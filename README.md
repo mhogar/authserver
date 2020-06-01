@@ -1,1 +1,1 @@
-# authserver
+# AuthServer [![Build Status](https://travis-ci.com/mhogar/authserver.svg?branch=master)](https://travis-ci.com/mhogar/authserver) [![Coverage Status](https://coveralls.io/repos/github/mhogar/authserver/badge.svg?branch=master)](https://coveralls.io/github/mhogar/authserver?branch=master)
