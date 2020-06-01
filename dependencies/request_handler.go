@@ -18,6 +18,12 @@ func ResolveRequestHandler() controllers.RequestHandler {
 				PasswordHasher:            ResolvePasswordHasher(),
 				PasswordCriteriaValidator: ResolvePasswordCriteriaValidator(),
 			},
+			TokenController: controllers.TokenController{
+				UserCRUD:       ResolveDatabase(),
+				SessionCRUD:    ResolveDatabase(),
+				PasswordHasher: ResolvePasswordHasher(),
+				TokenHelper:    ResolveTokenHelper(),
+			},
 		}
 	})
 	return requestHandler

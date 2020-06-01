@@ -8,13 +8,6 @@ import (
 	"net/http"
 )
 
-func createErrorResponse(err string) ErrorResponse {
-	return ErrorResponse{
-		Success: false,
-		Error:   err,
-	}
-}
-
 func parseJSONBody(r io.Reader, v interface{}) error {
 	decoder := json.NewDecoder(r)
 	err := decoder.Decode(v)
@@ -44,9 +37,19 @@ func sendSuccessResponse(w http.ResponseWriter) {
 }
 
 func sendErrorResponse(w http.ResponseWriter, status int, messsage string) {
-	sendResponse(w, status, createErrorResponse(messsage))
+	sendResponse(w, status, ErrorResponse{
+		Success: false,
+		Error:   messsage,
+	})
 }
 
 func sendInternalErrorResponse(w http.ResponseWriter) {
 	sendErrorResponse(w, http.StatusInternalServerError, "an internal error occurred")
+}
+
+func sendDataResponse(w http.ResponseWriter, data interface{}) {
+	sendResponse(w, http.StatusOK, DataResponse{
+		Success: true,
+		Data:    data,
+	})
 }

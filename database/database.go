@@ -10,6 +10,7 @@ import (
 type Database interface {
 	DBConnection
 	UserCRUD
+	SessionCRUD
 }
 
 // DBConnection is an interface for controlling the connection to the database.
@@ -25,7 +26,7 @@ type DBConnection interface {
 	Ping() error
 }
 
-// UserCRUD is an interface for performing CRUD operations on a user
+// UserCRUD is an interface for performing CRUD operations on a user.
 type UserCRUD interface {
 	// CreateUser creates a new user and returns any errors.
 	CreateUser(user *models.User) error
@@ -48,4 +49,10 @@ type UserCRUD interface {
 	// DeleteUser deletes the user associated with the provided user model.
 	// Returns an error if the user could not be deleted, as well as any other errors.
 	DeleteUser(user *models.User) error
+}
+
+// SessionCRUD is an interface for performing CRUD operations on a session.
+type SessionCRUD interface {
+	// CreateSession creates a new session and returns any errors.
+	CreateSession(session *models.Session) error
 }
