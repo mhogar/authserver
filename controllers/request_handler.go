@@ -16,14 +16,14 @@ type RequestHandler interface {
 
 // UserHandler is an interface for handling requests to user routes
 type UserHandler interface {
-	// PostUser handles POST requests to "/user"
-	PostUser(http.ResponseWriter, *http.Request, httprouter.Params)
+	// PostAPIUser handles POST requests to "/user"
+	PostAPIUser(http.ResponseWriter, *http.Request, httprouter.Params)
 
-	// DeleteUser handles DELETE requests to "/user/:id"
-	DeleteUser(http.ResponseWriter, *http.Request, httprouter.Params)
+	// DeleteAPIUser handles DELETE requests to "/user/:id"
+	DeleteAPIUser(http.ResponseWriter, *http.Request, httprouter.Params)
 
-	// PatchUserPassword handles PATCH requests to "/user/password"
-	PatchUserPassword(http.ResponseWriter, *http.Request, httprouter.Params)
+	// PatchAPIUserPassword handles PATCH requests to "/user/password"
+	PatchAPIUserPassword(http.ResponseWriter, *http.Request, httprouter.Params)
 }
 
 // TokenHandler is an interface for handling requests to token routes

@@ -28,10 +28,10 @@ func (suite *RouterTestSuite) TestRouter_SendsInternalServerErrorOnPanic() {
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
 
-	req, err := http.NewRequest(http.MethodPost, server.URL+"/user", nil)
+	req, err := http.NewRequest(http.MethodPost, server.URL+"/api/user", nil)
 	suite.Require().NoError(err)
 
-	suite.RequestHandler.On("PostUser", mock.Anything, mock.Anything, mock.Anything).Run(func(_ mock.Arguments) {
+	suite.RequestHandler.On("PostAPIUser", mock.Anything, mock.Anything, mock.Anything).Run(func(_ mock.Arguments) {
 		panic("test panic handler")
 	})
 
@@ -43,60 +43,60 @@ func (suite *RouterTestSuite) TestRouter_SendsInternalServerErrorOnPanic() {
 	suite.EqualValues(http.StatusInternalServerError, res.StatusCode)
 }
 
-func (suite *RouterTestSuite) TestRouter_PostUserHandledByCorrectHandleFunction() {
+func (suite *RouterTestSuite) TestRouter_PostAPIUserHandledByCorrectHandleFunction() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
 
-	req, err := http.NewRequest(http.MethodPost, server.URL+"/user", nil)
+	req, err := http.NewRequest(http.MethodPost, server.URL+"/api/user", nil)
 	suite.Require().NoError(err)
 
-	suite.RequestHandler.On("PostUser", mock.Anything, mock.Anything, mock.Anything)
+	suite.RequestHandler.On("PostAPIUser", mock.Anything, mock.Anything, mock.Anything)
 
 	//act
 	_, err = http.DefaultClient.Do(req)
 	suite.Require().NoError(err)
 
 	//assert
-	suite.RequestHandler.AssertCalled(suite.T(), "PostUser", mock.Anything, mock.Anything, mock.Anything)
+	suite.RequestHandler.AssertCalled(suite.T(), "PostAPIUser", mock.Anything, mock.Anything, mock.Anything)
 }
 
-func (suite *RouterTestSuite) TestRouter_DeleteUserHandledByCorrectHandleFunction() {
+func (suite *RouterTestSuite) TestRouter_DeleteAPIUserHandledByCorrectHandleFunction() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
 
-	req, err := http.NewRequest(http.MethodDelete, server.URL+"/user/1", nil)
+	req, err := http.NewRequest(http.MethodDelete, server.URL+"/api/user/1", nil)
 	suite.Require().NoError(err)
 
-	suite.RequestHandler.On("DeleteUser", mock.Anything, mock.Anything, mock.Anything)
+	suite.RequestHandler.On("DeleteAPIUser", mock.Anything, mock.Anything, mock.Anything)
 
 	//act
 	_, err = http.DefaultClient.Do(req)
 	suite.Require().NoError(err)
 
 	//assert
-	suite.RequestHandler.AssertCalled(suite.T(), "DeleteUser", mock.Anything, mock.Anything, mock.MatchedBy(func(params httprouter.Params) bool {
+	suite.RequestHandler.AssertCalled(suite.T(), "DeleteAPIUser", mock.Anything, mock.Anything, mock.MatchedBy(func(params httprouter.Params) bool {
 		return params.ByName("id") == "1"
 	}))
 }
 
-func (suite *RouterTestSuite) TestRouter_PatchUserPasswordHandledByCorrectHandleFunction() {
+func (suite *RouterTestSuite) TestRouter_PatchAPIUserPasswordHandledByCorrectHandleFunction() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
 
-	req, err := http.NewRequest(http.MethodPatch, server.URL+"/user/password", nil)
+	req, err := http.NewRequest(http.MethodPatch, server.URL+"/api/user/password", nil)
 	suite.Require().NoError(err)
 
-	suite.RequestHandler.On("PatchUserPassword", mock.Anything, mock.Anything, mock.Anything)
+	suite.RequestHandler.On("PatchAPIUserPassword", mock.Anything, mock.Anything, mock.Anything)
 
 	//act
 	_, err = http.DefaultClient.Do(req)
 	suite.Require().NoError(err)
 
 	//assert
-	suite.RequestHandler.AssertCalled(suite.T(), "PatchUserPassword", mock.Anything, mock.Anything, mock.Anything)
+	suite.RequestHandler.AssertCalled(suite.T(), "PatchAPIUserPassword", mock.Anything, mock.Anything, mock.Anything)
 }
 
 func TestRouterTestSuite(t *testing.T) {

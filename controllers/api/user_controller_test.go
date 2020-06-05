@@ -48,7 +48,7 @@ func (suite *UserControllerTestSuite) SetupTest() {
 	}
 }
 
-func (suite *UserControllerTestSuite) TestPostUser_WithInvalidJSONBody_ReturnsBadRequest() {
+func (suite *UserControllerTestSuite) TestPostAPIUser_WithInvalidJSONBody_ReturnsBadRequest() {
 	//arrange
 	w := httptest.NewRecorder()
 
@@ -56,14 +56,14 @@ func (suite *UserControllerTestSuite) TestPostUser_WithInvalidJSONBody_ReturnsBa
 	suite.Require().NoError(err)
 
 	//act
-	suite.UserController.PostUser(w, req, nil)
+	suite.UserController.PostAPIUser(w, req, nil)
 
 	//assert
 	common.AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "invalid json body")
 }
 
-func (suite *UserControllerTestSuite) TestPostUser_WithInvalidBodyFields_ReturnsBadRequest() {
-	var body api.PostUserBody
+func (suite *UserControllerTestSuite) TestPostAPIUser_WithInvalidBodyFields_ReturnsBadRequest() {
+	var body api.PostAPIUserBody
 
 	testCase := func() {
 		//arrange
@@ -71,30 +71,30 @@ func (suite *UserControllerTestSuite) TestPostUser_WithInvalidBodyFields_Returns
 		req := common.CreateRequestWithJSONBody(&suite.Suite, body)
 
 		//act
-		suite.UserController.PostUser(w, req, nil)
+		suite.UserController.PostAPIUser(w, req, nil)
 
 		//assert
 		common.AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "username and password cannot be empty")
 	}
 
-	body = api.PostUserBody{
+	body = api.PostAPIUserBody{
 		Username: "",
 		Password: "password",
 	}
 	suite.Run("EmptyUsername", testCase)
 
-	body = api.PostUserBody{
+	body = api.PostAPIUserBody{
 		Username: "username",
 		Password: "",
 	}
 	suite.Run("EmptyPassword", testCase)
 }
 
-func (suite *UserControllerTestSuite) TestPostUser_WithErrorGettingUserByUsername_ReturnsInternalServerError() {
+func (suite *UserControllerTestSuite) TestPostAPIUser_WithErrorGettingUserByUsername_ReturnsInternalServerError() {
 	//arrange
 	w := httptest.NewRecorder()
 
-	body := api.PostUserBody{
+	body := api.PostAPIUserBody{
 		Username: "username",
 		Password: "password",
 	}
@@ -103,17 +103,17 @@ func (suite *UserControllerTestSuite) TestPostUser_WithErrorGettingUserByUsernam
 	suite.UserCRUDMock.On("GetUserByUsername", body.Username).Return(nil, errors.New(""))
 
 	//act
-	suite.UserController.PostUser(w, req, nil)
+	suite.UserController.PostAPIUser(w, req, nil)
 
 	//assert
 	common.AssertInternalServerErrorResponse(&suite.Suite, w.Result())
 }
 
-func (suite *UserControllerTestSuite) TestPostUser_WithNonUniqueUsername_ReturnsBadRequest() {
+func (suite *UserControllerTestSuite) TestPostAPIUser_WithNonUniqueUsername_ReturnsBadRequest() {
 	//arrange
 	w := httptest.NewRecorder()
 
-	body := api.PostUserBody{
+	body := api.PostAPIUserBody{
 		Username: "username",
 		Password: "password",
 	}
@@ -122,17 +122,17 @@ func (suite *UserControllerTestSuite) TestPostUser_WithNonUniqueUsername_Returns
 	suite.UserCRUDMock.On("GetUserByUsername", body.Username).Return(&models.User{}, nil)
 
 	//act
-	suite.UserController.PostUser(w, req, nil)
+	suite.UserController.PostAPIUser(w, req, nil)
 
 	//assert
 	common.AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "username already exists")
 }
 
-func (suite *UserControllerTestSuite) TestPostUser_WherePasswordDoesNotMeetCriteria_ReturnsBadRequest() {
+func (suite *UserControllerTestSuite) TestPostAPIUser_WherePasswordDoesNotMeetCriteria_ReturnsBadRequest() {
 	//arrange
 	w := httptest.NewRecorder()
 
-	body := api.PostUserBody{
+	body := api.PostAPIUserBody{
 		Username: "username",
 		Password: "password",
 	}
@@ -143,17 +143,17 @@ func (suite *UserControllerTestSuite) TestPostUser_WherePasswordDoesNotMeetCrite
 	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(nil, errors.New(""))
 
 	//act
-	suite.UserController.PostUser(w, req, nil)
+	suite.UserController.PostAPIUser(w, req, nil)
 
 	//assert
 	common.AssertInternalServerErrorResponse(&suite.Suite, w.Result())
 }
 
-func (suite *UserControllerTestSuite) TestPostUser_WithErrorHashingNewPassword_ReturnsInternalServerError() {
+func (suite *UserControllerTestSuite) TestPostAPIUser_WithErrorHashingNewPassword_ReturnsInternalServerError() {
 	//arrange
 	w := httptest.NewRecorder()
 
-	body := api.PostUserBody{
+	body := api.PostAPIUserBody{
 		Username: "username",
 		Password: "password",
 	}
@@ -163,17 +163,17 @@ func (suite *UserControllerTestSuite) TestPostUser_WithErrorHashingNewPassword_R
 	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(helpers.CreateValidatePasswordCriteriaError(helpers.ValidatePasswordCriteriaTooShort, ""))
 
 	//act
-	suite.UserController.PostUser(w, req, nil)
+	suite.UserController.PostAPIUser(w, req, nil)
 
 	//assert
 	common.AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "password does not meet minimum criteria")
 }
 
-func (suite *UserControllerTestSuite) TestPostUser_WithErrorCreatingUser_ReturnsInternalServerError() {
+func (suite *UserControllerTestSuite) TestPostAPIUser_WithErrorCreatingUser_ReturnsInternalServerError() {
 	//arrange
 	w := httptest.NewRecorder()
 
-	body := api.PostUserBody{
+	body := api.PostAPIUserBody{
 		Username: "username",
 		Password: "password",
 	}
@@ -185,17 +185,17 @@ func (suite *UserControllerTestSuite) TestPostUser_WithErrorCreatingUser_Returns
 	suite.UserCRUDMock.On("CreateUser", mock.Anything).Return(errors.New(""))
 
 	//act
-	suite.UserController.PostUser(w, req, nil)
+	suite.UserController.PostAPIUser(w, req, nil)
 
 	//assert
 	common.AssertInternalServerErrorResponse(&suite.Suite, w.Result())
 }
 
-func (suite *UserControllerTestSuite) TestPostUser_WithValidRequest_ReturnsOK() {
+func (suite *UserControllerTestSuite) TestPostAPIUser_WithValidRequest_ReturnsOK() {
 	//arrange
 	w := httptest.NewRecorder()
 
-	body := api.PostUserBody{
+	body := api.PostAPIUserBody{
 		Username: "username",
 		Password: "password",
 	}
@@ -209,7 +209,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WithValidRequest_ReturnsOK() 
 	suite.UserCRUDMock.On("CreateUser", mock.Anything).Return(nil)
 
 	//act
-	suite.UserController.PostUser(w, req, nil)
+	suite.UserController.PostAPIUser(w, req, nil)
 
 	//assert
 	suite.UserCRUDMock.AssertCalled(suite.T(), "GetUserByUsername", body.Username)
@@ -222,18 +222,18 @@ func (suite *UserControllerTestSuite) TestPostUser_WithValidRequest_ReturnsOK() 
 	common.AssertSuccessResponse(&suite.Suite, w.Result())
 }
 
-func (suite *UserControllerTestSuite) TestDeleteUser_WithoutIdInParams_ReturnsBadRequest() {
+func (suite *UserControllerTestSuite) TestDeleteAPIUser_WithoutIdInParams_ReturnsBadRequest() {
 	//arrange
 	w := httptest.NewRecorder()
 
 	//act
-	suite.UserController.DeleteUser(w, nil, make(httprouter.Params, 0))
+	suite.UserController.DeleteAPIUser(w, nil, make(httprouter.Params, 0))
 
 	//assert
 	common.AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "id must be present")
 }
 
-func (suite *UserControllerTestSuite) TestDeleteUser_WithIdInInvalidFormat_ReturnsBadRequest() {
+func (suite *UserControllerTestSuite) TestDeleteAPIUser_WithIdInInvalidFormat_ReturnsBadRequest() {
 	//arrange
 	w := httptest.NewRecorder()
 
@@ -243,13 +243,13 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WithIdInInvalidFormat_Retur
 	}
 
 	//act
-	suite.UserController.DeleteUser(w, nil, params)
+	suite.UserController.DeleteAPIUser(w, nil, params)
 
 	//assert
 	common.AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "id is in invalid format")
 }
 
-func (suite *UserControllerTestSuite) TestDeleteUser_WithErrorGettingUserById_ReturnsInternalServerError() {
+func (suite *UserControllerTestSuite) TestDeleteAPIUser_WithErrorGettingUserById_ReturnsInternalServerError() {
 	//arrange
 	w := httptest.NewRecorder()
 
@@ -261,13 +261,13 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WithErrorGettingUserById_Re
 	suite.UserCRUDMock.On("GetUserByID", mock.Anything).Return(nil, errors.New(""))
 
 	//act
-	suite.UserController.DeleteUser(w, nil, params)
+	suite.UserController.DeleteAPIUser(w, nil, params)
 
 	//assert
 	common.AssertInternalServerErrorResponse(&suite.Suite, w.Result())
 }
 
-func (suite *UserControllerTestSuite) TestDeleteUser_WhereUserIsNotFound_ReturnsBadRequest() {
+func (suite *UserControllerTestSuite) TestDeleteAPIUser_WhereUserIsNotFound_ReturnsBadRequest() {
 	//arrange
 	w := httptest.NewRecorder()
 
@@ -279,13 +279,13 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WhereUserIsNotFound_Returns
 	suite.UserCRUDMock.On("GetUserByID", mock.Anything).Return(nil, nil)
 
 	//act
-	suite.UserController.DeleteUser(w, nil, params)
+	suite.UserController.DeleteAPIUser(w, nil, params)
 
 	//assert
 	common.AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "user not found")
 }
 
-func (suite *UserControllerTestSuite) TestDeleteUser_WithErrorDeletingUser_ReturnsInternalServerError() {
+func (suite *UserControllerTestSuite) TestDeleteAPIUser_WithErrorDeletingUser_ReturnsInternalServerError() {
 	//arrange
 	w := httptest.NewRecorder()
 
@@ -298,13 +298,13 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WithErrorDeletingUser_Retur
 	suite.UserCRUDMock.On("DeleteUser", mock.Anything).Return(errors.New(""))
 
 	//act
-	suite.UserController.DeleteUser(w, nil, params)
+	suite.UserController.DeleteAPIUser(w, nil, params)
 
 	//assert
 	common.AssertInternalServerErrorResponse(&suite.Suite, w.Result())
 }
 
-func (suite *UserControllerTestSuite) TestDeleteUser_WithValidRequest_ReturnsOK() {
+func (suite *UserControllerTestSuite) TestDeleteAPIUser_WithValidRequest_ReturnsOK() {
 	//arrange
 	w := httptest.NewRecorder()
 
@@ -317,7 +317,7 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WithValidRequest_ReturnsOK(
 	suite.UserCRUDMock.On("DeleteUser", mock.Anything).Return(nil)
 
 	//act
-	suite.UserController.DeleteUser(w, nil, params)
+	suite.UserController.DeleteAPIUser(w, nil, params)
 
 	//assert
 	suite.UserCRUDMock.AssertCalled(suite.T(), "GetUserByID", user.ID)
@@ -326,7 +326,7 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WithValidRequest_ReturnsOK(
 	common.AssertSuccessResponse(&suite.Suite, w.Result())
 }
 
-func (suite *UserControllerTestSuite) TestPatchUserPassword_WithNoSessionId_ReturnsUnauthorized() {
+func (suite *UserControllerTestSuite) TestPatchAPIUserPassword_WithNoSessionId_ReturnsUnauthorized() {
 	//arrange
 	w := httptest.NewRecorder()
 
@@ -334,13 +334,13 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithNoSessionId_Retu
 	suite.Require().NoError(err)
 
 	//act
-	suite.UserController.PatchUserPassword(w, req, nil)
+	suite.UserController.PatchAPIUserPassword(w, req, nil)
 
 	//assert
 	common.AssertErrorResponse(&suite.Suite, w.Result(), http.StatusUnauthorized, "token not provided")
 }
 
-func (suite *UserControllerTestSuite) TestPatchUserPassword_WithInvalidSessionId_ReturnsUnauthorized() {
+func (suite *UserControllerTestSuite) TestPatchAPIUserPassword_WithInvalidSessionId_ReturnsUnauthorized() {
 	//arrange
 	w := httptest.NewRecorder()
 
@@ -351,13 +351,13 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithInvalidSessionId
 	req.AddCookie(suite.SessionCookie)
 
 	//act
-	suite.UserController.PatchUserPassword(w, req, nil)
+	suite.UserController.PatchAPIUserPassword(w, req, nil)
 
 	//assert
 	common.AssertErrorResponse(&suite.Suite, w.Result(), http.StatusUnauthorized, "invalid format")
 }
 
-func (suite *UserControllerTestSuite) TestPatchUserPassword_WithErrorGettingUserBySessionId_ReturnsInternalServerError() {
+func (suite *UserControllerTestSuite) TestPatchAPIUserPassword_WithErrorGettingUserBySessionId_ReturnsInternalServerError() {
 	//arrange
 	w := httptest.NewRecorder()
 
@@ -368,13 +368,13 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithErrorGettingUser
 	suite.UserCRUDMock.On("GetUserBySessionID", mock.Anything).Return(nil, errors.New(""))
 
 	//act
-	suite.UserController.PatchUserPassword(w, req, nil)
+	suite.UserController.PatchAPIUserPassword(w, req, nil)
 
 	//assert
 	common.AssertInternalServerErrorResponse(&suite.Suite, w.Result())
 }
 
-func (suite *UserControllerTestSuite) TestPatchUserPassword_WhereNoUserIsFound_ReturnsUnauthorized() {
+func (suite *UserControllerTestSuite) TestPatchAPIUserPassword_WhereNoUserIsFound_ReturnsUnauthorized() {
 	//arrange
 	w := httptest.NewRecorder()
 
@@ -385,13 +385,13 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WhereNoUserIsFound_R
 	suite.UserCRUDMock.On("GetUserBySessionID", mock.Anything).Return(nil, nil)
 
 	//act
-	suite.UserController.PatchUserPassword(w, req, nil)
+	suite.UserController.PatchAPIUserPassword(w, req, nil)
 
 	//assert
 	common.AssertErrorResponse(&suite.Suite, w.Result(), http.StatusUnauthorized, "no user")
 }
 
-func (suite *UserControllerTestSuite) TestPatchUserPassword_WithInvalidJSONBody_ReturnsBadRequest() {
+func (suite *UserControllerTestSuite) TestPatchAPIUserPassword_WithInvalidJSONBody_ReturnsBadRequest() {
 	//arrange
 	w := httptest.NewRecorder()
 
@@ -402,14 +402,14 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithInvalidJSONBody_
 	suite.UserCRUDMock.On("GetUserBySessionID", mock.Anything).Return(&models.User{}, nil)
 
 	//act
-	suite.UserController.PatchUserPassword(w, req, nil)
+	suite.UserController.PatchAPIUserPassword(w, req, nil)
 
 	//assert
 	common.AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "invalid json body")
 }
 
-func (suite *UserControllerTestSuite) TestPatchUserPassword_WithInvalidBodyFields_ReturnsBadRequest() {
-	var body api.PatchUserPasswordBody
+func (suite *UserControllerTestSuite) TestPatchAPIUserPassword_WithInvalidBodyFields_ReturnsBadRequest() {
+	var body api.PatchAPIUserPasswordBody
 
 	testCase := func() {
 		//arrange
@@ -421,30 +421,30 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithInvalidBodyField
 		suite.UserCRUDMock.On("GetUserBySessionID", mock.Anything).Return(&models.User{}, nil)
 
 		//act
-		suite.UserController.PatchUserPassword(w, req, nil)
+		suite.UserController.PatchAPIUserPassword(w, req, nil)
 
 		//assert
 		common.AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "old password and new password cannot be empty")
 	}
 
-	body = api.PatchUserPasswordBody{
+	body = api.PatchAPIUserPasswordBody{
 		OldPassword: "",
 		NewPassword: "new password",
 	}
 	suite.Run("EmptyUsername", testCase)
 
-	body = api.PatchUserPasswordBody{
+	body = api.PatchAPIUserPasswordBody{
 		OldPassword: "old password",
 		NewPassword: "",
 	}
 	suite.Run("EmptyPassword", testCase)
 }
 
-func (suite *UserControllerTestSuite) TestPatchUserPassword_WhereOldPasswordIsInvalid_ReturnsBadRequest() {
+func (suite *UserControllerTestSuite) TestPatchAPIUserPassword_WhereOldPasswordIsInvalid_ReturnsBadRequest() {
 	//arrange
 	w := httptest.NewRecorder()
 
-	body := api.PatchUserPasswordBody{
+	body := api.PatchAPIUserPasswordBody{
 		OldPassword: "old password",
 		NewPassword: "new password",
 	}
@@ -456,17 +456,17 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WhereOldPasswordIsIn
 	suite.PasswordHasherMock.On("ComparePasswords", mock.Anything, mock.Anything).Return(errors.New(""))
 
 	//act
-	suite.UserController.PatchUserPassword(w, req, nil)
+	suite.UserController.PatchAPIUserPassword(w, req, nil)
 
 	//assert
 	common.AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "old password is invalid")
 }
 
-func (suite *UserControllerTestSuite) TestPatchUserPassword_WhereNewPasswordDoesNotMeetCriteria_ReturnsBadRequest() {
+func (suite *UserControllerTestSuite) TestPatchAPIUserPassword_WhereNewPasswordDoesNotMeetCriteria_ReturnsBadRequest() {
 	//arrange
 	w := httptest.NewRecorder()
 
-	body := api.PatchUserPasswordBody{
+	body := api.PatchAPIUserPasswordBody{
 		OldPassword: "old password",
 		NewPassword: "new password",
 	}
@@ -479,17 +479,17 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WhereNewPasswordDoes
 	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(helpers.CreateValidatePasswordCriteriaError(helpers.ValidatePasswordCriteriaTooShort, ""))
 
 	//act
-	suite.UserController.PatchUserPassword(w, req, nil)
+	suite.UserController.PatchAPIUserPassword(w, req, nil)
 
 	//assert
 	common.AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "password does not meet minimum criteria")
 }
 
-func (suite *UserControllerTestSuite) TestPatchUserPassword_WithErrorHashingNewPassword_ReturnsInternalServerError() {
+func (suite *UserControllerTestSuite) TestPatchAPIUserPassword_WithErrorHashingNewPassword_ReturnsInternalServerError() {
 	//arrange
 	w := httptest.NewRecorder()
 
-	body := api.PatchUserPasswordBody{
+	body := api.PatchAPIUserPasswordBody{
 		OldPassword: "old password",
 		NewPassword: "new password",
 	}
@@ -503,17 +503,17 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithErrorHashingNewP
 	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(nil, errors.New(""))
 
 	//act
-	suite.UserController.PatchUserPassword(w, req, nil)
+	suite.UserController.PatchAPIUserPassword(w, req, nil)
 
 	//assert
 	common.AssertInternalServerErrorResponse(&suite.Suite, w.Result())
 }
 
-func (suite *UserControllerTestSuite) TestPatchUserPassword_WithErrorUpdatingUser_ReturnsInternalServerError() {
+func (suite *UserControllerTestSuite) TestPatchAPIUserPassword_WithErrorUpdatingUser_ReturnsInternalServerError() {
 	//arrange
 	w := httptest.NewRecorder()
 
-	body := api.PatchUserPasswordBody{
+	body := api.PatchAPIUserPasswordBody{
 		OldPassword: "old password",
 		NewPassword: "new password",
 	}
@@ -528,17 +528,17 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithErrorUpdatingUse
 	suite.UserCRUDMock.On("UpdateUser", mock.Anything).Return(errors.New(""))
 
 	//act
-	suite.UserController.PatchUserPassword(w, req, nil)
+	suite.UserController.PatchAPIUserPassword(w, req, nil)
 
 	//assert
 	common.AssertInternalServerErrorResponse(&suite.Suite, w.Result())
 }
 
-func (suite *UserControllerTestSuite) TestPatchUserPassword_WithValidRequest_ReturnsOK() {
+func (suite *UserControllerTestSuite) TestPatchAPIUserPassword_WithValidRequest_ReturnsOK() {
 	//arrange
 	w := httptest.NewRecorder()
 
-	body := api.PatchUserPasswordBody{
+	body := api.PatchAPIUserPasswordBody{
 		OldPassword: "old password",
 		NewPassword: "new password",
 	}
@@ -557,7 +557,7 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithValidRequest_Ret
 	suite.UserCRUDMock.On("UpdateUser", mock.Anything).Return(nil)
 
 	//act
-	suite.UserController.PatchUserPassword(w, req, nil)
+	suite.UserController.PatchAPIUserPassword(w, req, nil)
 
 	//assert
 	suite.UserCRUDMock.AssertCalled(suite.T(), "GetUserBySessionID", suite.SID)

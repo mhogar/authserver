@@ -14,27 +14,27 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-// UserController handles requests to "/user" endpoints
+// UserController handles requests to "/api/user" endpoints
 type UserController struct {
 	UserCRUD                  database.UserCRUD
 	PasswordHasher            helpers.PasswordHasher
 	PasswordCriteriaValidator helpers.PasswordCriteriaValidator
 }
 
-// PostUserBody is the struct the body of requests to PostUser should be parsed into
-type PostUserBody struct {
+// PostAPIUserBody is the struct the body of requests to PostAPIUser should be parsed into
+type PostAPIUserBody struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-// PostUser handles Post requests to "/user"
-func (c *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
-	var body PostUserBody
+// PostAPIUser handles Post requests to "/api/user"
+func (c *UserController) PostAPIUser(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+	var body PostAPIUserBody
 
 	//parse the body
 	err := common.ParseJSONBody(req.Body, &body)
 	if err != nil {
-		log.Println(helpers.ChainError("error parsing PostUser request body", err))
+		log.Println(helpers.ChainError("error parsing PostAPIUser request body", err))
 		common.SendErrorResponse(w, http.StatusBadRequest, "invalid json body")
 		return
 	}
@@ -87,8 +87,8 @@ func (c *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ ht
 	common.SendSuccessResponse(w)
 }
 
-// DeleteUser handles DELETE requests to "/user"
-func (c *UserController) DeleteUser(w http.ResponseWriter, _ *http.Request, params httprouter.Params) {
+// DeleteAPIUser handles DELETE requests to "/api/user"
+func (c *UserController) DeleteAPIUser(w http.ResponseWriter, _ *http.Request, params httprouter.Params) {
 	//check for id
 	idStr := params.ByName("id")
 	if idStr == "" {
@@ -129,15 +129,15 @@ func (c *UserController) DeleteUser(w http.ResponseWriter, _ *http.Request, para
 	common.SendSuccessResponse(w)
 }
 
-// PatchUserPasswordBody is the struct the body of requests to PatchUserPassword should be parsed into
-type PatchUserPasswordBody struct {
+// PatchAPIUserPasswordBody is the struct the body of requests to PatchAPIUserPassword should be parsed into
+type PatchAPIUserPasswordBody struct {
 	OldPassword string `json:"oldPassword"`
 	NewPassword string `json:"newPassword"`
 }
 
-// PatchUserPassword handles PATCH requests to "/user/password"
-func (c *UserController) PatchUserPassword(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
-	var body PatchUserPasswordBody
+// PatchAPIUserPassword handles PATCH requests to "/api/user/password"
+func (c *UserController) PatchAPIUserPassword(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+	var body PatchAPIUserPasswordBody
 
 	//get the session
 	sID, err := getSessionFromRequest(req)
@@ -164,7 +164,7 @@ func (c *UserController) PatchUserPassword(w http.ResponseWriter, req *http.Requ
 	//parse the body
 	err = common.ParseJSONBody(req.Body, &body)
 	if err != nil {
-		log.Println(helpers.ChainError("error parsing PatchUserPassword request body", err))
+		log.Println(helpers.ChainError("error parsing PatchAPIUserPassword request body", err))
 		common.SendErrorResponse(w, http.StatusBadRequest, "invalid json body")
 		return
 	}

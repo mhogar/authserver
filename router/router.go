@@ -14,9 +14,9 @@ func CreateRouter(handler controllers.RequestHandler) *httprouter.Router {
 	router.PanicHandler = common.PanicHandler
 
 	//user routes
-	router.POST("/user", handler.PostUser)
-	router.DELETE("/user/:id", handler.DeleteUser)
-	router.PATCH("/user/password", handler.PatchUserPassword)
+	router.POST("/api/user", handler.PostAPIUser)
+	router.DELETE("/api/user/:id", handler.DeleteAPIUser)
+	router.PATCH("/api/user/password", handler.PatchAPIUserPassword)
 
 	//oauth routes
 	router.POST("/oauth/token", handler.PostOAuthToken)
