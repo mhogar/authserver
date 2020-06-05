@@ -1,4 +1,4 @@
-package controllers
+package api
 
 import (
 	"log"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"authserver/controllers/common"
 	"authserver/database"
 	"authserver/helpers"
 	"authserver/models"
@@ -31,16 +32,16 @@ func (c *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ ht
 	var body PostUserBody
 
 	//parse the body
-	err := parseJSONBody(req.Body, &body)
+	err := common.ParseJSONBody(req.Body, &body)
 	if err != nil {
 		log.Println(helpers.ChainError("error parsing PostUser request body", err))
-		sendErrorResponse(w, http.StatusBadRequest, "invalid json body")
+		common.SendErrorResponse(w, http.StatusBadRequest, "invalid json body")
 		return
 	}
 
 	//validate the body fields
 	if body.Username == "" || body.Password == "" {
-		sendErrorResponse(w, http.StatusBadRequest, "username and password cannot be empty")
+		common.SendErrorResponse(w, http.StatusBadRequest, "username and password cannot be empty")
 		return
 	}
 
@@ -48,12 +49,12 @@ func (c *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ ht
 	otherUser, err := c.UserCRUD.GetUserByUsername(body.Username)
 	if err != nil {
 		log.Println(helpers.ChainError("error getting user by username", err))
-		sendInternalErrorResponse(w)
+		common.SendInternalErrorResponse(w)
 		return
 	}
 
 	if otherUser != nil {
-		sendErrorResponse(w, http.StatusBadRequest, "an user with that username already exists")
+		common.SendErrorResponse(w, http.StatusBadRequest, "an user with that username already exists")
 		return
 	}
 
@@ -61,7 +62,7 @@ func (c *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ ht
 	verr := c.PasswordCriteriaValidator.ValidatePasswordCriteria(body.Password)
 	if verr.Status != helpers.ValidatePasswordCriteriaValid {
 		log.Println(helpers.ChainError("error validating password criteria", verr))
-		sendErrorResponse(w, http.StatusBadRequest, "password does not meet minimum criteria")
+		common.SendErrorResponse(w, http.StatusBadRequest, "password does not meet minimum criteria")
 		return
 	}
 
@@ -69,7 +70,7 @@ func (c *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ ht
 	hash, err := c.PasswordHasher.HashPassword(body.Password)
 	if err != nil {
 		log.Println(helpers.ChainError("error generating password hash", err))
-		sendInternalErrorResponse(w)
+		common.SendInternalErrorResponse(w)
 		return
 	}
 
@@ -78,12 +79,12 @@ func (c *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ ht
 	err = c.UserCRUD.CreateUser(user)
 	if err != nil {
 		log.Println(helpers.ChainError("error saving user", err))
-		sendInternalErrorResponse(w)
+		common.SendInternalErrorResponse(w)
 		return
 	}
 
 	//return success
-	sendSuccessResponse(w)
+	common.SendSuccessResponse(w)
 }
 
 // DeleteUser handles DELETE requests to "/user"
@@ -91,7 +92,7 @@ func (c *UserController) DeleteUser(w http.ResponseWriter, _ *http.Request, para
 	//check for id
 	idStr := params.ByName("id")
 	if idStr == "" {
-		sendErrorResponse(w, http.StatusBadRequest, "id must be present")
+		common.SendErrorResponse(w, http.StatusBadRequest, "id must be present")
 		return
 	}
 
@@ -99,7 +100,7 @@ func (c *UserController) DeleteUser(w http.ResponseWriter, _ *http.Request, para
 	id, err := uuid.Parse(idStr)
 	if err != nil {
 		log.Println(helpers.ChainError("error parsing user id", err))
-		sendErrorResponse(w, http.StatusBadRequest, "id is in invalid format")
+		common.SendErrorResponse(w, http.StatusBadRequest, "id is in invalid format")
 		return
 	}
 
@@ -107,12 +108,12 @@ func (c *UserController) DeleteUser(w http.ResponseWriter, _ *http.Request, para
 	user, err := c.UserCRUD.GetUserByID(id)
 	if err != nil {
 		log.Println(helpers.ChainError("error fetching user by id", err))
-		sendInternalErrorResponse(w)
+		common.SendInternalErrorResponse(w)
 		return
 	}
 
 	if user == nil {
-		sendErrorResponse(w, http.StatusBadRequest, "user not found")
+		common.SendErrorResponse(w, http.StatusBadRequest, "user not found")
 		return
 	}
 
@@ -120,12 +121,12 @@ func (c *UserController) DeleteUser(w http.ResponseWriter, _ *http.Request, para
 	err = c.UserCRUD.DeleteUser(user)
 	if err != nil {
 		log.Println(helpers.ChainError("error deleting user", err))
-		sendInternalErrorResponse(w)
+		common.SendInternalErrorResponse(w)
 		return
 	}
 
 	//return success
-	sendSuccessResponse(w)
+	common.SendSuccessResponse(w)
 }
 
 // PatchUserPasswordBody is the struct the body of requests to PatchUserPassword should be parsed into
@@ -142,7 +143,7 @@ func (c *UserController) PatchUserPassword(w http.ResponseWriter, req *http.Requ
 	sID, err := getSessionFromRequest(req)
 	if err != nil {
 		log.Println(helpers.ChainError("error getting session id from request", err))
-		sendErrorResponse(w, http.StatusUnauthorized, "session token not provided or was in invalid format")
+		common.SendErrorResponse(w, http.StatusUnauthorized, "session token not provided or was in invalid format")
 		return
 	}
 
@@ -150,27 +151,27 @@ func (c *UserController) PatchUserPassword(w http.ResponseWriter, req *http.Requ
 	user, err := c.UserCRUD.GetUserBySessionID(sID)
 	if err != nil {
 		log.Println(helpers.ChainError("error getting user by session id", err))
-		sendInternalErrorResponse(w)
+		common.SendInternalErrorResponse(w)
 		return
 	}
 
 	//check user was found
 	if user == nil {
-		sendErrorResponse(w, http.StatusUnauthorized, "no user for provided session")
+		common.SendErrorResponse(w, http.StatusUnauthorized, "no user for provided session")
 		return
 	}
 
 	//parse the body
-	err = parseJSONBody(req.Body, &body)
+	err = common.ParseJSONBody(req.Body, &body)
 	if err != nil {
 		log.Println(helpers.ChainError("error parsing PatchUserPassword request body", err))
-		sendErrorResponse(w, http.StatusBadRequest, "invalid json body")
+		common.SendErrorResponse(w, http.StatusBadRequest, "invalid json body")
 		return
 	}
 
 	//validate the body fields
 	if body.OldPassword == "" || body.NewPassword == "" {
-		sendErrorResponse(w, http.StatusBadRequest, "old password and new password cannot be empty")
+		common.SendErrorResponse(w, http.StatusBadRequest, "old password and new password cannot be empty")
 		return
 	}
 
@@ -178,7 +179,7 @@ func (c *UserController) PatchUserPassword(w http.ResponseWriter, req *http.Requ
 	err = c.PasswordHasher.ComparePasswords(user.PasswordHash, body.OldPassword)
 	if err != nil {
 		log.Println(helpers.ChainError("error comparing password hashes", err))
-		sendErrorResponse(w, http.StatusBadRequest, "old password is invalid")
+		common.SendErrorResponse(w, http.StatusBadRequest, "old password is invalid")
 		return
 	}
 
@@ -186,7 +187,7 @@ func (c *UserController) PatchUserPassword(w http.ResponseWriter, req *http.Requ
 	verr := c.PasswordCriteriaValidator.ValidatePasswordCriteria(body.NewPassword)
 	if verr.Status != helpers.ValidatePasswordCriteriaValid {
 		log.Println(helpers.ChainError("error validating password criteria", verr))
-		sendErrorResponse(w, http.StatusBadRequest, "password does not meet minimum criteria")
+		common.SendErrorResponse(w, http.StatusBadRequest, "password does not meet minimum criteria")
 		return
 	}
 
@@ -194,7 +195,7 @@ func (c *UserController) PatchUserPassword(w http.ResponseWriter, req *http.Requ
 	hash, err := c.PasswordHasher.HashPassword(body.NewPassword)
 	if err != nil {
 		log.Println(helpers.ChainError("error generating password hash", err))
-		sendInternalErrorResponse(w)
+		common.SendInternalErrorResponse(w)
 		return
 	}
 
@@ -203,10 +204,10 @@ func (c *UserController) PatchUserPassword(w http.ResponseWriter, req *http.Requ
 	err = c.UserCRUD.UpdateUser(user)
 	if err != nil {
 		log.Println(helpers.ChainError("error updating user", err))
-		sendInternalErrorResponse(w)
+		common.SendInternalErrorResponse(w)
 		return
 	}
 
 	//return success
-	sendSuccessResponse(w)
+	common.SendSuccessResponse(w)
 }

@@ -1,4 +1,4 @@
-package controllers
+package common
 
 import (
 	"log"
@@ -26,5 +26,5 @@ type DataResponse struct {
 func PanicHandler(w http.ResponseWriter, req *http.Request, info interface{}) {
 	log.Println(info)
 
-	sendInternalErrorResponse(w)
+	SendInternalErrorResponse(w)
 }

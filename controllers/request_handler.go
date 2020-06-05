@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"authserver/controllers/api"
+	"authserver/controllers/oauth"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -26,12 +28,12 @@ type UserHandler interface {
 
 // TokenHandler is an interface for handling requests to token routes
 type TokenHandler interface {
-	//PostToken handles Post requests to "/token"
-	PostToken(http.ResponseWriter, *http.Request, httprouter.Params)
+	//PostOAuthToken handles Post requests to "/token"
+	PostOAuthToken(http.ResponseWriter, *http.Request, httprouter.Params)
 }
 
 // RequestHandle is an implementation of RequestHandler that uses controllers to satisfy the interface's methods
 type RequestHandle struct {
-	UserController
-	TokenController
+	api.UserController
+	oauth.TokenController
 }

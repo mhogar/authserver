@@ -2,6 +2,8 @@ package dependencies
 
 import (
 	"authserver/controllers"
+	"authserver/controllers/api"
+	"authserver/controllers/oauth"
 	"sync"
 )
 
@@ -13,12 +15,12 @@ var requestHandler controllers.RequestHandler
 func ResolveRequestHandler() controllers.RequestHandler {
 	requestHandlerOnce.Do(func() {
 		requestHandler = &controllers.RequestHandle{
-			UserController: controllers.UserController{
+			UserController: api.UserController{
 				UserCRUD:                  ResolveDatabase(),
 				PasswordHasher:            ResolvePasswordHasher(),
 				PasswordCriteriaValidator: ResolvePasswordCriteriaValidator(),
 			},
-			TokenController: controllers.TokenController{
+			TokenController: oauth.TokenController{
 				UserCRUD:       ResolveDatabase(),
 				SessionCRUD:    ResolveDatabase(),
 				PasswordHasher: ResolvePasswordHasher(),
