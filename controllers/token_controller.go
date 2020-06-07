@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"authserver/database"
 	"authserver/helpers"
 	"authserver/models"
 	"log"
@@ -12,10 +11,10 @@ import (
 
 // TokenController handles requests to "/token" endpoints
 type TokenController struct {
-	database.UserCRUD
-	database.ClientCRUD
-	database.ScopeCRUD
-	database.AccessTokenCRUD
+	models.UserCRUD
+	models.ClientCRUD
+	models.ScopeCRUD
+	models.AccessTokenCRUD
 	helpers.PasswordHasher
 }
 
@@ -117,7 +116,7 @@ func (c TokenController) handlePasswordGrant(w http.ResponseWriter, body passwor
 	token := models.CreateNewAccessToken(user.ID, client.ID, scope.ID)
 
 	//save the token
-	err = c.AccessTokenCRUD.CreateAccessToken(token)
+	err = c.AccessTokenCRUD.SaveAccessToken(token)
 	if err != nil {
 		log.Println(helpers.ChainError("error saving access token", err))
 		sendInternalErrorResponse(w)

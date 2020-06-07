@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/uuid"
 
-	"authserver/database"
 	"authserver/helpers"
 	"authserver/models"
 
@@ -15,7 +14,7 @@ import (
 
 // UserController handles requests to "/user" endpoints
 type UserController struct {
-	UserCRUD                  database.UserCRUD
+	UserCRUD                  models.UserCRUD
 	PasswordHasher            helpers.PasswordHasher
 	PasswordCriteriaValidator helpers.PasswordCriteriaValidator
 }
@@ -75,7 +74,7 @@ func (c UserController) PostUser(w http.ResponseWriter, req *http.Request, _ htt
 
 	//save the user
 	user := models.CreateNewUser(body.Username, hash)
-	err = c.UserCRUD.CreateUser(user)
+	err = c.UserCRUD.SaveUser(user)
 	if err != nil {
 		log.Println(helpers.ChainError("error saving user", err))
 		sendInternalErrorResponse(w)

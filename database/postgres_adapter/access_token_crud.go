@@ -5,6 +5,6 @@ import (
 	"errors"
 )
 
-func (db *PostgresAdapter) CreateAccessToken(token *models.AccessToken) error {
+func (db *PostgresAdapter) SaveAccessToken(token *models.AccessToken) error {
 	return errors.New("not implemented yet")
 }

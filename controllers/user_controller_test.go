@@ -2,10 +2,10 @@ package controllers_test
 
 import (
 	"authserver/controllers"
-	databasemocks "authserver/database/mocks"
 	"authserver/helpers"
 	helpermocks "authserver/helpers/mocks"
 	"authserver/models"
+	modelmocks "authserver/models/mocks"
 	"bytes"
 	"errors"
 	"net/http"
@@ -24,7 +24,7 @@ type UserControllerTestSuite struct {
 	suite.Suite
 	SID                           uuid.UUID
 	SessionCookie                 *http.Cookie
-	UserCRUDMock                  databasemocks.UserCRUD
+	UserCRUDMock                  modelmocks.UserCRUD
 	PasswordHasherMock            helpermocks.PasswordHasher
 	PasswordCriteriaValidatorMock helpermocks.PasswordCriteriaValidator
 	UserController                controllers.UserController
@@ -37,7 +37,7 @@ func (suite *UserControllerTestSuite) SetupTest() {
 		Value: suite.SID.String(),
 	}
 
-	suite.UserCRUDMock = databasemocks.UserCRUD{}
+	suite.UserCRUDMock = modelmocks.UserCRUD{}
 	suite.PasswordHasherMock = helpermocks.PasswordHasher{}
 	suite.PasswordCriteriaValidatorMock = helpermocks.PasswordCriteriaValidator{}
 	suite.UserController = controllers.UserController{
@@ -181,7 +181,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WithErrorCreatingUser_Returns
 	suite.UserCRUDMock.On("GetUserByUsername", body.Username).Return(nil, nil)
 	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(nil, nil)
 	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(helpers.CreateValidatePasswordCriteriaValid())
-	suite.UserCRUDMock.On("CreateUser", mock.Anything).Return(errors.New(""))
+	suite.UserCRUDMock.On("SaveUser", mock.Anything).Return(errors.New(""))
 
 	//act
 	suite.UserController.PostUser(w, req, nil)
@@ -205,7 +205,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WithValidRequest_ReturnsOK() 
 	suite.UserCRUDMock.On("GetUserByUsername", body.Username).Return(nil, nil)
 	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(helpers.CreateValidatePasswordCriteriaValid())
 	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(hash, nil)
-	suite.UserCRUDMock.On("CreateUser", mock.Anything).Return(nil)
+	suite.UserCRUDMock.On("SaveUser", mock.Anything).Return(nil)
 
 	//act
 	suite.UserController.PostUser(w, req, nil)
@@ -214,7 +214,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WithValidRequest_ReturnsOK() 
 	suite.UserCRUDMock.AssertCalled(suite.T(), "GetUserByUsername", body.Username)
 	suite.PasswordCriteriaValidatorMock.AssertCalled(suite.T(), "ValidatePasswordCriteria", body.Password)
 	suite.PasswordHasherMock.AssertCalled(suite.T(), "HashPassword", body.Password)
-	suite.UserCRUDMock.AssertCalled(suite.T(), "CreateUser", mock.MatchedBy(func(u *models.User) bool {
+	suite.UserCRUDMock.AssertCalled(suite.T(), "SaveUser", mock.MatchedBy(func(u *models.User) bool {
 		return u.Username == body.Username && bytes.Equal(u.PasswordHash, hash)
 	}))
 

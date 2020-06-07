@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (db *PostgresAdapter) CreateUser(user *models.User) error {
+func (db *PostgresAdapter) SaveUser(user *models.User) error {
 	verr := user.Validate()
 	if verr.Status != models.ValidateUserValid {
 		return helpers.ChainError("error validating user model", verr)

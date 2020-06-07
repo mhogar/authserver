@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"authserver/database"
 	"authserver/helpers"
 	"authserver/models"
 	"log"
@@ -24,7 +23,7 @@ func sendOAuthErrorResponse(w http.ResponseWriter, status int, err string, descr
 	})
 }
 
-func parseClient(clientCRUD database.ClientCRUD, w http.ResponseWriter, clientIDStr string) *models.Client {
+func parseClient(clientCRUD models.ClientCRUD, w http.ResponseWriter, clientIDStr string) *models.Client {
 	//parse the client id
 	clientID, err := uuid.Parse(clientIDStr)
 	if err != nil {
@@ -49,7 +48,7 @@ func parseClient(clientCRUD database.ClientCRUD, w http.ResponseWriter, clientID
 	return client
 }
 
-func parseScope(scopeCRUD database.ScopeCRUD, w http.ResponseWriter, name string) *models.Scope {
+func parseScope(scopeCRUD models.ScopeCRUD, w http.ResponseWriter, name string) *models.Scope {
 	//get the scope
 	scope, err := scopeCRUD.GetScopeByName(name)
 	if err != nil {
