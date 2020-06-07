@@ -35,7 +35,7 @@ func CreateValidateUserValid() ValidateError {
 
 // Validate validates the the user model has valid fields.
 // Returns a ValidateError indicating its result.
-func (u User) Validate() ValidateError {
+func (u *User) Validate() ValidateError {
 	if u.ID == uuid.Nil {
 		return CreateValidateError(ValidateUserInvalidID, "id cannot be nil")
 	}

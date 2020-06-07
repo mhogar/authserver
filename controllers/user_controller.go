@@ -27,7 +27,7 @@ type PostUserBody struct {
 }
 
 // PostUser handles Post requests to "/user"
-func (c *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+func (c UserController) PostUser(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	var body PostUserBody
 
 	//parse the body
@@ -87,7 +87,7 @@ func (c *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ ht
 }
 
 // DeleteUser handles DELETE requests to "/user"
-func (c *UserController) DeleteUser(w http.ResponseWriter, _ *http.Request, params httprouter.Params) {
+func (c UserController) DeleteUser(w http.ResponseWriter, _ *http.Request, params httprouter.Params) {
 	//check for id
 	idStr := params.ByName("id")
 	if idStr == "" {
@@ -135,7 +135,7 @@ type PatchUserPasswordBody struct {
 }
 
 // PatchUserPassword handles PATCH requests to "/user/password"
-func (c *UserController) PatchUserPassword(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+func (c UserController) PatchUserPassword(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	var body PatchUserPasswordBody
 
 	//get the session
