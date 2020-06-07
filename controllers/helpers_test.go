@@ -47,3 +47,21 @@ func assertErrorResponse(suite *suite.Suite, res *http.Response, expectedStatus 
 func assertInternalServerErrorResponse(suite *suite.Suite, res *http.Response) {
 	assertErrorResponse(suite, res, http.StatusInternalServerError, "an internal error occurred")
 }
+
+func assertOAuthErrorResponse(suite *suite.Suite, res *http.Response, expectedStatus int, expectedError string, expectedDescription string) {
+	var errRes controllers.OAuthErrorResponse
+	status := parseResponse(suite, res, &errRes)
+
+	suite.Equal(expectedStatus, status)
+	suite.Contains(errRes.Error, expectedError)
+	suite.Contains(errRes.ErrorDescription, expectedDescription)
+}
+
+func assertAccessTokenResponse(suite *suite.Suite, res *http.Response, expectedTokenID string) {
+	var tokenRes controllers.AccessTokenResponse
+	status := parseResponse(suite, res, &tokenRes)
+
+	suite.Equal(http.StatusOK, status)
+	suite.Equal(expectedTokenID, tokenRes.AccessToken)
+	suite.Equal("bearer", tokenRes.TokenType)
+}

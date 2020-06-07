@@ -21,7 +21,15 @@ type TokenController struct {
 // PostTokenBody is the struct the body of requests to PostToken should be parsed into
 type PostTokenBody struct {
 	GrantType string `json:"grant_type"`
-	passwordGrantBody
+	PostTokenPasswordGrantBody
+}
+
+// PostTokenPasswordGrantBody is the struct the body of password grant requests to PostToken should be parsed into
+type PostTokenPasswordGrantBody struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	ClientID string `json:"client_id"`
+	Scope    string `json:"scope"`
 }
 
 // PostToken handles POST requests to "/token"
@@ -36,12 +44,18 @@ func (c TokenController) PostToken(w http.ResponseWriter, req *http.Request, _ h
 		return
 	}
 
+	//validate grant type is present
+	if body.GrantType == "" {
+		sendOAuthErrorResponse(w, http.StatusBadRequest, "invalid_request", "missing grant_type parameter")
+		return
+	}
+
 	var token *models.AccessToken = nil
 
 	//choose the workflow based on the grant type
 	switch body.GrantType {
 	case "password":
-		token = c.handlePasswordGrant(w, body.passwordGrantBody)
+		token = c.handlePasswordGrant(w, body.PostTokenPasswordGrantBody)
 	default:
 		sendOAuthErrorResponse(w, http.StatusBadRequest, "unsupported_grant_type", "")
 	}
@@ -57,7 +71,7 @@ func (c TokenController) PostToken(w http.ResponseWriter, req *http.Request, _ h
 	})
 }
 
-func (c TokenController) handlePasswordGrant(w http.ResponseWriter, body passwordGrantBody) *models.AccessToken {
+func (c TokenController) handlePasswordGrant(w http.ResponseWriter, body PostTokenPasswordGrantBody) *models.AccessToken {
 	//validate parameters
 	if body.Username == "" {
 		sendOAuthErrorResponse(w, http.StatusBadRequest, "invalid_request", "missing username parameter")

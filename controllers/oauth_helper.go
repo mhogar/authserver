@@ -9,13 +9,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type passwordGrantBody struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	ClientID string `json:"client_id"`
-	Scope    string `json:"scope"`
-}
-
 func sendOAuthErrorResponse(w http.ResponseWriter, status int, err string, description string) {
 	sendResponse(w, status, OAuthErrorResponse{
 		Error:            err,
@@ -58,7 +51,7 @@ func parseScope(scopeCRUD models.ScopeCRUD, w http.ResponseWriter, name string) 
 	}
 
 	if scope == nil {
-		sendOAuthErrorResponse(w, http.StatusUnauthorized, "invalid_scope", "")
+		sendOAuthErrorResponse(w, http.StatusBadRequest, "invalid_scope", "")
 		return nil
 	}
 
