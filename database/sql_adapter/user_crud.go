@@ -1,4 +1,4 @@
-package postgresadapter
+package sqladapter
 
 import (
 	"authserver/helpers"
@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (db *PostgresAdapter) SaveUser(user *models.User) error {
+func (db *SQLAdapter) SaveUser(user *models.User) error {
 	verr := user.Validate()
 	if verr.Status != models.ValidateUserValid {
 		return helpers.ChainError("error validating user model", verr)
@@ -17,22 +17,22 @@ func (db *PostgresAdapter) SaveUser(user *models.User) error {
 	return errors.New("not implemented yet")
 }
 
-func (db *PostgresAdapter) GetUserByID(id uuid.UUID) (*models.User, error) {
+func (db *SQLAdapter) GetUserByID(id uuid.UUID) (*models.User, error) {
 	return nil, errors.New("not implemented yet")
 }
 
-func (db *PostgresAdapter) GetUserByUsername(email string) (*models.User, error) {
+func (db *SQLAdapter) GetUserByUsername(email string) (*models.User, error) {
 	return nil, errors.New("not implemented yet")
 }
 
-func (db *PostgresAdapter) GetUserBySessionID(sID uuid.UUID) (*models.User, error) {
+func (db *SQLAdapter) GetUserBySessionID(sID uuid.UUID) (*models.User, error) {
 	return nil, errors.New("not implemented yet")
 }
 
-func (db *PostgresAdapter) UpdateUser(user *models.User) error {
+func (db *SQLAdapter) UpdateUser(user *models.User) error {
 	return errors.New("not implemented yet")
 }
 
-func (db *PostgresAdapter) DeleteUser(user *models.User) error {
+func (db *SQLAdapter) DeleteUser(user *models.User) error {
 	return errors.New("not implemented yet")
 }

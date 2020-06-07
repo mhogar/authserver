@@ -1,4 +1,4 @@
-package postgresadapter
+package sqladapter
 
 import (
 	"authserver/models"
@@ -7,6 +7,6 @@ import (
 	"github.com/google/uuid"
 )
 
-func (db *PostgresAdapter) GetClientByID(ID uuid.UUID) (*models.Client, error) {
+func (db *SQLAdapter) GetClientByID(ID uuid.UUID) (*models.Client, error) {
 	return nil, errors.New("not implemented yet")
 }
