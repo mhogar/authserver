@@ -22,6 +22,18 @@ type DataResponse struct {
 	Data    interface{} `json:"data"`
 }
 
+// OAuthErrorResponse represents an error response defined by the oauth spec
+type OAuthErrorResponse struct {
+	Error            string `json:"error"`
+	ErrorDescription string `json:"error_description"`
+}
+
+// AccessTokenResponse represents an access token response defined by the oauth spec
+type AccessTokenResponse struct {
+	AccessToken string `json:"access_token"`
+	TokenType   string `json:"token_type"`
+}
+
 // PanicHandler is the function to be called if a panic is encountered
 func PanicHandler(w http.ResponseWriter, req *http.Request, info interface{}) {
 	log.Println(info)

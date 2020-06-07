@@ -19,7 +19,7 @@ type User struct {
 	PasswordHash []byte
 }
 
-// CreateNewUser creates a user model with new id and the provided fields.
+// CreateNewUser creates a user model with a new id and the provided fields.
 func CreateNewUser(username string, passwordHash []byte) *User {
 	return &User{
 		ID:           uuid.New(),
