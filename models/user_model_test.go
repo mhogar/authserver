@@ -33,7 +33,7 @@ func (suite *UserTestSuite) TestCreateNewUser_CreatesUserWithSuppliedFields() {
 	suite.EqualValues(hash, user.PasswordHash)
 }
 
-func (suite *UserTestSuite) TestValidate_WithValidUser_ReturnsModelValid() {
+func (suite *UserTestSuite) TestValidate_WithValidUser_ReturnsValid() {
 	//act
 	err := suite.User.Validate()
 
@@ -41,7 +41,7 @@ func (suite *UserTestSuite) TestValidate_WithValidUser_ReturnsModelValid() {
 	suite.EqualValues(models.ValidateUserValid, err.Status)
 }
 
-func (suite *UserTestSuite) TestValidate_WithNilUserID_ReturnsUserInvalidID() {
+func (suite *UserTestSuite) TestValidate_WithNilID_ReturnsUserInvalidID() {
 	//arrange
 	suite.User.ID = uuid.Nil
 

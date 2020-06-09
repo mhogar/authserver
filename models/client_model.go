@@ -4,6 +4,12 @@ import (
 	"github.com/google/uuid"
 )
 
+// Client ValidateError statuses.
+const (
+	ValidateClientValid     = iota
+	ValidateClientInvalidID = iota
+)
+
 // Client represents the client model.
 type Client struct {
 	ID uuid.UUID
@@ -21,4 +27,14 @@ func CreateNewClient() *Client {
 	return &Client{
 		ID: uuid.New(),
 	}
+}
+
+// Validate validates the client model has valid fields.
+// Returns a ValidateError indicating its result.
+func (c *Client) Validate() ValidateError {
+	if c.ID == uuid.Nil {
+		return CreateValidateError(ValidateClientInvalidID, "id cannot be nil")
+	}
+
+	return ValidateError{ValidateClientValid, nil}
 }

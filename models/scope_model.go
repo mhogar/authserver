@@ -4,6 +4,13 @@ import (
 	"github.com/google/uuid"
 )
 
+// Scope ValidateError statuses.
+const (
+	ValidateScopeValid       = iota
+	ValidateScopeInvalidID   = iota
+	ValidateScopeInvalidName = iota
+)
+
 // Scope represents the scope model.
 type Scope struct {
 	ID   uuid.UUID
@@ -23,4 +30,18 @@ func CreateNewScope(name string) *Scope {
 		ID:   uuid.New(),
 		Name: name,
 	}
+}
+
+// Validate validates the client model has valid fields.
+// Returns a ValidateError indicating its result.
+func (s *Scope) Validate() ValidateError {
+	if s.ID == uuid.Nil {
+		return CreateValidateError(ValidateScopeInvalidID, "id cannot be nil")
+	}
+
+	if s.Name == "" {
+		return CreateValidateError(ValidateScopeInvalidName, "name cannot be empty")
+	}
+
+	return ValidateError{ValidateScopeValid, nil}
 }

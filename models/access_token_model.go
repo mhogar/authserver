@@ -2,6 +2,15 @@ package models
 
 import "github.com/google/uuid"
 
+// AccessToken ValidateError statuses.
+const (
+	ValidateAccessTokenValid           = iota
+	ValidateAccessTokenInvalidID       = iota
+	ValidateAccessTokenInvalidUserID   = iota
+	ValidateAccessTokenInvalidClientID = iota
+	ValidateAccessTokenInvalidScopeID  = iota
+)
+
 // AccessToken represents the access token model.
 type AccessToken struct {
 	ID       uuid.UUID
@@ -31,4 +40,26 @@ func CreateNewAccessToken(userID uuid.UUID, clientID uuid.UUID, scopeID uuid.UUI
 		ClientID: clientID,
 		ScopeID:  scopeID,
 	}
+}
+
+// Validate validates the access token model has valid fields.
+// Returns a ValidateError indicating its result.
+func (tk *AccessToken) Validate() ValidateError {
+	if tk.ID == uuid.Nil {
+		return CreateValidateError(ValidateAccessTokenInvalidID, "id cannot be nil")
+	}
+
+	if tk.UserID == uuid.Nil {
+		return CreateValidateError(ValidateAccessTokenInvalidUserID, "user id cannot be nil")
+	}
+
+	if tk.ClientID == uuid.Nil {
+		return CreateValidateError(ValidateAccessTokenInvalidClientID, "client id cannot be nil")
+	}
+
+	if tk.ScopeID == uuid.Nil {
+		return CreateValidateError(ValidateAccessTokenInvalidScopeID, "scope id cannot be nil")
+	}
+
+	return ValidateError{ValidateAccessTokenValid, nil}
 }

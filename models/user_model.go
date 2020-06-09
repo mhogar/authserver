@@ -52,12 +52,7 @@ func CreateNewUser(username string, passwordHash []byte) *User {
 	}
 }
 
-// CreateValidateUserValid creates a ValidateError with status ValidateUserValid and nil error.
-func CreateValidateUserValid() ValidateError {
-	return ValidateError{ValidateUserValid, nil}
-}
-
-// Validate validates the the user model has valid fields.
+// Validate validates the user model has valid fields.
 // Returns a ValidateError indicating its result.
 func (u *User) Validate() ValidateError {
 	if u.ID == uuid.Nil {
@@ -72,5 +67,5 @@ func (u *User) Validate() ValidateError {
 		return CreateValidateError(ValidateUserInvalidPasswordHash, "password hash cannot be nil")
 	}
 
-	return CreateValidateUserValid()
+	return ValidateError{ValidateUserValid, nil}
 }
