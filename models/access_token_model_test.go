@@ -40,7 +40,7 @@ func (suite *AccessTokenSuite) TestValidate_WithValidAccessToken_ReturnsValid() 
 	err := suite.Token.Validate()
 
 	//assert
-	suite.EqualValues(models.ValidateAccessTokenValid, err.Status)
+	suite.Equal(models.ValidateAccessTokenValid, err.Status)
 }
 
 func (suite *AccessTokenSuite) TestValidate_WithNilID_ReturnsAccessTokenInvalidID() {
@@ -51,7 +51,7 @@ func (suite *AccessTokenSuite) TestValidate_WithNilID_ReturnsAccessTokenInvalidI
 	err := suite.Token.Validate()
 
 	//assert
-	suite.EqualValues(models.ValidateAccessTokenInvalidID, err.Status)
+	suite.Equal(models.ValidateAccessTokenInvalidID, err.Status)
 }
 
 func (suite *AccessTokenSuite) TestValidate_WithNilUserID_ReturnsAccessTokenInvalidUserID() {
@@ -62,7 +62,7 @@ func (suite *AccessTokenSuite) TestValidate_WithNilUserID_ReturnsAccessTokenInva
 	err := suite.Token.Validate()
 
 	//assert
-	suite.EqualValues(models.ValidateAccessTokenInvalidUserID, err.Status)
+	suite.Equal(models.ValidateAccessTokenInvalidUserID, err.Status)
 }
 
 func (suite *AccessTokenSuite) TestValidate_WithNilClientID_ReturnsAccessTokenInvalidClientID() {
@@ -73,7 +73,7 @@ func (suite *AccessTokenSuite) TestValidate_WithNilClientID_ReturnsAccessTokenIn
 	err := suite.Token.Validate()
 
 	//assert
-	suite.EqualValues(models.ValidateAccessTokenInvalidClientID, err.Status)
+	suite.Equal(models.ValidateAccessTokenInvalidClientID, err.Status)
 }
 
 func (suite *AccessTokenSuite) TestValidate_WithNilScopeID_ReturnsAccessTokenInvalidScopeID() {
@@ -84,7 +84,7 @@ func (suite *AccessTokenSuite) TestValidate_WithNilScopeID_ReturnsAccessTokenInv
 	err := suite.Token.Validate()
 
 	//assert
-	suite.EqualValues(models.ValidateAccessTokenInvalidScopeID, err.Status)
+	suite.Equal(models.ValidateAccessTokenInvalidScopeID, err.Status)
 }
 
 func TestAccessTokenSuite(t *testing.T) {

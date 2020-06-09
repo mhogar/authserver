@@ -36,7 +36,7 @@ func (suite *ScopeSuite) TestValidate_WithValidScope_ReturnsValid() {
 	err := suite.Scope.Validate()
 
 	//assert
-	suite.EqualValues(models.ValidateScopeValid, err.Status)
+	suite.Equal(models.ValidateScopeValid, err.Status)
 }
 
 func (suite *ScopeSuite) TestValidate_WithNilID_ReturnsScopeInvalidID() {
@@ -47,7 +47,7 @@ func (suite *ScopeSuite) TestValidate_WithNilID_ReturnsScopeInvalidID() {
 	err := suite.Scope.Validate()
 
 	//assert
-	suite.EqualValues(models.ValidateScopeInvalidID, err.Status)
+	suite.Equal(models.ValidateScopeInvalidID, err.Status)
 }
 
 func (suite *ScopeSuite) TestValidate_WithEmptyName_ReturnsScopeInvalidName() {
@@ -58,7 +58,7 @@ func (suite *ScopeSuite) TestValidate_WithEmptyName_ReturnsScopeInvalidName() {
 	err := suite.Scope.Validate()
 
 	//assert
-	suite.EqualValues(models.ValidateScopeInvalidName, err.Status)
+	suite.Equal(models.ValidateScopeInvalidName, err.Status)
 }
 
 func TestScopeSuite(t *testing.T) {

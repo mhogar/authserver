@@ -40,7 +40,7 @@ func (suite *RouterTestSuite) TestRouter_SendsInternalServerErrorOnPanic() {
 	suite.Require().NoError(err)
 
 	//assert
-	suite.EqualValues(http.StatusInternalServerError, res.StatusCode)
+	suite.Equal(http.StatusInternalServerError, res.StatusCode)
 }
 
 func (suite *RouterTestSuite) TestRouter_PostUserHandledByCorrectHandleFunction() {

@@ -32,7 +32,7 @@ func (suite *ClientSuite) TestValidate_WithValidClient_ReturnsValid() {
 	err := suite.Client.Validate()
 
 	//assert
-	suite.EqualValues(models.ValidateClientValid, err.Status)
+	suite.Equal(models.ValidateClientValid, err.Status)
 }
 
 func (suite *ClientSuite) TestValidate_WithNilID_ReturnsClientInvalidID() {
@@ -43,7 +43,7 @@ func (suite *ClientSuite) TestValidate_WithNilID_ReturnsClientInvalidID() {
 	err := suite.Client.Validate()
 
 	//assert
-	suite.EqualValues(models.ValidateClientInvalidID, err.Status)
+	suite.Equal(models.ValidateClientInvalidID, err.Status)
 }
 
 func TestClientSuite(t *testing.T) {
