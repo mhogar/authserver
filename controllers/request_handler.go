@@ -28,6 +28,9 @@ type UserHandler interface {
 type TokenHandler interface {
 	// PostToken handles POST requests to "/token"
 	PostToken(http.ResponseWriter, *http.Request, httprouter.Params)
+
+	// DeleteToken handles DELETE requests to "/token"
+	DeleteToken(http.ResponseWriter, *http.Request, httprouter.Params)
 }
 
 // RequestHandle is an implementation of RequestHandler that uses controllers to satisfy the interface's methods

@@ -139,3 +139,23 @@ func (c TokenController) handlePasswordGrant(w http.ResponseWriter, body PostTok
 
 	return token
 }
+
+// DeleteToken handles DELETE requests to "/token"
+func (c TokenController) DeleteToken(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+	//get the token
+	token := parseAuthHeader(c.AccessTokenCRUD, w, req)
+	if token == nil {
+		return
+	}
+
+	//delete the token
+	err := c.AccessTokenCRUD.DeleteAccessToken(token)
+	if err != nil {
+		log.Println(helpers.ChainError("error deleting access token", err))
+		sendInternalErrorResponse(w)
+		return
+	}
+
+	//return success
+	sendSuccessResponse(w)
+}

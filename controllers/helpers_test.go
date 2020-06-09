@@ -9,12 +9,28 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+func createEmptyRequest(suite *suite.Suite) *http.Request {
+	req, err := http.NewRequest("", "", nil)
+	suite.Require().NoError(err)
+
+	return req
+}
+
 func createRequestWithJSONBody(suite *suite.Suite, body interface{}) *http.Request {
 	bodyStr, err := json.Marshal(body)
 	suite.Require().NoError(err)
 
 	req, err := http.NewRequest("", "", bytes.NewReader(bodyStr))
 	suite.Require().NoError(err)
+
+	return req
+}
+
+func createRequestWithAuthorizationHeader(suite *suite.Suite, token string) *http.Request {
+	req, err := http.NewRequest("", "", nil)
+	suite.Require().NoError(err)
+
+	req.Header.Set("Authorization", "Bearer "+token)
 
 	return req
 }
@@ -35,13 +51,16 @@ func assertSuccessResponse(suite *suite.Suite, res *http.Response) {
 	suite.True(basicRes.Success)
 }
 
-func assertErrorResponse(suite *suite.Suite, res *http.Response, expectedStatus int, expectedError string) {
+func assertErrorResponse(suite *suite.Suite, res *http.Response, expectedStatus int, expectedErrorSubStrings ...string) {
 	var errRes controllers.ErrorResponse
 	status := parseResponse(suite, res, &errRes)
 
 	suite.Equal(expectedStatus, status)
 	suite.False(errRes.Success)
-	suite.Contains(errRes.Error, expectedError)
+
+	for _, expectedError := range expectedErrorSubStrings {
+		suite.Contains(errRes.Error, expectedError)
+	}
 }
 
 func assertInternalServerErrorResponse(suite *suite.Suite, res *http.Response) {

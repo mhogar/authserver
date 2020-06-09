@@ -39,8 +39,7 @@ type UserCRUD interface {
 	// UpdateUser updates the user and returns any errors.
 	UpdateUser(user *User) error
 
-	// DeleteUser deletes the user associated with the provided user model.
-	// Returns an error if the user could not be deleted, as well as any other errors.
+	// DeleteUser deletes the user and returns any errors.
 	DeleteUser(user *User) error
 }
 

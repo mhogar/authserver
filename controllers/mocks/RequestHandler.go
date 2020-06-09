@@ -14,6 +14,11 @@ type RequestHandler struct {
 	mock.Mock
 }
 
+// DeleteToken provides a mock function with given fields: _a0, _a1, _a2
+func (_m *RequestHandler) DeleteToken(_a0 http.ResponseWriter, _a1 *http.Request, _a2 httprouter.Params) {
+	_m.Called(_a0, _a1, _a2)
+}
+
 // DeleteUser provides a mock function with given fields: _a0, _a1, _a2
 func (_m *RequestHandler) DeleteUser(_a0 http.ResponseWriter, _a1 *http.Request, _a2 httprouter.Params) {
 	_m.Called(_a0, _a1, _a2)

@@ -19,6 +19,7 @@ func CreateRouter(handler controllers.RequestHandler) *httprouter.Router {
 
 	//token routes
 	router.POST("/token", handler.PostToken)
+	router.DELETE("/token", handler.DeleteToken)
 
 	return router
 }

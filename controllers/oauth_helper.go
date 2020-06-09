@@ -5,6 +5,7 @@ import (
 	"authserver/models"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -56,4 +57,35 @@ func parseScope(scopeCRUD models.ScopeCRUD, w http.ResponseWriter, name string) 
 	}
 
 	return scope
+}
+
+func parseAuthHeader(accessTokenCRUD models.AccessTokenCRUD, w http.ResponseWriter, req *http.Request) *models.AccessToken {
+	//extract the token string from the authorization header
+	splitTokens := strings.Split(req.Header.Get("Authorization"), "Bearer ")
+	if len(splitTokens) != 2 {
+		sendErrorResponse(w, http.StatusUnauthorized, "no bearer token provided")
+		return nil
+	}
+
+	//parse the token
+	tokenID, err := uuid.Parse(splitTokens[1])
+	if err != nil {
+		log.Println(helpers.ChainError("error parsing access token id", err))
+		sendErrorResponse(w, http.StatusUnauthorized, "bearer token was in invalid format")
+		return nil
+	}
+
+	//fetch the token
+	token, err := accessTokenCRUD.GetAccessTokenByID(tokenID)
+	if err != nil {
+		log.Println(helpers.ChainError("error getting access token by id", err))
+		sendInternalErrorResponse(w)
+		return nil
+	}
+
+	if token == nil {
+		sendErrorResponse(w, http.StatusUnauthorized, "invalid bearer token")
+	}
+
+	return token
 }
