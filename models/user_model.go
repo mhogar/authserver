@@ -28,10 +28,6 @@ type UserCRUD interface {
 	// If no users are found, returns nil user. Also returns any errors.
 	GetUserByID(ID uuid.UUID) (*User, error)
 
-	// GetUserBySessionID fetches the user associated with the session id.
-	// If no users are found, returns nil user. Also returns any errors.
-	GetUserBySessionID(sID uuid.UUID) (*User, error)
-
 	// GetUserByUsername fetches the user with the matching username.
 	// If no users are found, returns nil user. Also returns any errors.
 	GetUserByUsername(username string) (*User, error)

@@ -147,31 +147,28 @@ type PatchUserPasswordBody struct {
 
 // PatchUserPassword handles PATCH requests to "/user/password"
 func (c UserController) PatchUserPassword(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
-	var body PatchUserPasswordBody
-
-	//get the session
-	sID, err := getSessionFromRequest(req)
-	if err != nil {
-		log.Println(helpers.ChainError("error getting session id from request", err))
-		sendErrorResponse(w, http.StatusUnauthorized, "session token not provided or was in invalid format")
+	//get the access token
+	token := parseAuthHeader(c.AccessTokenCRUD, w, req)
+	if token == nil {
 		return
 	}
 
 	//get the user
-	user, err := c.UserCRUD.GetUserBySessionID(sID)
+	user, err := c.UserCRUD.GetUserByID(token.UserID)
 	if err != nil {
-		log.Println(helpers.ChainError("error getting user by session id", err))
+		log.Println(helpers.ChainError("error getting user by id", err))
 		sendInternalErrorResponse(w)
 		return
 	}
 
 	//check user was found
 	if user == nil {
-		sendErrorResponse(w, http.StatusUnauthorized, "no user for provided session")
+		sendErrorResponse(w, http.StatusUnauthorized, "no user for the provided access token")
 		return
 	}
 
 	//parse the body
+	var body PatchUserPasswordBody
 	err = parseJSONBody(req.Body, &body)
 	if err != nil {
 		log.Println(helpers.ChainError("error parsing PatchUserPassword request body", err))

@@ -25,10 +25,6 @@ func (db *SQLAdapter) GetUserByUsername(email string) (*models.User, error) {
 	return nil, errors.New("not implemented yet")
 }
 
-func (db *SQLAdapter) GetUserBySessionID(sID uuid.UUID) (*models.User, error) {
-	return nil, errors.New("not implemented yet")
-}
-
 func (db *SQLAdapter) UpdateUser(user *models.User) error {
 	return errors.New("not implemented yet")
 }
