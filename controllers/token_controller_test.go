@@ -413,51 +413,8 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WithValidRequ
 	assertAccessTokenResponse(&suite.Suite, w.Result(), token.ID.String())
 }
 
-func (suite *TokenControllerTestSuite) TestDeleteToken_WithNoBearerToken_ReturnsUnauthorized() {
-	var req *http.Request
-
-	testCase := func() {
-		//arrange
-		w := httptest.NewRecorder()
-
-		//act
-		suite.TokenController.DeleteToken(w, req, nil)
-
-		//assert
-		assertErrorResponse(&suite.Suite, w.Result(), http.StatusUnauthorized, "no bearer token")
-	}
-
-	req = createEmptyRequest(&suite.Suite)
-	suite.Run("NoAuthorizationHeader", testCase)
-
-	req.Header.Set("Authorization", "invalid")
-	suite.Run("AuthorizationHeaderDoesNotContainBearerToken", testCase)
-}
-
-func (suite *TokenControllerTestSuite) TestDeleteToken_WithBearerTokenInInvalidFormat_ReturnsUnauthorized() {
-	//arrange
-	w := httptest.NewRecorder()
-	req := createRequestWithAuthorizationHeader(&suite.Suite, "invalid")
-
-	//act
-	suite.TokenController.DeleteToken(w, req, nil)
-
-	//assert
-	assertErrorResponse(&suite.Suite, w.Result(), http.StatusUnauthorized, "bearer token", "invalid format")
-}
-
-func (suite *TokenControllerTestSuite) TestDeleteToken_WithErrorFetchingAccessTokenByID_ReturnsInternalServerError() {
-	//arrange
-	w := httptest.NewRecorder()
-	req := createRequestWithAuthorizationHeader(&suite.Suite, uuid.New().String())
-
-	suite.AccessTokenCRUDMock.On("GetAccessTokenByID", mock.Anything).Return(nil, errors.New(""))
-
-	//act
-	suite.TokenController.DeleteToken(w, req, nil)
-
-	//assert
-	assertInternalServerErrorResponse(&suite.Suite, w.Result())
+func (suite *TokenControllerTestSuite) TestDeleteToken_AuthorizationHeaderTests() {
+	RunAuthHeaderTests(&suite.Suite, &suite.AccessTokenCRUDMock, suite.TokenController.DeleteToken)
 }
 
 func (suite *TokenControllerTestSuite) TestDeleteToken_WhereAccessTokenWithIDisNotFound_ReturnsUnauthorized() {
