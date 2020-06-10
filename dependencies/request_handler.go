@@ -15,6 +15,7 @@ func ResolveRequestHandler() controllers.RequestHandler {
 		requestHandler = &controllers.RequestHandle{
 			UserController: controllers.UserController{
 				UserCRUD:                  ResolveDatabase(),
+				AccessTokenCRUD:           ResolveDatabase(),
 				PasswordHasher:            ResolvePasswordHasher(),
 				PasswordCriteriaValidator: ResolvePasswordCriteriaValidator(),
 			},

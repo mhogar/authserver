@@ -12,7 +12,8 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-func RunAuthHeaderTests(suite *suite.Suite, accessTokenCRUDMock *modelmocks.AccessTokenCRUD, actFunc httprouter.Handle) {
+func RunAuthHeaderTests(suite *suite.Suite, accessTokenCRUDMock *modelmocks.AccessTokenCRUD, setupTest func(), actFunc httprouter.Handle) {
+	setupTest()
 	suite.Run("NoBearerToken_ReturnsUnauthorized", func() {
 		var req *http.Request
 
@@ -24,32 +25,34 @@ func RunAuthHeaderTests(suite *suite.Suite, accessTokenCRUDMock *modelmocks.Acce
 			actFunc(w, req, nil)
 
 			//assert
-			assertErrorResponse(suite, w.Result(), http.StatusUnauthorized, "no bearer token")
+			AssertErrorResponse(suite, w.Result(), http.StatusUnauthorized, "no bearer token")
 		}
 
-		req = createEmptyRequest(suite)
+		req = CreateRequest(suite, "", nil)
 		suite.Run("NoAuthorizationHeader", testCase)
 
 		req.Header.Set("Authorization", "invalid")
 		suite.Run("AuthorizationHeaderDoesNotContainBearerToken", testCase)
 	})
 
+	setupTest()
 	suite.Run("BearerTokenInInvalidFormat_ReturnsUnauthorized", func() {
 		//arrange
 		w := httptest.NewRecorder()
-		req := createRequestWithAuthorizationHeader(suite, "invalid")
+		req := CreateRequest(suite, "invalid", nil)
 
 		//act
 		actFunc(w, req, nil)
 
 		//assert
-		assertErrorResponse(suite, w.Result(), http.StatusUnauthorized, "bearer token", "invalid format")
+		AssertErrorResponse(suite, w.Result(), http.StatusUnauthorized, "bearer token", "invalid format")
 	})
 
+	setupTest()
 	suite.Run("ErrorFetchingAccessTokenByID_ReturnsInternalServerError", func() {
 		//arrange
 		w := httptest.NewRecorder()
-		req := createRequestWithAuthorizationHeader(suite, uuid.New().String())
+		req := CreateRequest(suite, uuid.New().String(), nil)
 
 		accessTokenCRUDMock.On("GetAccessTokenByID", mock.Anything).Return(nil, errors.New(""))
 
@@ -57,6 +60,21 @@ func RunAuthHeaderTests(suite *suite.Suite, accessTokenCRUDMock *modelmocks.Acce
 		actFunc(w, req, nil)
 
 		//assert
-		assertInternalServerErrorResponse(suite, w.Result())
+		AssertInternalServerErrorResponse(suite, w.Result())
+	})
+
+	setupTest()
+	suite.Run("AccessTokenWithIDisNotFound_ReturnsUnauthorized", func() {
+		//arrange
+		w := httptest.NewRecorder()
+		req := CreateRequest(suite, uuid.New().String(), nil)
+
+		accessTokenCRUDMock.On("GetAccessTokenByID", mock.Anything).Return(nil, nil)
+
+		//act
+		actFunc(w, req, nil)
+
+		//assert
+		AssertErrorResponse(suite, w.Result(), http.StatusUnauthorized, "bearer token", "invalid")
 	})
 }

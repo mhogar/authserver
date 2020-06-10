@@ -15,6 +15,7 @@ import (
 // UserController handles requests to "/user" endpoints
 type UserController struct {
 	UserCRUD                  models.UserCRUD
+	AccessTokenCRUD           models.AccessTokenCRUD
 	PasswordHasher            helpers.PasswordHasher
 	PasswordCriteriaValidator helpers.PasswordCriteriaValidator
 }
@@ -27,9 +28,14 @@ type PostUserBody struct {
 
 // PostUser handles Post requests to "/user"
 func (c UserController) PostUser(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
-	var body PostUserBody
+	//check user has a valid access token
+	token := parseAuthHeader(c.AccessTokenCRUD, w, req)
+	if token == nil {
+		return
+	}
 
 	//parse the body
+	var body PostUserBody
 	err := parseJSONBody(req.Body, &body)
 	if err != nil {
 		log.Println(helpers.ChainError("error parsing PostUser request body", err))
@@ -86,7 +92,13 @@ func (c UserController) PostUser(w http.ResponseWriter, req *http.Request, _ htt
 }
 
 // DeleteUser handles DELETE requests to "/user"
-func (c UserController) DeleteUser(w http.ResponseWriter, _ *http.Request, params httprouter.Params) {
+func (c UserController) DeleteUser(w http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	//check user has a valid access token
+	token := parseAuthHeader(c.AccessTokenCRUD, w, req)
+	if token == nil {
+		return
+	}
+
 	//check for id
 	idStr := params.ByName("id")
 	if idStr == "" {
