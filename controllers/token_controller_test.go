@@ -157,7 +157,7 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WithClientIDi
 	suite.TokenController.PostToken(w, req, nil)
 
 	//assert
-	AssertOAuthErrorResponse(&suite.Suite, w.Result(), http.StatusUnauthorized, "invalid_client", "client_id was in invalid format")
+	AssertOAuthErrorResponse(&suite.Suite, w.Result(), http.StatusUnauthorized, "invalid_client", "client_id", "invalid format")
 }
 
 func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WithErrorGettingClientByID_ReturnsInternalServerError() {
@@ -307,7 +307,7 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WhereUserWith
 	suite.TokenController.PostToken(w, req, nil)
 
 	//assert
-	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "invalid username and/or password")
+	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "invalid", "username", "password")
 }
 
 func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WherePasswordDoesNotMatch_ReturnsBadRequest() {
@@ -334,7 +334,7 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WherePassword
 	suite.TokenController.PostToken(w, req, nil)
 
 	//assert
-	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "invalid username and/or password")
+	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "invalid", "username", "password")
 }
 
 func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WithErrorSavingAccessToken_ReturnsInternalServerError() {

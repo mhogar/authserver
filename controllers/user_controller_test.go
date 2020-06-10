@@ -78,7 +78,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WithInvalidBodyFields_Returns
 		suite.UserController.PostUser(w, req, nil)
 
 		//assert
-		AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "username and password cannot be empty")
+		AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "username", "password", "cannot be empty")
 	}
 
 	body = controllers.PostUserBody{
@@ -152,7 +152,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WherePasswordDoesNotMeetCrite
 	suite.UserController.PostUser(w, req, nil)
 
 	//assert
-	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "password does not meet minimum criteria")
+	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "password", "not", "minimum criteria")
 }
 
 func (suite *UserControllerTestSuite) TestPostUser_WithErrorHashingNewPassword_ReturnsInternalServerError() {
@@ -274,7 +274,7 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WithIdInInvalidFormat_Retur
 	suite.UserController.DeleteUser(w, req, params)
 
 	//assert
-	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "id is in invalid format")
+	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "id", "invalid format")
 }
 
 func (suite *UserControllerTestSuite) TestDeleteUser_WithErrorGettingUserById_ReturnsInternalServerError() {
@@ -468,7 +468,7 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WhereOldPasswordIsIn
 	suite.UserController.PatchUserPassword(w, req, nil)
 
 	//assert
-	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "old password is invalid")
+	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "old password", "invalid")
 }
 
 func (suite *UserControllerTestSuite) TestPatchUserPassword_WhereNewPasswordDoesNotMeetCriteria_ReturnsBadRequest() {
@@ -490,7 +490,7 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WhereNewPasswordDoes
 	suite.UserController.PatchUserPassword(w, req, nil)
 
 	//assert
-	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "password does not meet minimum criteria")
+	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "password", "not", "minimum criteria")
 }
 
 func (suite *UserControllerTestSuite) TestPatchUserPassword_WithErrorHashingNewPassword_ReturnsInternalServerError() {
