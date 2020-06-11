@@ -40,7 +40,7 @@ func (suite *RouterTestSuite) TestRouter_SendsInternalServerErrorOnPanic() {
 	suite.Require().NoError(err)
 
 	//assert
-	suite.EqualValues(http.StatusInternalServerError, res.StatusCode)
+	suite.Equal(http.StatusInternalServerError, res.StatusCode)
 }
 
 func (suite *RouterTestSuite) TestRouter_PostUserHandledByCorrectHandleFunction() {
@@ -97,6 +97,42 @@ func (suite *RouterTestSuite) TestRouter_PatchUserPasswordHandledByCorrectHandle
 
 	//assert
 	suite.RequestHandler.AssertCalled(suite.T(), "PatchUserPassword", mock.Anything, mock.Anything, mock.Anything)
+}
+
+func (suite *RouterTestSuite) TestRouter_PostTokenHandledByCorrectHandleFunction() {
+	//arrange
+	server := httptest.NewServer(suite.Router)
+	defer server.Close()
+
+	req, err := http.NewRequest(http.MethodPost, server.URL+"/token", nil)
+	suite.Require().NoError(err)
+
+	suite.RequestHandler.On("PostToken", mock.Anything, mock.Anything, mock.Anything)
+
+	//act
+	_, err = http.DefaultClient.Do(req)
+	suite.Require().NoError(err)
+
+	//assert
+	suite.RequestHandler.AssertCalled(suite.T(), "PostToken", mock.Anything, mock.Anything, mock.Anything)
+}
+
+func (suite *RouterTestSuite) TestRouter_DeleteTokenHandledByCorrectHandleFunction() {
+	//arrange
+	server := httptest.NewServer(suite.Router)
+	defer server.Close()
+
+	req, err := http.NewRequest(http.MethodDelete, server.URL+"/token", nil)
+	suite.Require().NoError(err)
+
+	suite.RequestHandler.On("DeleteToken", mock.Anything, mock.Anything, mock.Anything)
+
+	//act
+	_, err = http.DefaultClient.Do(req)
+	suite.Require().NoError(err)
+
+	//assert
+	suite.RequestHandler.AssertCalled(suite.T(), "DeleteToken", mock.Anything, mock.Anything, mock.Anything)
 }
 
 func TestRouterTestSuite(t *testing.T) {

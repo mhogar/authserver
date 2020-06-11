@@ -4,22 +4,33 @@ import (
 	"authserver/controllers"
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 
 	"github.com/stretchr/testify/suite"
 )
 
-func createRequestWithJSONBody(suite *suite.Suite, body interface{}) *http.Request {
-	bodyStr, err := json.Marshal(body)
+func CreateRequest(suite *suite.Suite, bearerToken string, body interface{}) *http.Request {
+	var bodyReader io.Reader = nil
+
+	if body != nil {
+		bodyStr, err := json.Marshal(body)
+		suite.Require().NoError(err)
+
+		bodyReader = bytes.NewReader(bodyStr)
+	}
+
+	req, err := http.NewRequest("", "", bodyReader)
 	suite.Require().NoError(err)
 
-	req, err := http.NewRequest("", "", bytes.NewReader(bodyStr))
-	suite.Require().NoError(err)
+	if bearerToken != "" {
+		req.Header.Set("Authorization", "Bearer "+bearerToken)
+	}
 
 	return req
 }
 
-func parseResponse(suite *suite.Suite, res *http.Response, body interface{}) (status int) {
+func ParseResponse(suite *suite.Suite, res *http.Response, body interface{}) (status int) {
 	decoder := json.NewDecoder(res.Body)
 	err := decoder.Decode(body)
 	suite.Require().NoError(err)
@@ -27,23 +38,47 @@ func parseResponse(suite *suite.Suite, res *http.Response, body interface{}) (st
 	return res.StatusCode
 }
 
-func assertSuccessResponse(suite *suite.Suite, res *http.Response) {
+func AssertSuccessResponse(suite *suite.Suite, res *http.Response) {
 	var basicRes controllers.BasicResponse
-	status := parseResponse(suite, res, &basicRes)
+	status := ParseResponse(suite, res, &basicRes)
 
 	suite.Equal(http.StatusOK, status)
 	suite.True(basicRes.Success)
 }
 
-func assertErrorResponse(suite *suite.Suite, res *http.Response, expectedStatus int, expectedError string) {
+func AssertErrorResponse(suite *suite.Suite, res *http.Response, expectedStatus int, expectedErrorSubStrings ...string) {
 	var errRes controllers.ErrorResponse
-	status := parseResponse(suite, res, &errRes)
+	status := ParseResponse(suite, res, &errRes)
 
 	suite.Equal(expectedStatus, status)
 	suite.False(errRes.Success)
-	suite.Contains(errRes.Error, expectedError)
+
+	for _, expectedError := range expectedErrorSubStrings {
+		suite.Contains(errRes.Error, expectedError)
+	}
 }
 
-func assertInternalServerErrorResponse(suite *suite.Suite, res *http.Response) {
-	assertErrorResponse(suite, res, http.StatusInternalServerError, "an internal error occurred")
+func AssertInternalServerErrorResponse(suite *suite.Suite, res *http.Response) {
+	AssertErrorResponse(suite, res, http.StatusInternalServerError, "an internal error occurred")
+}
+
+func AssertOAuthErrorResponse(suite *suite.Suite, res *http.Response, expectedStatus int, expectedError string, expectedDescriptionSubStrings ...string) {
+	var errRes controllers.OAuthErrorResponse
+	status := ParseResponse(suite, res, &errRes)
+
+	suite.Equal(expectedStatus, status)
+	suite.Contains(errRes.Error, expectedError)
+
+	for _, expectedDescription := range expectedDescriptionSubStrings {
+		suite.Contains(errRes.ErrorDescription, expectedDescription)
+	}
+}
+
+func AssertAccessTokenResponse(suite *suite.Suite, res *http.Response, expectedTokenID string) {
+	var tokenRes controllers.AccessTokenResponse
+	status := ParseResponse(suite, res, &tokenRes)
+
+	suite.Equal(http.StatusOK, status)
+	suite.Equal(expectedTokenID, tokenRes.AccessToken)
+	suite.Equal("bearer", tokenRes.TokenType)
 }

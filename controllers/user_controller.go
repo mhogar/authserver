@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/uuid"
 
-	"authserver/database"
 	"authserver/helpers"
 	"authserver/models"
 
@@ -15,7 +14,8 @@ import (
 
 // UserController handles requests to "/user" endpoints
 type UserController struct {
-	UserCRUD                  database.UserCRUD
+	UserCRUD                  models.UserCRUD
+	AccessTokenCRUD           models.AccessTokenCRUD
 	PasswordHasher            helpers.PasswordHasher
 	PasswordCriteriaValidator helpers.PasswordCriteriaValidator
 }
@@ -27,10 +27,15 @@ type PostUserBody struct {
 }
 
 // PostUser handles Post requests to "/user"
-func (c *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
-	var body PostUserBody
+func (c UserController) PostUser(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+	//check user has a valid access token
+	token := parseAuthHeader(c.AccessTokenCRUD, w, req)
+	if token == nil {
+		return
+	}
 
 	//parse the body
+	var body PostUserBody
 	err := parseJSONBody(req.Body, &body)
 	if err != nil {
 		log.Println(helpers.ChainError("error parsing PostUser request body", err))
@@ -75,7 +80,7 @@ func (c *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ ht
 
 	//save the user
 	user := models.CreateNewUser(body.Username, hash)
-	err = c.UserCRUD.CreateUser(user)
+	err = c.UserCRUD.SaveUser(user)
 	if err != nil {
 		log.Println(helpers.ChainError("error saving user", err))
 		sendInternalErrorResponse(w)
@@ -87,7 +92,13 @@ func (c *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ ht
 }
 
 // DeleteUser handles DELETE requests to "/user"
-func (c *UserController) DeleteUser(w http.ResponseWriter, _ *http.Request, params httprouter.Params) {
+func (c UserController) DeleteUser(w http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	//check user has a valid access token
+	token := parseAuthHeader(c.AccessTokenCRUD, w, req)
+	if token == nil {
+		return
+	}
+
 	//check for id
 	idStr := params.ByName("id")
 	if idStr == "" {
@@ -135,32 +146,29 @@ type PatchUserPasswordBody struct {
 }
 
 // PatchUserPassword handles PATCH requests to "/user/password"
-func (c *UserController) PatchUserPassword(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
-	var body PatchUserPasswordBody
-
-	//get the session
-	sID, err := getSessionFromRequest(req)
-	if err != nil {
-		log.Println(helpers.ChainError("error getting session id from request", err))
-		sendErrorResponse(w, http.StatusUnauthorized, "session token not provided or was in invalid format")
+func (c UserController) PatchUserPassword(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+	//get the access token
+	token := parseAuthHeader(c.AccessTokenCRUD, w, req)
+	if token == nil {
 		return
 	}
 
 	//get the user
-	user, err := c.UserCRUD.GetUserBySessionID(sID)
+	user, err := c.UserCRUD.GetUserByID(token.UserID)
 	if err != nil {
-		log.Println(helpers.ChainError("error getting user by session id", err))
+		log.Println(helpers.ChainError("error getting user by id", err))
 		sendInternalErrorResponse(w)
 		return
 	}
 
 	//check user was found
 	if user == nil {
-		sendErrorResponse(w, http.StatusUnauthorized, "no user for provided session")
+		sendErrorResponse(w, http.StatusUnauthorized, "no user for the provided access token")
 		return
 	}
 
 	//parse the body
+	var body PatchUserPasswordBody
 	err = parseJSONBody(req.Body, &body)
 	if err != nil {
 		log.Println(helpers.ChainError("error parsing PatchUserPassword request body", err))

@@ -2,12 +2,6 @@ package models
 
 import "errors"
 
-// Model is an interface for representing a model.
-type Model interface {
-	// Validate should check if a model if valid and return an appropriate ValidateError.
-	Validate() ValidateError
-}
-
 // ValidateError is a struct for encapsulating the return value of Model's Validate method.
 type ValidateError struct {
 	// Status is an int that describes the type of error.

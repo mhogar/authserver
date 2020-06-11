@@ -9,6 +9,7 @@ import (
 // RequestHandler is an interface that encapsulates all other handler interfaces
 type RequestHandler interface {
 	UserHandler
+	TokenHandler
 }
 
 // UserHandler is an interface for handling requests to user routes
@@ -23,7 +24,17 @@ type UserHandler interface {
 	PatchUserPassword(http.ResponseWriter, *http.Request, httprouter.Params)
 }
 
+// TokenHandler is an interface for handling requests to token routes
+type TokenHandler interface {
+	// PostToken handles POST requests to "/token"
+	PostToken(http.ResponseWriter, *http.Request, httprouter.Params)
+
+	// DeleteToken handles DELETE requests to "/token"
+	DeleteToken(http.ResponseWriter, *http.Request, httprouter.Params)
+}
+
 // RequestHandle is an implementation of RequestHandler that uses controllers to satisfy the interface's methods
 type RequestHandle struct {
 	UserController
+	TokenController
 }
