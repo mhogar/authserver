@@ -22,7 +22,7 @@ jobs:
       script:
         - go test ./controllers/ ./models/ ./helpers/ ./router/ -v -covermode=count -coverprofile=coverage.out
         - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
-    - name: Database Integration Tests
+    - name: SQL Adapter Integration Tests
       services:
         - postgresql
       install:

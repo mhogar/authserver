@@ -2,11 +2,14 @@ package database
 
 import (
 	"authserver/models"
+
+	"github.com/mhogar/migrationrunner"
 )
 
 // Database is an interface that encapsulates the database connection interface and various model CRUD interfaces.
 type Database interface {
 	DBConnection
+	migrationrunner.MigrationCRUD
 	models.UserCRUD
 	models.ClientCRUD
 	models.ScopeCRUD
