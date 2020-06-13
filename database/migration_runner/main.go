@@ -18,14 +18,25 @@ func main() {
 	down := flag.Bool("down", false, "Run migrate down instead of migrate up")
 	flag.Parse()
 
-	err := Run(dependencies.ResolveDatabase(), dependencies.ResolveDatabase(), dependencies.ResolveMigrationRepository(), *down)
+	migrationRunner := migrationrunner.MigrationRunner{
+		MigrationRepository: dependencies.ResolveMigrationRepository(),
+		MigrationCRUD:       dependencies.ResolveDatabase(),
+	}
+
+	err := Run(dependencies.ResolveDatabase(), migrationRunner, *down)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
+// MigrationRunner is an interface to match the signature of migrationrunner's MigrationRunner.
+type MigrationRunner interface {
+	MigrateUp() error
+	MigrateDown() error
+}
+
 // Run connects to the database and runs the migration runner. Returns any errors.
-func Run(db database.DBConnection, migrationCRUD migrationrunner.MigrationCRUD, repo migrationrunner.MigrationRepository, down bool) error {
+func Run(db database.DBConnection, migrationRunner MigrationRunner, down bool) error {
 	//open the db connection
 	err := db.OpenConnection()
 	if err != nil {
@@ -42,9 +53,9 @@ func Run(db database.DBConnection, migrationCRUD migrationrunner.MigrationCRUD, 
 
 	//run the migrations
 	if down {
-		err = migrationrunner.MigrateDown(repo, migrationCRUD)
+		err = migrationRunner.MigrateDown()
 	} else {
-		err = migrationrunner.MigrateUp(repo, migrationCRUD)
+		err = migrationRunner.MigrateUp()
 	}
 
 	if err != nil {

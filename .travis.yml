@@ -15,12 +15,24 @@ jobs:
       install: skip
       script: 
         - go build
+    - name: Build MigrationRunner
+      before_install:
+        - cd database/migration_runner
+      install: skip
+      script: 
+        - go build
     - stage: Test
       name: AuthServer Unit Tests
       install:
         - go get github.com/mattn/goveralls
       script:
         - go test ./controllers/ ./models/ ./helpers/ ./router/ -v -covermode=count -coverprofile=coverage.out
+        - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
+    - name: MigrationRunner Unit Tests
+      install:
+        - go get github.com/mattn/goveralls
+      script:
+        - go test ./database/migration_runner/ -v -covermode=count -coverprofile=coverage.out
         - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
     - name: SQL Adapter Integration Tests
       services:
