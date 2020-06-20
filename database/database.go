@@ -2,14 +2,13 @@ package database
 
 import (
 	"authserver/models"
-
-	"github.com/mhogar/migrationrunner"
 )
 
 // Database is an interface that encapsulates the database connection interface and various model CRUD interfaces.
 type Database interface {
 	DBConnection
-	migrationrunner.MigrationCRUD
+	Transaction
+	models.MigrationCRUD
 	models.UserCRUD
 	models.ClientCRUD
 	models.ScopeCRUD
@@ -27,4 +26,16 @@ type DBConnection interface {
 	// Ping pings the database to verify it can be reached.
 	// Returns an error if the database can't be reached or if any other errors occur.
 	Ping() error
+}
+
+// Transaction is an interface for creating and controlling transactions.
+type Transaction interface {
+	// BeginTransaction starts a new transaction.
+	BeginTransaction() error
+
+	// CommitTransaction commits all changes since the transaction began.
+	CommitTransaction() error
+
+	// RollbackTransaction drops all changes since the transaction began.
+	RollbackTransaction() error
 }

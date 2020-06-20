@@ -1,11 +1,11 @@
 package migrations
 
 import (
-	sqladapter "authserver/database/sql_adapter"
+	postgresadapter "authserver/database/postgres_adapter"
 )
 
 type m20200611224101 struct {
-	Adapter *sqladapter.SQLAdapter
+	Adapter *postgresadapter.PostgresAdapter
 }
 
 func (m m20200611224101) GetTimestamp() string {

@@ -14,20 +14,25 @@ import (
 // Initializes the adapter's context and cancel function, as well as its db instance.
 // Returns any errors.
 func (adapter *SQLAdapter) OpenConnection() error {
-	//get conection string
+	//load the database config
 	env := viper.GetString("env")
 	mapResult, ok := viper.GetStringMap("database")[env]
 	if !ok {
 		return errors.New("no database config found for environment " + env)
 	}
-
 	dbConfig := mapResult.(config.DatabaseConfig)
+
+	//get conection string
+	connectionStr, ok := dbConfig.ConnectionStrings[adapter.DbKey]
+	if !ok {
+		return errors.New("no connection string found for database key " + adapter.DbKey)
+	}
 
 	adapter.context, adapter.cancelFunc = context.WithCancel(context.Background())
 	adapter.timeout = dbConfig.Timeout
 
 	//connect to the db
-	db, err := sql.Open(adapter.DriverName, dbConfig.DBs[adapter.DbKey])
+	db, err := sql.Open(adapter.DriverName, connectionStr)
 	if err != nil {
 		return helpers.ChainError("error opening database connection", err)
 	}

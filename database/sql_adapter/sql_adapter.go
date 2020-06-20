@@ -20,6 +20,9 @@ type SQLAdapter struct {
 
 	//DB is the sql database instance.
 	DB *sql.DB
+
+	//Tx is the active database transaction.
+	Tx *sql.Tx
 }
 
 // CreateStandardTimeoutContext creates a context with the timeout loaded from the database config.

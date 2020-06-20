@@ -9,6 +9,7 @@ import (
 	"log"
 
 	"github.com/mhogar/migrationrunner"
+	"github.com/spf13/viper"
 )
 
 func main() {
@@ -16,7 +17,10 @@ func main() {
 
 	//parse flags
 	down := flag.Bool("down", false, "Run migrate down instead of migrate up")
+	dbKey := flag.String("db", "core", "The database to run the migrations against")
 	flag.Parse()
+
+	viper.Set("main_db", *dbKey)
 
 	migrationRunner := migrationrunner.MigrationRunner{
 		MigrationRepository: dependencies.ResolveMigrationRepository(),

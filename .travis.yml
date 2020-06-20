@@ -34,13 +34,14 @@ jobs:
       script:
         - go test ./database/migration_runner/ -v -covermode=count -coverprofile=coverage.out
         - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
-    - name: SQL Adapter Integration Tests
+    - name: Postgres Adapter Integration Tests
       services:
         - postgresql
       install:
         - go get github.com/mattn/goveralls
       before_script:
         - psql -c 'create database travis_ci_test;' -U postgres
+        - go run database/migration_runner/main.go -db=integration
       script:
-        - go test ./database/sql_adapter/ -v -covermode=count -coverprofile=coverage.out
+        - go test ./database/postgres_adapter/ -v -covermode=count -coverprofile=coverage.out
         - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci

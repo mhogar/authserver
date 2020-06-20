@@ -1,8 +1,9 @@
-package sqladapter_test
+package postgresadapter_test
 
 import (
 	"authserver/config"
-	postgresadapter "authserver/database/sql_adapter/postgres_adapter"
+	postgresadapter "authserver/database/postgres_adapter"
+	"authserver/helpers"
 	"testing"
 
 	"github.com/spf13/viper"
@@ -18,7 +19,7 @@ func (suite *DbConnectionTestSuite) SetupTest() {
 	viper.Reset()
 	config.InitConfig()
 
-	suite.Adapter = postgresadapter.CreatePostgresAdapter("integration")
+	suite.Adapter = postgresadapter.CreatePostgresAdapter(viper.GetString("test_db"))
 }
 
 func (suite *DbConnectionTestSuite) TestOpenConnection_WhereEnvironmentIsNotFound_ReturnsError() {
@@ -30,8 +31,19 @@ func (suite *DbConnectionTestSuite) TestOpenConnection_WhereEnvironmentIsNotFoun
 	err := suite.Adapter.OpenConnection()
 
 	//assert
-	suite.Require().Error(err)
-	suite.Contains(err.Error(), env)
+	helpers.AssertError(&suite.Suite, err, "no database config", env)
+}
+
+func (suite *DbConnectionTestSuite) TestOpenConnection_WhereConnectionStringIsNotFound_ReturnsError() {
+	//arrange
+	dbKey := "not a real dbkey"
+	suite.Adapter.DbKey = dbKey
+
+	//act
+	err := suite.Adapter.OpenConnection()
+
+	//assert
+	helpers.AssertError(&suite.Suite, err, "no connection string", dbKey)
 }
 
 func (suite *DbConnectionTestSuite) TestCloseConnection_WithValidConnection_ReturnsNoError() {

@@ -2,9 +2,10 @@ package dependencies
 
 import (
 	databasepkg "authserver/database"
+	postgresadapter "authserver/database/postgres_adapter"
 	"sync"
 
-	postgresadpater "authserver/database/sql_adapter/postgres_adapter"
+	"github.com/spf13/viper"
 )
 
 var createDatabaseOnce sync.Once
@@ -14,7 +15,7 @@ var database databasepkg.Database
 // Only the first call to this function will create a new Database, after which it will be retrieved from the cache.
 func ResolveDatabase() databasepkg.Database {
 	createDatabaseOnce.Do(func() {
-		database = postgresadpater.CreatePostgresAdapter("core")
+		database = postgresadapter.CreatePostgresAdapter(viper.GetString("main_db"))
 	})
 	return database
 }

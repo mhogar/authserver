@@ -1,6 +1,10 @@
 package models
 
-import "regexp"
+import (
+	"regexp"
+
+	"github.com/mhogar/migrationrunner"
+)
 
 // Migration ValidateError statuses.
 const (
@@ -11,6 +15,15 @@ const (
 // Migration represents the migration model.
 type Migration struct {
 	Timestamp string
+}
+
+// MigrationCRUD is an interface for performing CRUD operations on a migration.
+type MigrationCRUD interface {
+	migrationrunner.MigrationCRUD
+
+	// GetMigrationByTimestamp fetches the migration with the matching timestamp.
+	// If no migrations are found, returns nil migration. Also returns any errors.
+	GetMigrationByTimestamp(timestamp string) (*Migration, error)
 }
 
 // CreateNewMigration creates a new migration with the given timestamp.
