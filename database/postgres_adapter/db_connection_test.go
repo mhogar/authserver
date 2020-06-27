@@ -12,14 +12,14 @@ import (
 
 type DbConnectionTestSuite struct {
 	suite.Suite
-	Adapter *postgresadapter.PostgresAdapter
+	DB *postgresadapter.PostgresDB
 }
 
 func (suite *DbConnectionTestSuite) SetupTest() {
 	viper.Reset()
 	config.InitConfig()
 
-	suite.Adapter = postgresadapter.CreatePostgresAdapter(viper.GetString("test_db"))
+	suite.DB = postgresadapter.CreatePostgresDB("integration")
 }
 
 func (suite *DbConnectionTestSuite) TestOpenConnection_WhereEnvironmentIsNotFound_ReturnsError() {
@@ -28,7 +28,7 @@ func (suite *DbConnectionTestSuite) TestOpenConnection_WhereEnvironmentIsNotFoun
 	viper.Set("env", env)
 
 	//act
-	err := suite.Adapter.OpenConnection()
+	err := suite.DB.OpenConnection()
 
 	//assert
 	helpers.AssertError(&suite.Suite, err, "no database config", env)
@@ -37,10 +37,10 @@ func (suite *DbConnectionTestSuite) TestOpenConnection_WhereEnvironmentIsNotFoun
 func (suite *DbConnectionTestSuite) TestOpenConnection_WhereConnectionStringIsNotFound_ReturnsError() {
 	//arrange
 	dbKey := "not a real dbkey"
-	suite.Adapter.DbKey = dbKey
+	suite.DB.DbKey = dbKey
 
 	//act
-	err := suite.Adapter.OpenConnection()
+	err := suite.DB.OpenConnection()
 
 	//assert
 	helpers.AssertError(&suite.Suite, err, "no connection string", dbKey)
@@ -48,24 +48,24 @@ func (suite *DbConnectionTestSuite) TestOpenConnection_WhereConnectionStringIsNo
 
 func (suite *DbConnectionTestSuite) TestCloseConnection_WithValidConnection_ReturnsNoError() {
 	//arrange
-	err := suite.Adapter.OpenConnection()
+	err := suite.DB.OpenConnection()
 	suite.Require().NoError(err)
 
 	//act
-	err = suite.Adapter.CloseConnection()
+	err = suite.DB.CloseConnection()
 
 	//assert
 	suite.NoError(err)
-	suite.Nil(suite.Adapter.DB)
+	suite.Nil(suite.DB.DB)
 }
 
 func (suite *DbConnectionTestSuite) TestPing_WithValidConnection_ReturnsNoError() {
 	//arrange
-	err := suite.Adapter.OpenConnection()
+	err := suite.DB.OpenConnection()
 	suite.Require().NoError(err)
 
 	//act
-	err = suite.Adapter.Ping()
+	err = suite.DB.Ping()
 
 	//assert
 	suite.NoError(err)

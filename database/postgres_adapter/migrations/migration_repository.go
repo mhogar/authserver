@@ -8,7 +8,7 @@ import (
 
 // PostgresMigrationRepository is an implementation of the MigrationRepository interface that fetches migrations for the postgres adapter.
 type PostgresMigrationRepository struct {
-	Adapter *postgresadapter.PostgresAdapter
+	DB *postgresadapter.PostgresDB
 }
 
 // GetMigrations returns a slice of Migrations that need to be run on the sql database.

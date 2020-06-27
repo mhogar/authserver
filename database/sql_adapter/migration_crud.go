@@ -1,4 +1,4 @@
-package postgresadapter
+package sqladapter
 
 import (
 	"authserver/helpers"
@@ -6,15 +6,8 @@ import (
 )
 
 // Setup creates the migration table if it does not already exist.
-func (adapter *PostgresAdapter) Setup() error {
-	stmt := `
-		CREATE TABLE IF NOT EXISTS public.migration (
-			"timestamp" varchar(14) NOT NULL,
-			CONSTRAINT migration_pk PRIMARY KEY ("timestamp")
-		);
-	`
-
-	_, err := adapter.ExecStatement(stmt)
+func (adapter *SQLAdapter) Setup() error {
+	_, err := adapter.ExecStatement(adapter.SQLScriptRepository.GetSQLScript("CreateMigrationTable"))
 	if err != nil {
 		return err
 	}
@@ -24,7 +17,7 @@ func (adapter *PostgresAdapter) Setup() error {
 
 // CreateMigration validates the given timestamp and inserts it into the migration table.
 // Returns any errors.
-func (adapter *PostgresAdapter) CreateMigration(timestamp string) error {
+func (adapter *SQLAdapter) CreateMigration(timestamp string) error {
 	//create and validate migration model
 	migration := models.CreateNewMigration(timestamp)
 	verr := migration.Validate()
@@ -32,12 +25,7 @@ func (adapter *PostgresAdapter) CreateMigration(timestamp string) error {
 		return helpers.ChainError("error validating migration model", verr)
 	}
 
-	stmt := `
-		INSERT INTO migration ("timestamp")
-			VALUES ($1)
-	`
-
-	_, err := adapter.ExecStatement(stmt, migration.Timestamp)
+	_, err := adapter.ExecStatement(adapter.SQLScriptRepository.GetSQLScript("SaveMigration"), migration.Timestamp)
 	if err != nil {
 		return err
 	}
@@ -47,14 +35,8 @@ func (adapter *PostgresAdapter) CreateMigration(timestamp string) error {
 
 // GetMigrationByTimestamp gets the row in the migration table with the matching timestamp, and creates a new migration model using its data.
 // Returns the model and any errors.
-func (adapter *PostgresAdapter) GetMigrationByTimestamp(timestamp string) (*models.Migration, error) {
-	query := `
-		SELECT m."timestamp" 
-			FROM migration m 
-			WHERE m."timestamp" = $1
-	`
-
-	rows, err := adapter.ExecQuery(query, timestamp)
+func (adapter *SQLAdapter) GetMigrationByTimestamp(timestamp string) (*models.Migration, error) {
+	rows, err := adapter.ExecQuery(adapter.SQLScriptRepository.GetSQLScript("GetMigrationByTimestamp"), timestamp)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +49,7 @@ func (adapter *PostgresAdapter) GetMigrationByTimestamp(timestamp string) (*mode
 			return nil, helpers.ChainError("error preparing next row", err)
 		}
 
-		//return no results
+		//return no resultsz
 		return nil, nil
 	}
 
@@ -84,14 +66,8 @@ func (adapter *PostgresAdapter) GetMigrationByTimestamp(timestamp string) (*mode
 // GetLatestTimestamp returns the latest timestamp of all rows in the migration table.
 // If the table is empty, hasLatest will be false, else it will be true.
 // Returns any errors.
-func (adapter *PostgresAdapter) GetLatestTimestamp() (timestamp string, hasLatest bool, err error) {
-	query := `
-		SELECT m."timestamp" FROM migration m
-			ORDER BY m."timestamp" DESC
-			LIMIT 1
-	`
-
-	rows, err := adapter.ExecQuery(query)
+func (adapter *SQLAdapter) GetLatestTimestamp() (timestamp string, hasLatest bool, err error) {
+	rows, err := adapter.ExecQuery(adapter.SQLScriptRepository.GetSQLScript("GetLatestTimestamp"))
 	if err != nil {
 		return "", false, err
 	}
@@ -119,13 +95,8 @@ func (adapter *PostgresAdapter) GetLatestTimestamp() (timestamp string, hasLates
 
 // DeleteMigrationByTimestamp deletes up to one row from the migartion table with a matching timestamp.
 // Returns any errors.
-func (adapter *PostgresAdapter) DeleteMigrationByTimestamp(timestamp string) error {
-	stmt := `
-		DELETE FROM migration
-			WHERE "timestamp" = $1
-	`
-
-	_, err := adapter.ExecStatement(stmt, timestamp)
+func (adapter *SQLAdapter) DeleteMigrationByTimestamp(timestamp string) error {
+	_, err := adapter.ExecStatement(adapter.SQLScriptRepository.GetSQLScript("DeleteMigrationByTimestamp"), timestamp)
 	if err != nil {
 		return err
 	}

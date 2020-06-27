@@ -16,7 +16,7 @@ var migrationRepository migrationrunner.MigrationRepository
 func ResolveMigrationRepository() migrationrunner.MigrationRepository {
 	createMigrationRepositoryOnce.Do(func() {
 		migrationRepository = migrations.PostgresMigrationRepository{
-			Adapter: ResolveDatabase().(*postgresadapter.PostgresAdapter),
+			DB: ResolveDatabase().(*postgresadapter.PostgresDB),
 		}
 	})
 	return migrationRepository

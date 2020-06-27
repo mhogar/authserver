@@ -2,7 +2,6 @@ package sqladapter
 
 import (
 	"context"
-	"database/sql"
 	"time"
 )
 
@@ -18,11 +17,8 @@ type SQLAdapter struct {
 	// DbKey is the key that will be used to resolve the database's connection string.
 	DbKey string
 
-	//DB is the sql database instance.
-	DB *sql.DB
-
-	//Tx is the active database transaction.
-	Tx *sql.Tx
+	SQLScriptRepository SQLScriptRepository
+	SQLExecuter         SQLExecuter
 }
 
 // CreateStandardTimeoutContext creates a context with the timeout loaded from the database config.

@@ -4,10 +4,7 @@ import (
 	"authserver/models"
 )
 
-// Database is an interface that encapsulates the database connection interface and various model CRUD interfaces.
-type Database interface {
-	DBConnection
-	Transaction
+type CRUDOperations interface {
 	models.MigrationCRUD
 	models.UserCRUD
 	models.ClientCRUD
@@ -28,14 +25,22 @@ type DBConnection interface {
 	Ping() error
 }
 
-// Transaction is an interface for creating and controlling transactions.
-type Transaction interface {
-	// BeginTransaction starts a new transaction.
-	BeginTransaction() error
-
-	// CommitTransaction commits all changes since the transaction began.
+type TransactionOperations interface {
 	CommitTransaction() error
-
-	// RollbackTransaction drops all changes since the transaction began.
 	RollbackTransaction() error
+}
+
+// Database is an interface that encapsulates the database connection interface and various model CRUD interfaces.
+type Database interface {
+	DBConnection
+	CRUDOperations
+}
+
+type Transaction interface {
+	TransactionOperations
+	CRUDOperations
+}
+
+type TransactionFactory interface {
+	CreateTransaction() (Transaction, error)
 }

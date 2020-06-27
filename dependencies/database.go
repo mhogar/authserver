@@ -15,7 +15,7 @@ var database databasepkg.Database
 // Only the first call to this function will create a new Database, after which it will be retrieved from the cache.
 func ResolveDatabase() databasepkg.Database {
 	createDatabaseOnce.Do(func() {
-		database = postgresadapter.CreatePostgresAdapter(viper.GetString("main_db"))
+		database = postgresadapter.CreatePostgresDB(viper.GetString("dbkey"))
 	})
 	return database
 }

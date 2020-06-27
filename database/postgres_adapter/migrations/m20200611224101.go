@@ -5,7 +5,7 @@ import (
 )
 
 type m20200611224101 struct {
-	Adapter *postgresadapter.PostgresAdapter
+	DB *postgresadapter.PostgresDB
 }
 
 func (m m20200611224101) GetTimestamp() string {

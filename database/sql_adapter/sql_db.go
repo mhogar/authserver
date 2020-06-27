@@ -10,10 +10,15 @@ import (
 	"github.com/spf13/viper"
 )
 
+type SQLDB struct {
+	SQLAdapter
+	DB *sql.DB
+}
+
 // OpenConnection opens the connection to SQL database server using the fields from the database config.
 // Initializes the adapter's context and cancel function, as well as its db instance.
 // Returns any errors.
-func (adapter *SQLAdapter) OpenConnection() error {
+func (sqlDB *SQLDB) OpenConnection() error {
 	//load the database config
 	env := viper.GetString("env")
 	mapResult, ok := viper.GetStringMap("database")[env]
@@ -23,20 +28,22 @@ func (adapter *SQLAdapter) OpenConnection() error {
 	dbConfig := mapResult.(config.DatabaseConfig)
 
 	//get conection string
-	connectionStr, ok := dbConfig.ConnectionStrings[adapter.DbKey]
+	connectionStr, ok := dbConfig.ConnectionStrings[sqlDB.DbKey]
 	if !ok {
-		return errors.New("no connection string found for database key " + adapter.DbKey)
+		return errors.New("no connection string found for database key " + sqlDB.DbKey)
 	}
 
-	adapter.context, adapter.cancelFunc = context.WithCancel(context.Background())
-	adapter.timeout = dbConfig.Timeout
+	sqlDB.context, sqlDB.cancelFunc = context.WithCancel(context.Background())
+	sqlDB.timeout = dbConfig.Timeout
 
 	//connect to the db
-	db, err := sql.Open(adapter.DriverName, connectionStr)
+	db, err := sql.Open(sqlDB.DriverName, connectionStr)
 	if err != nil {
 		return helpers.ChainError("error opening database connection", err)
 	}
-	adapter.DB = db
+
+	sqlDB.DB = db
+	sqlDB.SQLExecuter = db
 
 	return nil
 }
@@ -45,26 +52,26 @@ func (adapter *SQLAdapter) OpenConnection() error {
 // The adapter also calls its cancel function to cancel any child requests that may still be running.
 // Niether the adapter's db instance or context should be used after calling this function.
 // Returns any errors.
-func (adapter *SQLAdapter) CloseConnection() error {
-	err := adapter.DB.Close()
+func (sqlDB *SQLDB) CloseConnection() error {
+	err := sqlDB.DB.Close()
 	if err != nil {
 		return helpers.ChainError("error closing database connection", err)
 	}
 
 	//cancel any remaining requests that may still be running
-	adapter.cancelFunc()
+	sqlDB.cancelFunc()
 
 	//clean up resources
-	adapter.DB = nil
+	sqlDB.DB = nil
 
 	return nil
 }
 
 // Ping pings the SQL database server to verify it can still be reached.
 // Returns an error if it cannot, or if any other errors are encountered.
-func (adapter *SQLAdapter) Ping() error {
-	ctx, cancel := adapter.CreateStandardTimeoutContext()
-	err := adapter.DB.PingContext(ctx)
+func (sqlDB *SQLDB) Ping() error {
+	ctx, cancel := sqlDB.CreateStandardTimeoutContext()
+	err := sqlDB.DB.PingContext(ctx)
 	cancel()
 
 	if err != nil {
