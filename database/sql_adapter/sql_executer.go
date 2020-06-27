@@ -2,15 +2,8 @@ package sqladapter
 
 import (
 	"authserver/helpers"
-	"context"
 	"database/sql"
 )
-
-type SQLExecuter interface {
-	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
-	QueryContext(context.Context, string, ...interface{}) (*sql.Rows, error)
-	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
-}
 
 // ExecStatement executes the provided statement on its DB instance with a standard timeout context.
 // Returns the result and any errors.

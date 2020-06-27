@@ -2,10 +2,12 @@ package postgresadapter
 
 import (
 	sqladapter "authserver/database/sql_adapter"
+
 	//import the postgres driver
 	_ "github.com/lib/pq"
 )
 
+// PostgresDB is SQL DB that uses the postgres sql driver.
 type PostgresDB struct {
 	sqladapter.SQLDB
 }

@@ -4,8 +4,10 @@ import (
 	"authserver/database/postgres_adapter/scripts"
 )
 
+// PostgresScriptRepository is an implementation of the sql script respository interface for postgres scripts.
 type PostgresScriptRepository struct{}
 
+// GetSQLScript gets the sql script for the given key.
 func (PostgresScriptRepository) GetSQLScript(key string) string {
 	switch key {
 	case "CreateMigrationTable":

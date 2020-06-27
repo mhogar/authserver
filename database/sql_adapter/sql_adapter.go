@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// SQLAdapter is a SQL implementation of the Database interface.
+// SQLAdapter contains methods and members common to the sql db and transaction structs.
 type SQLAdapter struct {
 	context    context.Context
 	cancelFunc context.CancelFunc
@@ -17,8 +17,11 @@ type SQLAdapter struct {
 	// DbKey is the key that will be used to resolve the database's connection string.
 	DbKey string
 
+	// SQLScriptRepository is a dependency for loading sql scripts.
 	SQLScriptRepository SQLScriptRepository
-	SQLExecuter         SQLExecuter
+
+	// SQLExecuter is a dependency for executing sql scripts.
+	SQLExecuter SQLExecuter
 }
 
 // CreateStandardTimeoutContext creates a context with the timeout loaded from the database config.

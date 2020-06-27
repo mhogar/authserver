@@ -4,6 +4,7 @@ import (
 	"authserver/models"
 )
 
+// CRUDOperations is an interface that encapsulates various model CRUD interfaces.
 type CRUDOperations interface {
 	models.MigrationCRUD
 	models.UserCRUD
@@ -25,22 +26,29 @@ type DBConnection interface {
 	Ping() error
 }
 
+// TransactionOperations is an interface for performing transaction operations.
 type TransactionOperations interface {
+	// CommitTransaction commits the transaction.
 	CommitTransaction() error
+
+	// RollbackTransaction rollbacks the transaction.
 	RollbackTransaction() error
 }
 
-// Database is an interface that encapsulates the database connection interface and various model CRUD interfaces.
+// Database is an interface that encapsulates the database connection and CRUD operations interfaces.
 type Database interface {
 	DBConnection
 	CRUDOperations
 }
 
+// Transaction is an interface that encapsulates the transaction operations and CRUD operations interfaces.
 type Transaction interface {
 	TransactionOperations
 	CRUDOperations
 }
 
+// TransactionFactory is an interface for creating new transactions.
 type TransactionFactory interface {
+	// CreateTransaction creates a new transaction and returns and errors.
 	CreateTransaction() (Transaction, error)
 }

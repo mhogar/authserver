@@ -10,8 +10,11 @@ import (
 	"github.com/spf13/viper"
 )
 
+// SQLDB is a SQL implementation of the Database interface.
 type SQLDB struct {
 	SQLAdapter
+
+	// DB is the sql database instance.
 	DB *sql.DB
 }
 
