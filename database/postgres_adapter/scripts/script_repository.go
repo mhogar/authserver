@@ -3,7 +3,7 @@
 package scripts
 
 // StaticScriptRepository is an implementation of the sql script repository interface that fetches statically defined scripts.
-type StaticScriptRepository struct{}
+type StaticScriptRepository struct {}
 
 // CreateMigrationTableScript gets the CreateMigrationTable script
 func (StaticScriptRepository) CreateMigrationTableScript() string {
@@ -36,6 +36,14 @@ DELETE FROM "migration"
 `
 }
 
+// DeleteUserScript gets the DeleteUser script
+func (StaticScriptRepository) DeleteUserScript() string {
+	return `
+DELETE FROM "user" u
+    WHERE u."id" = $1
+`
+}
+
 // GetLatestTimestampScript gets the GetLatestTimestamp script
 func (StaticScriptRepository) GetLatestTimestampScript() string {
 	return `
@@ -63,6 +71,15 @@ SELECT u."id", u."username", u."password_hash"
 `
 }
 
+// GetUserByUsernameScript gets the GetUserByUsername script
+func (StaticScriptRepository) GetUserByUsernameScript() string {
+	return `
+SELECT u."id", u."username", u."password_hash"
+	FROM "user" u
+	WHERE u."username" = $1
+`
+}
+
 // SaveMigrationScript gets the SaveMigration script
 func (StaticScriptRepository) SaveMigrationScript() string {
 	return `
@@ -76,5 +93,15 @@ func (StaticScriptRepository) SaveUserScript() string {
 	return `
 INSERT INTO "user" ("id", "username", "password_hash")
 	VALUES ($1, $2, $3)
+`
+}
+
+// UpdateUserScript gets the UpdateUser script
+func (StaticScriptRepository) UpdateUserScript() string {
+	return `
+UPDATE "user" SET
+    "username" = $2,
+    "password_hash" = $3
+WHERE "id" = $1
 `
 }

@@ -1,6 +1,8 @@
 package models
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 )
 
@@ -8,9 +10,13 @@ import (
 const (
 	ValidateUserValid               = iota
 	ValidateUserInvalidID           = iota
-	ValidateUserInvalidUsername     = iota
+	ValidateUserEmptyUsername       = iota
+	ValidateUserUsernameTooLong     = iota
 	ValidateUserInvalidPasswordHash = iota
 )
+
+// UserUsernameMaxLength is the max length a user's username can be.
+const UserUsernameMaxLength = 30
 
 // User represents the user model.
 type User struct {
@@ -56,7 +62,11 @@ func (u *User) Validate() ValidateError {
 	}
 
 	if u.Username == "" {
-		return CreateValidateError(ValidateUserInvalidUsername, "username cannot be empty")
+		return CreateValidateError(ValidateUserEmptyUsername, "username cannot be empty")
+	}
+
+	if len(u.Username) > UserUsernameMaxLength {
+		return CreateValidateError(ValidateUserUsernameTooLong, fmt.Sprint("username cannot be longer than", UserUsernameMaxLength, "characters"))
 	}
 
 	if len(u.PasswordHash) == 0 {

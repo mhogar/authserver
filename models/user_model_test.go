@@ -60,7 +60,31 @@ func (suite *UserTestSuite) TestValidate_WithEmptyUsername_ReturnsUserInvalidUse
 	err := suite.User.Validate()
 
 	//assert
-	suite.Equal(models.ValidateUserInvalidUsername, err.Status)
+	suite.Equal(models.ValidateUserEmptyUsername, err.Status)
+}
+
+func (suite *UserTestSuite) TestValidate_UsernameMaxLengthTestCases() {
+	var username string
+	var expectedValidateError int
+
+	testCase := func() {
+		//arrange
+		suite.User.Username = username
+
+		//act
+		err := suite.User.Validate()
+
+		//assert
+		suite.Equal(expectedValidateError, err.Status)
+	}
+
+	username = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" //30 chars
+	expectedValidateError = models.ValidateUserValid
+	suite.Run("ExactlyMaxLengthIsValid", testCase)
+
+	username = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" //31 chars
+	expectedValidateError = models.ValidateUserUsernameTooLong
+	suite.Run("OneMoreThanMaxLengthIsInvalid", testCase)
 }
 
 func (suite *UserTestSuite) TestValidate_WithEmptyPasswordHash_ReturnsUserInvalidPasswordHash() {

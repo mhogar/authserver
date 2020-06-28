@@ -10,4 +10,7 @@ type SQLScriptRepository interface {
 	CreateUserTableScript() string
 	SaveUserScript() string
 	GetUserByIDScript() string
+	GetUserByUsernameScript() string
+	UpdateUserScript() string
+	DeleteUserScript() string
 }

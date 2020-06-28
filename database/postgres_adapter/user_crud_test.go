@@ -2,20 +2,20 @@ package postgresadapter_test
 
 import (
 	"authserver/config"
-	"authserver/database"
 	postgresadapter "authserver/database/postgres_adapter"
 	sqladapter "authserver/database/sql_adapter"
 	"authserver/helpers"
 	"authserver/models"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 )
 
 type UserCRUDTestSuite struct {
 	suite.Suite
 	TransactionFactory *sqladapter.SQLTransactionFactory
-	Transaction        database.Transaction
+	Tx                 *sqladapter.SQLTransaction
 }
 
 func (suite *UserCRUDTestSuite) SetupSuite() {
@@ -44,35 +44,126 @@ func (suite *UserCRUDTestSuite) SetupTest() {
 	tx, err := suite.TransactionFactory.CreateTransaction()
 	suite.Require().NoError(err)
 
-	suite.Transaction = tx
+	suite.Tx = tx.(*sqladapter.SQLTransaction)
 }
 
 func (suite *UserCRUDTestSuite) TearDownTest() {
 	//rollback the transaction after each test
-	err := suite.Transaction.RollbackTransaction()
+	err := suite.Tx.RollbackTransaction()
 	suite.Require().NoError(err)
 }
 
 func (suite *UserCRUDTestSuite) TestSaveUser_WithInvalidUser_ReturnsError() {
 	//act
-	err := suite.Transaction.SaveUser(models.CreateNewUser("", nil))
+	err := suite.Tx.SaveUser(models.CreateNewUser("", nil))
 
 	//assert
 	helpers.AssertError(&suite.Suite, err, "error", "model")
 }
 
-func (suite *UserCRUDTestSuite) TestGetUserById_GetsTheUser() {
+func (suite *UserCRUDTestSuite) TestGetUserById_WhereUserNotFound_ReturnsNilUser() {
+	//act
+	user, err := suite.Tx.GetUserByID(uuid.New())
+
+	//assert
+	suite.NoError(err)
+	suite.Nil(user)
+}
+
+func (suite *UserCRUDTestSuite) TestGetUserById_GetsTheUserWithId() {
 	//arrange
 	user := models.CreateNewUser("user.name", []byte("password"))
-	err := suite.Transaction.SaveUser(user)
+	err := suite.Tx.SaveUser(user)
 	suite.Require().NoError(err)
 
 	//act
-	resultUser, err := suite.Transaction.GetUserByID(user.ID)
+	resultUser, err := suite.Tx.GetUserByID(user.ID)
 
 	//assert
 	suite.NoError(err)
 	suite.EqualValues(user, resultUser)
+}
+
+func (suite *UserCRUDTestSuite) TestGetUserByUsername_WhereUserNotFound_ReturnsNilUser() {
+	//act
+	user, err := suite.Tx.GetUserByUsername("DNE")
+
+	//assert
+	suite.NoError(err)
+	suite.Nil(user)
+}
+
+func (suite *UserCRUDTestSuite) TestGetUserByUsernameGetsTheUserWithUsername() {
+	//arrange
+	user := models.CreateNewUser("user.name", []byte("password"))
+	err := suite.Tx.SaveUser(user)
+	suite.Require().NoError(err)
+
+	//act
+	resultUser, err := suite.Tx.GetUserByUsername(user.Username)
+
+	//assert
+	suite.NoError(err)
+	suite.EqualValues(user, resultUser)
+}
+
+func (suite *UserCRUDTestSuite) TestUpdateUser_WithInvalidUser_ReturnsError() {
+	//act
+	err := suite.Tx.UpdateUser(models.CreateNewUser("", nil))
+
+	//assert
+	helpers.AssertError(&suite.Suite, err, "error", "model")
+}
+
+func (suite *UserCRUDTestSuite) TestUpdateUser_WithNoUserToUpdate_ReturnsNilError() {
+	//act
+	err := suite.Tx.UpdateUser(models.CreateNewUser("user.name", []byte("password")))
+
+	//assert
+	suite.NoError(err)
+}
+
+func (suite *UserCRUDTestSuite) TestUpdateUser_UpdatesUserWithId() {
+	//arrange
+	user := models.CreateNewUser("user.name", []byte("password"))
+	err := suite.Tx.SaveUser(user)
+	suite.Require().NoError(err)
+
+	//act
+	user.Username = "user.name2"
+	err = suite.Tx.UpdateUser(user)
+
+	//assert
+	suite.Require().NoError(err)
+
+	resultUser, err := suite.Tx.GetUserByID(user.ID)
+	suite.NoError(err)
+	suite.EqualValues(user, resultUser)
+}
+
+func (suite *UserCRUDTestSuite) TestDeleteUser_WithNoUserToDelete_ReturnsNilError() {
+	//act
+	err := suite.Tx.DeleteUser(models.CreateNewUser("", nil))
+
+	//assert
+	suite.NoError(err)
+}
+
+func (suite *UserCRUDTestSuite) TestDeleteUser_DeletesUserWithId() {
+	//arrange
+	user := models.CreateNewUser("user.name", []byte("password"))
+	err := suite.Tx.SaveUser(user)
+	suite.Require().NoError(err)
+
+	//act
+	err = suite.Tx.DeleteUser(user)
+
+	//assert
+	suite.Require().NoError(err)
+
+	resultUser, err := suite.Tx.GetUserByID(user.ID)
+	suite.NoError(err)
+	suite.Nil(resultUser)
 }
 
 func TestUserCRUDTestSuite(t *testing.T) {
