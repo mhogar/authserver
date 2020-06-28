@@ -60,21 +60,66 @@ func (suite *MigrationCRUDTestSuite) TestCreateMigration_WithInvalidTimestamp_Re
 	helpers.AssertError(&suite.Suite, err, "error", "model")
 }
 
-func (suite *MigrationCRUDTestSuite) TestCreateMigration_AddsRowToMigrationTable() {
+func (suite *MigrationCRUDTestSuite) TestGetMigrationByTimestamp_WhereTimestampNotFound_ReturnsNilMigration() {
+	//act
+	migration, err := suite.Transaction.GetMigrationByTimestamp("DNE")
+
+	//assert
+	suite.NoError(err)
+	suite.Nil(migration)
+}
+
+func (suite *MigrationCRUDTestSuite) TestGetMigrationByTimestamp_FindsMigration() {
 	//arrange
 	timestamp := "00000000000001"
+	err := suite.Transaction.CreateMigration(timestamp)
+	suite.Require().NoError(err)
 
 	//act
+	migration, err := suite.Transaction.GetMigrationByTimestamp(timestamp)
+
+	//assert
+	suite.NoError(err)
+	suite.Require().NotNil(migration)
+	suite.Equal(timestamp, migration.Timestamp)
+}
+
+func (suite *MigrationCRUDTestSuite) TestGetLatestTimestamp_WithNoLatestTimestamp_ReturnsHasLatestFalse() {
+	//act
+	_, hasLatest, err := suite.Transaction.GetLatestTimestamp()
+
+	//assert
+	suite.False(hasLatest)
+	suite.NoError(err)
+}
+
+func (suite *MigrationCRUDTestSuite) TestGetLatestTimestamp_ReturnsLatestTimestamp() {
+	//TODO: implement
+}
+
+func (suite *MigrationCRUDTestSuite) TestDeleteMigrationByTimestamp_WithNoMigrationToDelete_ReturnsNilError() {
+	//act
+	err := suite.Transaction.DeleteMigrationByTimestamp("DNE")
+
+	//assert
+	suite.NoError(err)
+}
+
+func (suite *MigrationCRUDTestSuite) TestDeleteMigrationByTimestamp_DeletesMigration() {
+	//arrange
+	timestamp := "00000000000001"
 	err := suite.Transaction.CreateMigration(timestamp)
+	suite.Require().NoError(err)
+
+	//act
+	err = suite.Transaction.DeleteMigrationByTimestamp(timestamp)
 
 	//assert
 	suite.Require().NoError(err)
 
 	migration, err := suite.Transaction.GetMigrationByTimestamp(timestamp)
-	suite.Require().NoError(err)
-	suite.Require().NotNil(migration)
-
-	suite.Equal(timestamp, migration.Timestamp)
+	suite.NoError(err)
+	suite.Nil(migration)
 }
 
 func TestMigrationCRUDTestSuite(t *testing.T) {
