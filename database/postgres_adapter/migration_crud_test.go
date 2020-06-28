@@ -94,7 +94,26 @@ func (suite *MigrationCRUDTestSuite) TestGetLatestTimestamp_WithNoLatestTimestam
 }
 
 func (suite *MigrationCRUDTestSuite) TestGetLatestTimestamp_ReturnsLatestTimestamp() {
-	//TODO: implement
+	//arrange
+	timestamps := []string{
+		"00000000000001",
+		"00000000000005",
+		"00000000000002",
+		"00000000000003",
+	}
+
+	for _, timestamp := range timestamps {
+		err := suite.Transaction.CreateMigration(timestamp)
+		suite.Require().NoError(err)
+	}
+
+	//act
+	timestamp, hasLatest, err := suite.Transaction.GetLatestTimestamp()
+
+	//assert
+	suite.Equal(timestamps[1], timestamp)
+	suite.True(hasLatest)
+	suite.NoError(err)
 }
 
 func (suite *MigrationCRUDTestSuite) TestDeleteMigrationByTimestamp_WithNoMigrationToDelete_ReturnsNilError() {
