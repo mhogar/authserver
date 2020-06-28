@@ -1,6 +1,7 @@
 package postgresadapter
 
 import (
+	"authserver/database/postgres_adapter/scripts"
 	sqladapter "authserver/database/sql_adapter"
 
 	//import the postgres driver
@@ -19,7 +20,7 @@ func CreatePostgresDB(dbKey string) *PostgresDB {
 			SQLAdapter: sqladapter.SQLAdapter{
 				DriverName:          "postgres",
 				DbKey:               dbKey,
-				SQLScriptRepository: PostgresScriptRepository{},
+				SQLScriptRepository: scripts.StaticScriptRepository{},
 			},
 		},
 	}

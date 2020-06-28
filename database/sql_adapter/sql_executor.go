@@ -16,9 +16,3 @@ type SQLExecuter interface {
 	// QueryRowContext executes the sql query. Should be used when extactly one resulting row is expected. Returns the resulting row.
 	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
 }
-
-// SQLScriptRepository is an interface for fetching sql scripts.
-type SQLScriptRepository interface {
-	// GetSQLScript gets the sql script for the given key.
-	GetSQLScript(key string) string
-}

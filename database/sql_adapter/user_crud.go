@@ -17,9 +17,9 @@ func (adapter *SQLAdapter) SaveUser(user *models.User) error {
 	}
 
 	ctx, cancel := adapter.CreateStandardTimeoutContext()
-	_, err := adapter.SQLExecuter.ExecContext(ctx, adapter.SQLScriptRepository.GetSQLScript("SaveUser"),
+	_, err := adapter.SQLExecuter.ExecContext(ctx, adapter.SQLScriptRepository.SaveUserScript(),
 		user.ID, user.Username, user.PasswordHash)
-	defer cancel()
+	cancel()
 
 	if err != nil {
 		return helpers.ChainError("error executing save user statement", err)
@@ -32,7 +32,7 @@ func (adapter *SQLAdapter) SaveUser(user *models.User) error {
 // Returns the model and any errors.
 func (adapter *SQLAdapter) GetUserByID(id uuid.UUID) (*models.User, error) {
 	ctx, cancel := adapter.CreateStandardTimeoutContext()
-	rows, err := adapter.SQLExecuter.QueryContext(ctx, adapter.SQLScriptRepository.GetSQLScript("GetUserByID"), id)
+	rows, err := adapter.SQLExecuter.QueryContext(ctx, adapter.SQLScriptRepository.GetUserByIDScript(), id)
 	defer cancel()
 
 	if err != nil {

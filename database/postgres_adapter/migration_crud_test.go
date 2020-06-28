@@ -2,7 +2,6 @@ package postgresadapter_test
 
 import (
 	"authserver/config"
-	"authserver/database"
 	postgresadapter "authserver/database/postgres_adapter"
 	sqladapter "authserver/database/sql_adapter"
 	"authserver/helpers"
@@ -14,7 +13,7 @@ import (
 type MigrationCRUDTestSuite struct {
 	suite.Suite
 	TransactionFactory *sqladapter.SQLTransactionFactory
-	Transaction        database.Transaction
+	Tx                 *sqladapter.SQLTransaction
 }
 
 func (suite *MigrationCRUDTestSuite) SetupSuite() {
@@ -43,18 +42,18 @@ func (suite *MigrationCRUDTestSuite) SetupTest() {
 	tx, err := suite.TransactionFactory.CreateTransaction()
 	suite.Require().NoError(err)
 
-	suite.Transaction = tx
+	suite.Tx = tx.(*sqladapter.SQLTransaction)
 }
 
 func (suite *MigrationCRUDTestSuite) TearDownTest() {
 	//rollback the transaction after each test
-	err := suite.Transaction.RollbackTransaction()
+	err := suite.Tx.RollbackTransaction()
 	suite.Require().NoError(err)
 }
 
 func (suite *MigrationCRUDTestSuite) TestCreateMigration_WithInvalidTimestamp_ReturnsError() {
 	//act
-	err := suite.Transaction.CreateMigration("invalid")
+	err := suite.Tx.CreateMigration("invalid")
 
 	//assert
 	helpers.AssertError(&suite.Suite, err, "error", "model")
@@ -62,7 +61,7 @@ func (suite *MigrationCRUDTestSuite) TestCreateMigration_WithInvalidTimestamp_Re
 
 func (suite *MigrationCRUDTestSuite) TestGetMigrationByTimestamp_WhereTimestampNotFound_ReturnsNilMigration() {
 	//act
-	migration, err := suite.Transaction.GetMigrationByTimestamp("DNE")
+	migration, err := suite.Tx.GetMigrationByTimestamp("DNE")
 
 	//assert
 	suite.NoError(err)
@@ -72,11 +71,11 @@ func (suite *MigrationCRUDTestSuite) TestGetMigrationByTimestamp_WhereTimestampN
 func (suite *MigrationCRUDTestSuite) TestGetMigrationByTimestamp_FindsMigration() {
 	//arrange
 	timestamp := "00000000000001"
-	err := suite.Transaction.CreateMigration(timestamp)
+	err := suite.Tx.CreateMigration(timestamp)
 	suite.Require().NoError(err)
 
 	//act
-	migration, err := suite.Transaction.GetMigrationByTimestamp(timestamp)
+	migration, err := suite.Tx.GetMigrationByTimestamp(timestamp)
 
 	//assert
 	suite.NoError(err)
@@ -85,8 +84,14 @@ func (suite *MigrationCRUDTestSuite) TestGetMigrationByTimestamp_FindsMigration(
 }
 
 func (suite *MigrationCRUDTestSuite) TestGetLatestTimestamp_WithNoLatestTimestamp_ReturnsHasLatestFalse() {
+	//arrange
+	ctx, cancel := suite.TransactionFactory.DB.CreateStandardTimeoutContext()
+	_, err := suite.Tx.SQLExecuter.ExecContext(ctx, `DELETE FROM "migration"`)
+	cancel()
+	suite.Require().NoError(err)
+
 	//act
-	_, hasLatest, err := suite.Transaction.GetLatestTimestamp()
+	_, hasLatest, err := suite.Tx.GetLatestTimestamp()
 
 	//assert
 	suite.False(hasLatest)
@@ -96,19 +101,19 @@ func (suite *MigrationCRUDTestSuite) TestGetLatestTimestamp_WithNoLatestTimestam
 func (suite *MigrationCRUDTestSuite) TestGetLatestTimestamp_ReturnsLatestTimestamp() {
 	//arrange
 	timestamps := []string{
-		"00000000000001",
-		"00000000000005",
-		"00000000000002",
-		"00000000000003",
+		"99990000000001",
+		"99990000000005",
+		"99990000000002",
+		"99990000000003",
 	}
 
 	for _, timestamp := range timestamps {
-		err := suite.Transaction.CreateMigration(timestamp)
+		err := suite.Tx.CreateMigration(timestamp)
 		suite.Require().NoError(err)
 	}
 
 	//act
-	timestamp, hasLatest, err := suite.Transaction.GetLatestTimestamp()
+	timestamp, hasLatest, err := suite.Tx.GetLatestTimestamp()
 
 	//assert
 	suite.Equal(timestamps[1], timestamp)
@@ -118,7 +123,7 @@ func (suite *MigrationCRUDTestSuite) TestGetLatestTimestamp_ReturnsLatestTimesta
 
 func (suite *MigrationCRUDTestSuite) TestDeleteMigrationByTimestamp_WithNoMigrationToDelete_ReturnsNilError() {
 	//act
-	err := suite.Transaction.DeleteMigrationByTimestamp("DNE")
+	err := suite.Tx.DeleteMigrationByTimestamp("DNE")
 
 	//assert
 	suite.NoError(err)
@@ -127,16 +132,16 @@ func (suite *MigrationCRUDTestSuite) TestDeleteMigrationByTimestamp_WithNoMigrat
 func (suite *MigrationCRUDTestSuite) TestDeleteMigrationByTimestamp_DeletesMigration() {
 	//arrange
 	timestamp := "00000000000001"
-	err := suite.Transaction.CreateMigration(timestamp)
+	err := suite.Tx.CreateMigration(timestamp)
 	suite.Require().NoError(err)
 
 	//act
-	err = suite.Transaction.DeleteMigrationByTimestamp(timestamp)
+	err = suite.Tx.DeleteMigrationByTimestamp(timestamp)
 
 	//assert
 	suite.Require().NoError(err)
 
-	migration, err := suite.Transaction.GetMigrationByTimestamp(timestamp)
+	migration, err := suite.Tx.GetMigrationByTimestamp(timestamp)
 	suite.NoError(err)
 	suite.Nil(migration)
 }

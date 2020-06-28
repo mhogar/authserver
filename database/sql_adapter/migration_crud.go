@@ -8,8 +8,8 @@ import (
 // Setup creates the migration table if it does not already exist.
 func (adapter *SQLAdapter) Setup() error {
 	ctx, cancel := adapter.CreateStandardTimeoutContext()
-	_, err := adapter.SQLExecuter.ExecContext(ctx, adapter.SQLScriptRepository.GetSQLScript("CreateMigrationTable"))
-	defer cancel()
+	_, err := adapter.SQLExecuter.ExecContext(ctx, adapter.SQLScriptRepository.CreateMigrationTableScript())
+	cancel()
 
 	if err != nil {
 		return helpers.ChainError("error executing create migration table statment", err)
@@ -29,8 +29,8 @@ func (adapter *SQLAdapter) CreateMigration(timestamp string) error {
 	}
 
 	ctx, cancel := adapter.CreateStandardTimeoutContext()
-	_, err := adapter.SQLExecuter.ExecContext(ctx, adapter.SQLScriptRepository.GetSQLScript("SaveMigration"), migration.Timestamp)
-	defer cancel()
+	_, err := adapter.SQLExecuter.ExecContext(ctx, adapter.SQLScriptRepository.SaveMigrationScript(), migration.Timestamp)
+	cancel()
 
 	if err != nil {
 		return helpers.ChainError("error executing save migration statment", err)
@@ -43,7 +43,7 @@ func (adapter *SQLAdapter) CreateMigration(timestamp string) error {
 // Returns the model and any errors.
 func (adapter *SQLAdapter) GetMigrationByTimestamp(timestamp string) (*models.Migration, error) {
 	ctx, cancel := adapter.CreateStandardTimeoutContext()
-	rows, err := adapter.SQLExecuter.QueryContext(ctx, adapter.SQLScriptRepository.GetSQLScript("GetMigrationByTimestamp"), timestamp)
+	rows, err := adapter.SQLExecuter.QueryContext(ctx, adapter.SQLScriptRepository.GetMigrationByTimestampScript(), timestamp)
 	defer cancel()
 
 	if err != nil {
@@ -77,7 +77,7 @@ func (adapter *SQLAdapter) GetMigrationByTimestamp(timestamp string) (*models.Mi
 // Returns any errors.
 func (adapter *SQLAdapter) GetLatestTimestamp() (timestamp string, hasLatest bool, err error) {
 	ctx, cancel := adapter.CreateStandardTimeoutContext()
-	rows, err := adapter.SQLExecuter.QueryContext(ctx, adapter.SQLScriptRepository.GetSQLScript("GetLatestTimestamp"))
+	rows, err := adapter.SQLExecuter.QueryContext(ctx, adapter.SQLScriptRepository.GetLatestTimestampScript())
 	defer cancel()
 
 	if err != nil {
@@ -109,8 +109,8 @@ func (adapter *SQLAdapter) GetLatestTimestamp() (timestamp string, hasLatest boo
 // Returns any errors.
 func (adapter *SQLAdapter) DeleteMigrationByTimestamp(timestamp string) error {
 	ctx, cancel := adapter.CreateStandardTimeoutContext()
-	_, err := adapter.SQLExecuter.ExecContext(ctx, adapter.SQLScriptRepository.GetSQLScript("DeleteMigrationByTimestamp"), timestamp)
-	defer cancel()
+	_, err := adapter.SQLExecuter.ExecContext(ctx, adapter.SQLScriptRepository.DeleteMigrationByTimestampScript(), timestamp)
+	cancel()
 
 	if err != nil {
 		return helpers.ChainError("error executing delete migration by timestamp statement", err)
