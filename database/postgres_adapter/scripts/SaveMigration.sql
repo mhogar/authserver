@@ -1,2 +1,2 @@
-INSERT INTO migration ("timestamp") 
+INSERT INTO "migration" ("timestamp") 
     VALUES ($1)

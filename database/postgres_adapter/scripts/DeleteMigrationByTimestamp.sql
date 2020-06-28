@@ -1,2 +1,2 @@
-DELETE FROM migration
-    WHERE "timestamp" = $1
+DELETE FROM "migration"
+   WHERE "timestamp" = $1

@@ -1,3 +1,3 @@
 SELECT m."timestamp" 
-    FROM migration m 
+    FROM "migration" m 
     WHERE m."timestamp" = $1

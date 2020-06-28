@@ -20,6 +20,10 @@ func (PostgresScriptRepository) GetSQLScript(key string) string {
 		return scripts.GetGetLatestTimestampScript()
 	case "DeleteMigrationByTimestamp":
 		return scripts.GetDeleteMigrationByTimestampScript()
+	case "SaveUser":
+		return scripts.GetSaveUserScript()
+	case "GetUserByID":
+		return scripts.GetGetUserByIDScript()
 	default:
 		return ""
 	}
