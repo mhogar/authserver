@@ -12,7 +12,7 @@ type DatabaseConfig struct {
 }
 
 func initDatabaseConfig() {
-	viper.SetDefault("dbkey", "core")
+	viper.SetDefault("db_key", "core")
 
 	config := make(map[string]interface{})
 	config["local"] = DatabaseConfig{

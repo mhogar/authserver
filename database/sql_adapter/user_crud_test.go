@@ -1,9 +1,9 @@
-package postgresadapter_test
+package sqladapter_test
 
 import (
 	"authserver/config"
-	postgresadapter "authserver/database/postgres_adapter"
 	sqladapter "authserver/database/sql_adapter"
+	"authserver/dependencies"
 	"authserver/helpers"
 	"authserver/models"
 	"testing"
@@ -22,7 +22,7 @@ func (suite *UserCRUDTestSuite) SetupSuite() {
 	config.InitConfig()
 
 	//create the database and open its connection
-	db := postgresadapter.CreatePostgresDB("integration")
+	db := sqladapter.CreateSQLDB("integration", dependencies.ResolveSQLDriver())
 
 	err := db.OpenConnection()
 	suite.Require().NoError(err)
@@ -31,7 +31,7 @@ func (suite *UserCRUDTestSuite) SetupSuite() {
 	suite.Require().NoError(err)
 
 	suite.TransactionFactory = &sqladapter.SQLTransactionFactory{
-		DB: &db.SQLDB,
+		DB: db,
 	}
 }
 

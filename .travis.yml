@@ -43,5 +43,5 @@ jobs:
         - psql -c 'create database travis_ci_test;' -U postgres
         - go run database/migration_runner/main.go -db=integration
       script:
-        - go test ./database/sql_adapter/ ./database/postgres_adapter/ -v -covermode=count -coverprofile=coverage.out
+        - go test ./database/sql_adapter/ -v -covermode=count -coverprofile=coverage.out
         - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci

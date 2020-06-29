@@ -11,17 +11,14 @@ type SQLAdapter struct {
 	cancelFunc context.CancelFunc
 	timeout    int
 
-	// DriverName is the name of the sql driver.
-	DriverName string
-
 	// DbKey is the key that will be used to resolve the database's connection string.
 	DbKey string
 
-	// SQLScriptRepository is a dependency for loading sql scripts.
-	SQLScriptRepository SQLScriptRepository
-
 	// SQLExecuter is a dependency for executing sql scripts.
 	SQLExecuter SQLExecuter
+
+	// SQLDriver is a dependency for fetching the sql scripts and resolving the driver name.
+	SQLDriver SQLDriver
 }
 
 // CreateStandardTimeoutContext creates a context with the timeout loaded from the database config.

@@ -1,8 +1,9 @@
-package postgresadapter_test
+package sqladapter_test
 
 import (
 	"authserver/config"
-	postgresadapter "authserver/database/postgres_adapter"
+	sqladapter "authserver/database/sql_adapter"
+	"authserver/dependencies"
 	"authserver/helpers"
 	"testing"
 
@@ -12,14 +13,14 @@ import (
 
 type DbConnectionTestSuite struct {
 	suite.Suite
-	DB *postgresadapter.PostgresDB
+	DB *sqladapter.SQLDB
 }
 
 func (suite *DbConnectionTestSuite) SetupTest() {
 	viper.Reset()
 	config.InitConfig()
 
-	suite.DB = postgresadapter.CreatePostgresDB("integration")
+	suite.DB = sqladapter.CreateSQLDB("integration", dependencies.ResolveSQLDriver())
 }
 
 func (suite *DbConnectionTestSuite) TestOpenConnection_WhereEnvironmentIsNotFound_ReturnsError() {

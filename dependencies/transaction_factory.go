@@ -2,7 +2,6 @@ package dependencies
 
 import (
 	databasepkg "authserver/database"
-	postgresadapter "authserver/database/postgres_adapter"
 	sqladapter "authserver/database/sql_adapter"
 	"sync"
 )
@@ -15,7 +14,7 @@ var transactionFactory databasepkg.TransactionFactory
 func ResolveTransactionFactory() databasepkg.TransactionFactory {
 	transactionFactoryOnce.Do(func() {
 		transactionFactory = sqladapter.SQLTransactionFactory{
-			DB: &ResolveDatabase().(*postgresadapter.PostgresDB).SQLDB,
+			DB: ResolveDatabase().(*sqladapter.SQLDB),
 		}
 	})
 	return transactionFactory

@@ -15,7 +15,7 @@ type tmplData struct {
 }
 
 func main() {
-	inDir := "database/postgres_adapter/scripts"
+	inDir := "database/sql_adapter/postgres/scripts"
 
 	//load the template
 	tmpl := template.Must(template.ParseFiles("database/sql_adapter/script_compiler/script_repository.go.tmpl"))

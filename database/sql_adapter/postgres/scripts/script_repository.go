@@ -2,11 +2,11 @@
 
 package scripts
 
-// StaticScriptRepository is an implementation of the sql script repository interface that fetches statically defined scripts.
-type StaticScriptRepository struct {}
+// ScriptRepository is an implementation of the sql script repository interface that fetches scripts laoded from sql files.
+type ScriptRepository struct{}
 
 // CreateMigrationTableScript gets the CreateMigrationTable script
-func (StaticScriptRepository) CreateMigrationTableScript() string {
+func (ScriptRepository) CreateMigrationTableScript() string {
 	return `
 CREATE TABLE IF NOT EXISTS public."migration" (
     "timestamp" varchar(14) NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS public."migration" (
 }
 
 // CreateUserTableScript gets the CreateUserTable script
-func (StaticScriptRepository) CreateUserTableScript() string {
+func (ScriptRepository) CreateUserTableScript() string {
 	return `
 CREATE TABLE  IF NOT EXISTS public."user" (
 	id uuid NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE  IF NOT EXISTS public."user" (
 }
 
 // DeleteMigrationByTimestampScript gets the DeleteMigrationByTimestamp script
-func (StaticScriptRepository) DeleteMigrationByTimestampScript() string {
+func (ScriptRepository) DeleteMigrationByTimestampScript() string {
 	return `
 DELETE FROM "migration"
    WHERE "timestamp" = $1
@@ -37,7 +37,7 @@ DELETE FROM "migration"
 }
 
 // DeleteUserScript gets the DeleteUser script
-func (StaticScriptRepository) DeleteUserScript() string {
+func (ScriptRepository) DeleteUserScript() string {
 	return `
 DELETE FROM "user" u
     WHERE u."id" = $1
@@ -45,7 +45,7 @@ DELETE FROM "user" u
 }
 
 // GetLatestTimestampScript gets the GetLatestTimestamp script
-func (StaticScriptRepository) GetLatestTimestampScript() string {
+func (ScriptRepository) GetLatestTimestampScript() string {
 	return `
 SELECT m."timestamp" FROM "migration" m
     ORDER BY m."timestamp" DESC
@@ -54,7 +54,7 @@ SELECT m."timestamp" FROM "migration" m
 }
 
 // GetMigrationByTimestampScript gets the GetMigrationByTimestamp script
-func (StaticScriptRepository) GetMigrationByTimestampScript() string {
+func (ScriptRepository) GetMigrationByTimestampScript() string {
 	return `
 SELECT m."timestamp" 
     FROM "migration" m 
@@ -63,7 +63,7 @@ SELECT m."timestamp"
 }
 
 // GetUserByIDScript gets the GetUserByID script
-func (StaticScriptRepository) GetUserByIDScript() string {
+func (ScriptRepository) GetUserByIDScript() string {
 	return `
 SELECT u."id", u."username", u."password_hash"
 	FROM "user" u
@@ -72,7 +72,7 @@ SELECT u."id", u."username", u."password_hash"
 }
 
 // GetUserByUsernameScript gets the GetUserByUsername script
-func (StaticScriptRepository) GetUserByUsernameScript() string {
+func (ScriptRepository) GetUserByUsernameScript() string {
 	return `
 SELECT u."id", u."username", u."password_hash"
 	FROM "user" u
@@ -81,7 +81,7 @@ SELECT u."id", u."username", u."password_hash"
 }
 
 // SaveMigrationScript gets the SaveMigration script
-func (StaticScriptRepository) SaveMigrationScript() string {
+func (ScriptRepository) SaveMigrationScript() string {
 	return `
 INSERT INTO "migration" ("timestamp") 
     VALUES ($1)
@@ -89,7 +89,7 @@ INSERT INTO "migration" ("timestamp")
 }
 
 // SaveUserScript gets the SaveUser script
-func (StaticScriptRepository) SaveUserScript() string {
+func (ScriptRepository) SaveUserScript() string {
 	return `
 INSERT INTO "user" ("id", "username", "password_hash")
 	VALUES ($1, $2, $3)
@@ -97,7 +97,7 @@ INSERT INTO "user" ("id", "username", "password_hash")
 }
 
 // UpdateUserScript gets the UpdateUser script
-func (StaticScriptRepository) UpdateUserScript() string {
+func (ScriptRepository) UpdateUserScript() string {
 	return `
 UPDATE "user" SET
     "username" = $2,

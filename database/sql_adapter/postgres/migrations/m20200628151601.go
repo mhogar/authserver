@@ -1,12 +1,12 @@
 package migrations
 
 import (
-	postgresadapter "authserver/database/postgres_adapter"
+	sqladapter "authserver/database/sql_adapter"
 	"authserver/helpers"
 )
 
 type m20200628151601 struct {
-	DB *postgresadapter.PostgresDB
+	DB *sqladapter.SQLDB
 }
 
 func (m m20200628151601) GetTimestamp() string {
@@ -16,7 +16,7 @@ func (m m20200628151601) GetTimestamp() string {
 func (m m20200628151601) Up() error {
 	//create the user table
 	ctx, cancel := m.DB.CreateStandardTimeoutContext()
-	_, err := m.DB.SQLExecuter.ExecContext(ctx, m.DB.SQLScriptRepository.CreateUserTableScript())
+	_, err := m.DB.SQLExecuter.ExecContext(ctx, m.DB.SQLDriver.CreateUserTableScript())
 	defer cancel()
 
 	if err != nil {

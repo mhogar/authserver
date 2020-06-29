@@ -17,7 +17,7 @@ func (adapter *SQLAdapter) SaveUser(user *models.User) error {
 	}
 
 	ctx, cancel := adapter.CreateStandardTimeoutContext()
-	_, err := adapter.SQLExecuter.ExecContext(ctx, adapter.SQLScriptRepository.SaveUserScript(),
+	_, err := adapter.SQLExecuter.ExecContext(ctx, adapter.SQLDriver.SaveUserScript(),
 		user.ID, user.Username, user.PasswordHash)
 	cancel()
 
@@ -32,7 +32,7 @@ func (adapter *SQLAdapter) SaveUser(user *models.User) error {
 // Returns the model and any errors.
 func (adapter *SQLAdapter) GetUserByID(id uuid.UUID) (*models.User, error) {
 	ctx, cancel := adapter.CreateStandardTimeoutContext()
-	rows, err := adapter.SQLExecuter.QueryContext(ctx, adapter.SQLScriptRepository.GetUserByIDScript(), id)
+	rows, err := adapter.SQLExecuter.QueryContext(ctx, adapter.SQLDriver.GetUserByIDScript(), id)
 	defer cancel()
 
 	if err != nil {
@@ -47,7 +47,7 @@ func (adapter *SQLAdapter) GetUserByID(id uuid.UUID) (*models.User, error) {
 // Returns the model and any errors.
 func (adapter *SQLAdapter) GetUserByUsername(username string) (*models.User, error) {
 	ctx, cancel := adapter.CreateStandardTimeoutContext()
-	rows, err := adapter.SQLExecuter.QueryContext(ctx, adapter.SQLScriptRepository.GetUserByUsernameScript(), username)
+	rows, err := adapter.SQLExecuter.QueryContext(ctx, adapter.SQLDriver.GetUserByUsernameScript(), username)
 	defer cancel()
 
 	if err != nil {
@@ -67,7 +67,7 @@ func (adapter *SQLAdapter) UpdateUser(user *models.User) error {
 	}
 
 	ctx, cancel := adapter.CreateStandardTimeoutContext()
-	_, err := adapter.SQLExecuter.ExecContext(ctx, adapter.SQLScriptRepository.UpdateUserScript(),
+	_, err := adapter.SQLExecuter.ExecContext(ctx, adapter.SQLDriver.UpdateUserScript(),
 		user.ID, user.Username, user.PasswordHash)
 	cancel()
 
@@ -82,7 +82,7 @@ func (adapter *SQLAdapter) UpdateUser(user *models.User) error {
 // Returns any errors.
 func (adapter *SQLAdapter) DeleteUser(user *models.User) error {
 	ctx, cancel := adapter.CreateStandardTimeoutContext()
-	_, err := adapter.SQLExecuter.ExecContext(ctx, adapter.SQLScriptRepository.DeleteUserScript(), user.ID)
+	_, err := adapter.SQLExecuter.ExecContext(ctx, adapter.SQLDriver.DeleteUserScript(), user.ID)
 	cancel()
 
 	if err != nil {

@@ -20,7 +20,7 @@ func main() {
 	dbKey := flag.String("db", "core", "The database to run the migrations against")
 	flag.Parse()
 
-	viper.Set("dbkey", *dbKey)
+	viper.Set("db_key", *dbKey)
 
 	migrationRunner := migrationrunner.MigrationRunner{
 		MigrationRepository: dependencies.ResolveMigrationRepository(),

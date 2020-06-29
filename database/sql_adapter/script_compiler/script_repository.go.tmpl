@@ -2,11 +2,11 @@
 
 package scripts
 
-// StaticScriptRepository is an implementation of the sql script repository interface that fetches statically defined scripts.
-type StaticScriptRepository struct {}
+// ScriptRepository is an implementation of the sql script repository interface that fetches scripts laoded from sql files.
+type ScriptRepository struct {}
 {{range $scriptData := .}}
 // {{$scriptData.Name}}Script gets the {{$scriptData.Name}} script
-func (StaticScriptRepository) {{$scriptData.Name}}Script() string {
+func (ScriptRepository) {{$scriptData.Name}}Script() string {
 	return `
 {{$scriptData.Script}}
 `

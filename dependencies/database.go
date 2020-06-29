@@ -2,7 +2,7 @@ package dependencies
 
 import (
 	databasepkg "authserver/database"
-	postgresadapter "authserver/database/postgres_adapter"
+	sqladapter "authserver/database/sql_adapter"
 	"sync"
 
 	"github.com/spf13/viper"
@@ -15,7 +15,7 @@ var database databasepkg.Database
 // Only the first call to this function will create a new Database, after which it will be retrieved from the cache.
 func ResolveDatabase() databasepkg.Database {
 	createDatabaseOnce.Do(func() {
-		database = postgresadapter.CreatePostgresDB(viper.GetString("dbkey"))
+		database = sqladapter.CreateSQLDB(viper.GetString("db_key"), ResolveSQLDriver())
 	})
 	return database
 }
