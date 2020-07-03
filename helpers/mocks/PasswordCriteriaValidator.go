@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	helpers "authserver/helpers"
+	"authserver/helpers"
 
 	mock "github.com/stretchr/testify/mock"
 )

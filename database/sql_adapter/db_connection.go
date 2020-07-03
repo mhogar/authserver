@@ -2,7 +2,7 @@ package sqladapter
 
 import (
 	"authserver/config"
-	"authserver/helpers"
+	commonhelpers "authserver/helpers/common"
 	"context"
 	"database/sql"
 	"errors"
@@ -15,12 +15,7 @@ import (
 // Returns any errors.
 func (DB *SQLDB) OpenConnection() error {
 	//load the database config
-	env := viper.GetString("env")
-	mapResult, ok := viper.GetStringMap("database")[env]
-	if !ok {
-		return errors.New("no database config found for environment " + env)
-	}
-	dbConfig := mapResult.(config.DatabaseConfig)
+	dbConfig := viper.Get("database").(config.DatabaseConfig)
 
 	//get conection string
 	connectionStr, ok := dbConfig.ConnectionStrings[DB.DbKey]
@@ -34,7 +29,7 @@ func (DB *SQLDB) OpenConnection() error {
 	//connect to the db
 	db, err := sql.Open(DB.SQLDriver.GetDriverName(), connectionStr)
 	if err != nil {
-		return helpers.ChainError("error opening database connection", err)
+		return commonhelpers.ChainError("error opening database connection", err)
 	}
 
 	DB.DB = db
@@ -50,7 +45,7 @@ func (DB *SQLDB) OpenConnection() error {
 func (DB *SQLDB) CloseConnection() error {
 	err := DB.DB.Close()
 	if err != nil {
-		return helpers.ChainError("error closing database connection", err)
+		return commonhelpers.ChainError("error closing database connection", err)
 	}
 
 	//cancel any remaining requests that may still be running
@@ -70,7 +65,7 @@ func (DB *SQLDB) Ping() error {
 	cancel()
 
 	if err != nil {
-		return helpers.ChainError("error pinging database", err)
+		return commonhelpers.ChainError("error pinging database", err)
 	}
 
 	return nil

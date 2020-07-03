@@ -2,7 +2,7 @@ package sqladapter
 
 import (
 	"authserver/database"
-	"authserver/helpers"
+	commonhelpers "authserver/helpers/common"
 	"database/sql"
 )
 
@@ -36,7 +36,7 @@ func (tx *SQLTransaction) RollbackTransaction() error {
 func (f SQLTransactionFactory) CreateTransaction() (database.Transaction, error) {
 	tx, err := f.DB.DB.Begin()
 	if err != nil {
-		return nil, helpers.ChainError("error beginning transaction", err)
+		return nil, commonhelpers.ChainError("error beginning transaction", err)
 	}
 
 	//copy the adapter and set its executor to the transaction

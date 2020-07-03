@@ -4,7 +4,7 @@ import (
 	"authserver/config"
 	sqladapter "authserver/database/sql_adapter"
 	"authserver/dependencies"
-	"authserver/helpers"
+	commonhelpers "authserver/helpers/common"
 	"authserver/models"
 	"testing"
 
@@ -19,12 +19,13 @@ type UserCRUDTestSuite struct {
 }
 
 func (suite *UserCRUDTestSuite) SetupSuite() {
-	config.InitConfig()
+	err := config.InitConfig("../..")
+	suite.Require().NoError(err)
 
 	//create the database and open its connection
 	db := sqladapter.CreateSQLDB("integration", dependencies.ResolveSQLDriver())
 
-	err := db.OpenConnection()
+	err = db.OpenConnection()
 	suite.Require().NoError(err)
 
 	err = db.Ping()
@@ -58,7 +59,7 @@ func (suite *UserCRUDTestSuite) TestSaveUser_WithInvalidUser_ReturnsError() {
 	err := suite.Tx.SaveUser(models.CreateNewUser("", nil))
 
 	//assert
-	helpers.AssertError(&suite.Suite, err, "error", "model")
+	commonhelpers.AssertError(&suite.Suite, err, "error", "model")
 }
 
 func (suite *UserCRUDTestSuite) TestGetUserById_WhereUserNotFound_ReturnsNilUser() {
@@ -112,7 +113,7 @@ func (suite *UserCRUDTestSuite) TestUpdateUser_WithInvalidUser_ReturnsError() {
 	err := suite.Tx.UpdateUser(models.CreateNewUser("", nil))
 
 	//assert
-	helpers.AssertError(&suite.Suite, err, "error", "model")
+	commonhelpers.AssertError(&suite.Suite, err, "error", "model")
 }
 
 func (suite *UserCRUDTestSuite) TestUpdateUser_WithNoUserToUpdate_ReturnsNilError() {

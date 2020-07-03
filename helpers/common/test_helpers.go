@@ -1,4 +1,4 @@
-package helpers
+package commonhelpers
 
 import (
 	"github.com/stretchr/testify/suite"

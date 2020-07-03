@@ -4,7 +4,7 @@ import (
 	"authserver/config"
 	"authserver/database"
 	"authserver/dependencies"
-	"authserver/helpers"
+	commonhelpers "authserver/helpers/common"
 	"flag"
 	"log"
 
@@ -13,7 +13,10 @@ import (
 )
 
 func main() {
-	config.InitConfig()
+	err := config.InitConfig(".")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	//parse flags
 	down := flag.Bool("down", false, "Run migrate down instead of migrate up")
@@ -27,7 +30,7 @@ func main() {
 		MigrationCRUD:       dependencies.ResolveDatabase(),
 	}
 
-	err := Run(dependencies.ResolveDatabase(), migrationRunner, *down)
+	err = Run(dependencies.ResolveDatabase(), migrationRunner, *down)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,7 +47,7 @@ func Run(db database.DBConnection, migrationRunner MigrationRunner, down bool) e
 	//open the db connection
 	err := db.OpenConnection()
 	if err != nil {
-		return helpers.ChainError("could not create database connection", err)
+		return commonhelpers.ChainError("could not create database connection", err)
 	}
 
 	defer db.CloseConnection()
@@ -52,7 +55,7 @@ func Run(db database.DBConnection, migrationRunner MigrationRunner, down bool) e
 	//check db is connected
 	err = db.Ping()
 	if err != nil {
-		return helpers.ChainError("could not reach database", err)
+		return commonhelpers.ChainError("could not reach database", err)
 	}
 
 	//run the migrations
@@ -63,7 +66,7 @@ func Run(db database.DBConnection, migrationRunner MigrationRunner, down bool) e
 	}
 
 	if err != nil {
-		return helpers.ChainError("error running migrations", err)
+		return commonhelpers.ChainError("error running migrations", err)
 	}
 
 	return nil

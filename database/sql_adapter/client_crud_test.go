@@ -4,7 +4,7 @@ import (
 	"authserver/config"
 	sqladapter "authserver/database/sql_adapter"
 	"authserver/dependencies"
-	"authserver/helpers"
+	commonhelpers "authserver/helpers/common"
 	"authserver/models"
 	"testing"
 
@@ -19,12 +19,13 @@ type ClientCRUDTestSuite struct {
 }
 
 func (suite *ClientCRUDTestSuite) SetupSuite() {
-	config.InitConfig()
+	err := config.InitConfig("../..")
+	suite.Require().NoError(err)
 
 	//create the database and open its connection
 	db := sqladapter.CreateSQLDB("integration", dependencies.ResolveSQLDriver())
 
-	err := db.OpenConnection()
+	err = db.OpenConnection()
 	suite.Require().NoError(err)
 
 	err = db.Ping()
@@ -63,7 +64,7 @@ func (suite *ClientCRUDTestSuite) TestSaveClient_WithInvalidClient_ReturnsError(
 	err := suite.Tx.SaveClient(client)
 
 	//assert
-	helpers.AssertError(&suite.Suite, err, "error", "model")
+	commonhelpers.AssertError(&suite.Suite, err, "error", "model")
 }
 
 func (suite *ClientCRUDTestSuite) TestGetClientById_WhereClientNotFound_ReturnsNilClient() {

@@ -2,3 +2,7 @@
 authserver
 
 database/migration_runner/migration_runner
+
+.vscode/
+
+config.local.yml

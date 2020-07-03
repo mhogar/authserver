@@ -1,7 +1,8 @@
 package controllers
 
 import (
-	"authserver/helpers"
+	helpers "authserver/helpers"
+	commonhelpers "authserver/helpers/common"
 	"authserver/models"
 	"log"
 	"net/http"
@@ -39,7 +40,7 @@ func (c TokenController) PostToken(w http.ResponseWriter, req *http.Request, _ h
 	//parse the body
 	err := parseJSONBody(req.Body, &body)
 	if err != nil {
-		log.Println(helpers.ChainError("error parsing PostToken request body", err))
+		log.Println(commonhelpers.ChainError("error parsing PostToken request body", err))
 		sendOAuthErrorResponse(w, http.StatusBadRequest, "invalid_request", "invalid json body")
 		return
 	}
@@ -108,7 +109,7 @@ func (c TokenController) handlePasswordGrant(w http.ResponseWriter, body PostTok
 	//get the user
 	user, err := c.UserCRUD.GetUserByUsername(body.Username)
 	if err != nil {
-		log.Println(helpers.ChainError("error getting user by username", err))
+		log.Println(commonhelpers.ChainError("error getting user by username", err))
 		sendInternalErrorResponse(w)
 		return nil
 	}
@@ -121,7 +122,7 @@ func (c TokenController) handlePasswordGrant(w http.ResponseWriter, body PostTok
 	//validate the password
 	err = c.PasswordHasher.ComparePasswords(user.PasswordHash, body.Password)
 	if err != nil {
-		log.Println(helpers.ChainError("error comparing password hashes", err))
+		log.Println(commonhelpers.ChainError("error comparing password hashes", err))
 		sendErrorResponse(w, http.StatusBadRequest, "invalid username and/or password")
 		return nil
 	}
@@ -132,7 +133,7 @@ func (c TokenController) handlePasswordGrant(w http.ResponseWriter, body PostTok
 	//save the token
 	err = c.AccessTokenCRUD.SaveAccessToken(token)
 	if err != nil {
-		log.Println(helpers.ChainError("error saving access token", err))
+		log.Println(commonhelpers.ChainError("error saving access token", err))
 		sendInternalErrorResponse(w)
 		return nil
 	}
@@ -151,7 +152,7 @@ func (c TokenController) DeleteToken(w http.ResponseWriter, req *http.Request, _
 	//delete the token
 	err := c.AccessTokenCRUD.DeleteAccessToken(token)
 	if err != nil {
-		log.Println(helpers.ChainError("error deleting access token", err))
+		log.Println(commonhelpers.ChainError("error deleting access token", err))
 		sendInternalErrorResponse(w)
 		return
 	}

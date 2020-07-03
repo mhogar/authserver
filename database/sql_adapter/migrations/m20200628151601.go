@@ -2,7 +2,7 @@ package migrations
 
 import (
 	sqladapter "authserver/database/sql_adapter"
-	"authserver/helpers"
+	commonhelpers "authserver/helpers/common"
 )
 
 type m20200628151601 struct {
@@ -20,7 +20,7 @@ func (m m20200628151601) Up() error {
 	cancel()
 
 	if err != nil {
-		return helpers.ChainError("error executing create user table script", err)
+		return commonhelpers.ChainError("error executing create user table script", err)
 	}
 
 	//create the client table
@@ -29,7 +29,7 @@ func (m m20200628151601) Up() error {
 	cancel()
 
 	if err != nil {
-		return helpers.ChainError("error executing create client table script", err)
+		return commonhelpers.ChainError("error executing create client table script", err)
 	}
 
 	return nil
@@ -42,7 +42,7 @@ func (m m20200628151601) Down() error {
 	cancel()
 
 	if err != nil {
-		return helpers.ChainError("error executing drop user table script", err)
+		return commonhelpers.ChainError("error executing drop user table script", err)
 	}
 
 	//drop the client table
@@ -51,7 +51,7 @@ func (m m20200628151601) Down() error {
 	cancel()
 
 	if err != nil {
-		return helpers.ChainError("error executing drop client table script", err)
+		return commonhelpers.ChainError("error executing drop client table script", err)
 	}
 
 	return nil

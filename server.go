@@ -11,7 +11,10 @@ import (
 )
 
 func main() {
-	config.InitConfig()
+	err := config.InitConfig(".")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	//create the server
 	server := &http.Server{

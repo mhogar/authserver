@@ -4,7 +4,7 @@ import (
 	"authserver/config"
 	sqladapter "authserver/database/sql_adapter"
 	"authserver/dependencies"
-	"authserver/helpers"
+	commonhelpers "authserver/helpers/common"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -17,12 +17,13 @@ type MigrationCRUDTestSuite struct {
 }
 
 func (suite *MigrationCRUDTestSuite) SetupSuite() {
-	config.InitConfig()
+	err := config.InitConfig("../..")
+	suite.Require().NoError(err)
 
 	//create the database and open its connection
 	db := sqladapter.CreateSQLDB("integration", dependencies.ResolveSQLDriver())
 
-	err := db.OpenConnection()
+	err = db.OpenConnection()
 	suite.Require().NoError(err)
 
 	err = db.Ping()
@@ -56,7 +57,7 @@ func (suite *MigrationCRUDTestSuite) TestCreateMigration_WithInvalidTimestamp_Re
 	err := suite.Tx.CreateMigration("invalid")
 
 	//assert
-	helpers.AssertError(&suite.Suite, err, "error", "model")
+	commonhelpers.AssertError(&suite.Suite, err, "error", "model")
 }
 
 func (suite *MigrationCRUDTestSuite) TestGetMigrationByTimestamp_WhereTimestampNotFound_ReturnsNilMigration() {

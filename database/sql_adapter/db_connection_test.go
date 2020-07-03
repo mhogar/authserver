@@ -4,10 +4,9 @@ import (
 	"authserver/config"
 	sqladapter "authserver/database/sql_adapter"
 	"authserver/dependencies"
-	"authserver/helpers"
+	commonhelpers "authserver/helpers/common"
 	"testing"
 
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -17,22 +16,10 @@ type DbConnectionTestSuite struct {
 }
 
 func (suite *DbConnectionTestSuite) SetupTest() {
-	viper.Reset()
-	config.InitConfig()
+	err := config.InitConfig("../..")
+	suite.Require().NoError(err)
 
 	suite.DB = sqladapter.CreateSQLDB("integration", dependencies.ResolveSQLDriver())
-}
-
-func (suite *DbConnectionTestSuite) TestOpenConnection_WhereEnvironmentIsNotFound_ReturnsError() {
-	//arrange
-	env := "not a real environment"
-	viper.Set("env", env)
-
-	//act
-	err := suite.DB.OpenConnection()
-
-	//assert
-	helpers.AssertError(&suite.Suite, err, "no database config", env)
 }
 
 func (suite *DbConnectionTestSuite) TestOpenConnection_WhereConnectionStringIsNotFound_ReturnsError() {
@@ -44,7 +31,7 @@ func (suite *DbConnectionTestSuite) TestOpenConnection_WhereConnectionStringIsNo
 	err := suite.DB.OpenConnection()
 
 	//assert
-	helpers.AssertError(&suite.Suite, err, "no connection string", dbKey)
+	commonhelpers.AssertError(&suite.Suite, err, "no connection string", dbKey)
 }
 
 func (suite *DbConnectionTestSuite) TestCloseConnection_WithValidConnection_ReturnsNoError() {
