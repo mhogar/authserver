@@ -5,12 +5,22 @@ package scripts
 // ScriptRepository is an implementation of the sql script repository interface that fetches scripts laoded from sql files.
 type ScriptRepository struct {}
 
+// CreateClientTableScript gets the CreateClientTable script
+func (ScriptRepository) CreateClientTableScript() string {
+	return `
+CREATE TABLE public."client" (
+	"id" uuid NOT NULL,
+	CONSTRAINT "client_pk" PRIMARY KEY ("id")
+);
+`
+}
+
 // CreateMigrationTableScript gets the CreateMigrationTable script
 func (ScriptRepository) CreateMigrationTableScript() string {
 	return `
 CREATE TABLE IF NOT EXISTS public."migration" (
-    "timestamp" varchar(14) NOT NULL,
-    CONSTRAINT migration_pk PRIMARY KEY ("timestamp")
+    "timestamp" char(14) NOT NULL,
+    CONSTRAINT "migration_pk" PRIMARY KEY ("timestamp")
 );
 `
 }
@@ -19,11 +29,11 @@ CREATE TABLE IF NOT EXISTS public."migration" (
 func (ScriptRepository) CreateUserTableScript() string {
 	return `
 CREATE TABLE  IF NOT EXISTS public."user" (
-	id uuid NOT NULL,
-	username varchar(30) NOT NULL,
-	password_hash bytea NOT NULL,
-	CONSTRAINT user_pk PRIMARY KEY (id),
-	CONSTRAINT user_username_un UNIQUE (username)
+	"id" uuid NOT NULL,
+	"username" varchar(30) NOT NULL,
+	"password_hash" bytea NOT NULL,
+	CONSTRAINT "user_pk" PRIMARY KEY ("id"),
+	CONSTRAINT "user_username_un" UNIQUE ("username")
 );
 `
 }
@@ -44,10 +54,26 @@ DELETE FROM "user" u
 `
 }
 
+// DropClientTableScript gets the DropClientTable script
+func (ScriptRepository) DropClientTableScript() string {
+	return `
+DROP TABLE public."client"
+`
+}
+
 // DropUserTableScript gets the DropUserTable script
 func (ScriptRepository) DropUserTableScript() string {
 	return `
 DROP TABLE public."user"
+`
+}
+
+// GetClientByIdScript gets the GetClientById script
+func (ScriptRepository) GetClientByIdScript() string {
+	return `
+SELECT c."id"
+	FROM "client" c
+	WHERE c."id" = $1
 `
 }
 
@@ -69,8 +95,8 @@ SELECT m."timestamp"
 `
 }
 
-// GetUserByIDScript gets the GetUserByID script
-func (ScriptRepository) GetUserByIDScript() string {
+// GetUserByIdScript gets the GetUserById script
+func (ScriptRepository) GetUserByIdScript() string {
 	return `
 SELECT u."id", u."username", u."password_hash"
 	FROM "user" u
@@ -84,6 +110,14 @@ func (ScriptRepository) GetUserByUsernameScript() string {
 SELECT u."id", u."username", u."password_hash"
 	FROM "user" u
 	WHERE u."username" = $1
+`
+}
+
+// SaveClientScript gets the SaveClient script
+func (ScriptRepository) SaveClientScript() string {
+	return `
+INSERT INTO "client" ("id")
+	VALUES ($1)
 `
 }
 

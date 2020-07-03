@@ -17,6 +17,9 @@ type Client struct {
 
 // ClientCRUD is an interface for performing CRUD operations on a client.
 type ClientCRUD interface {
+	// SaveClient saves the client and returns any errors.
+	SaveClient(client *Client) error
+
 	// GetClientByID fetches the client associated with the id.
 	// If no clients are found, returns nil client. Also returns any errors.
 	GetClientByID(ID uuid.UUID) (*Client, error)

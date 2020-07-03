@@ -17,10 +17,19 @@ func (m m20200628151601) Up() error {
 	//create the user table
 	ctx, cancel := m.DB.CreateStandardTimeoutContext()
 	_, err := m.DB.SQLExecuter.ExecContext(ctx, m.DB.SQLDriver.CreateUserTableScript())
-	defer cancel()
+	cancel()
 
 	if err != nil {
 		return helpers.ChainError("error executing create user table script", err)
+	}
+
+	//create the client table
+	ctx, cancel = m.DB.CreateStandardTimeoutContext()
+	_, err = m.DB.SQLExecuter.ExecContext(ctx, m.DB.SQLDriver.CreateClientTableScript())
+	cancel()
+
+	if err != nil {
+		return helpers.ChainError("error executing create client table script", err)
 	}
 
 	return nil
@@ -30,10 +39,19 @@ func (m m20200628151601) Down() error {
 	//drop the user table
 	ctx, cancel := m.DB.CreateStandardTimeoutContext()
 	_, err := m.DB.SQLExecuter.ExecContext(ctx, m.DB.SQLDriver.DropUserTableScript())
-	defer cancel()
+	cancel()
 
 	if err != nil {
 		return helpers.ChainError("error executing drop user table script", err)
+	}
+
+	//drop the client table
+	ctx, cancel = m.DB.CreateStandardTimeoutContext()
+	_, err = m.DB.SQLExecuter.ExecContext(ctx, m.DB.SQLDriver.DropClientTableScript())
+	cancel()
+
+	if err != nil {
+		return helpers.ChainError("error executing drop client table script", err)
 	}
 
 	return nil

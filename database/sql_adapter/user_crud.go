@@ -30,9 +30,9 @@ func (adapter *SQLAdapter) SaveUser(user *models.User) error {
 
 // GetUserByID gets the row in the user table with the matching id, and creates a new user model using its data.
 // Returns the model and any errors.
-func (adapter *SQLAdapter) GetUserByID(id uuid.UUID) (*models.User, error) {
+func (adapter *SQLAdapter) GetUserByID(ID uuid.UUID) (*models.User, error) {
 	ctx, cancel := adapter.CreateStandardTimeoutContext()
-	rows, err := adapter.SQLExecuter.QueryContext(ctx, adapter.SQLDriver.GetUserByIDScript(), id)
+	rows, err := adapter.SQLExecuter.QueryContext(ctx, adapter.SQLDriver.GetUserByIdScript(), ID)
 	defer cancel()
 
 	if err != nil {
