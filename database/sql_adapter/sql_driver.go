@@ -16,6 +16,7 @@ type SQLScriptRepository interface {
 	GetLatestTimestampScript() string
 	DeleteMigrationByTimestampScript() string
 	CreateUserTableScript() string
+	DropUserTableScript() string
 	SaveUserScript() string
 	GetUserByIDScript() string
 	GetUserByUsernameScript() string

@@ -6,7 +6,7 @@ import (
 	"github.com/mhogar/migrationrunner"
 )
 
-// MigrationRepository is an implementation of the MigrationRepository interface that fetches migrations for the postgres db.
+// MigrationRepository is an implementation of the MigrationRepository interface that fetches migrations for the sql db.
 type MigrationRepository struct {
 	DB *sqladapter.SQLDB
 }

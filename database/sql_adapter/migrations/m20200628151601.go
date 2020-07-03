@@ -29,7 +29,7 @@ func (m m20200628151601) Up() error {
 func (m m20200628151601) Down() error {
 	//drop the user table
 	ctx, cancel := m.DB.CreateStandardTimeoutContext()
-	_, err := m.DB.SQLExecuter.ExecContext(ctx, `DROP TABLE public."user";`)
+	_, err := m.DB.SQLExecuter.ExecContext(ctx, m.DB.SQLDriver.DropUserTableScript())
 	defer cancel()
 
 	if err != nil {

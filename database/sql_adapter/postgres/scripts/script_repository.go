@@ -3,7 +3,7 @@
 package scripts
 
 // ScriptRepository is an implementation of the sql script repository interface that fetches scripts laoded from sql files.
-type ScriptRepository struct{}
+type ScriptRepository struct {}
 
 // CreateMigrationTableScript gets the CreateMigrationTable script
 func (ScriptRepository) CreateMigrationTableScript() string {
@@ -41,6 +41,13 @@ func (ScriptRepository) DeleteUserScript() string {
 	return `
 DELETE FROM "user" u
     WHERE u."id" = $1
+`
+}
+
+// DropUserTableScript gets the DropUserTable script
+func (ScriptRepository) DropUserTableScript() string {
+	return `
+DROP TABLE public."user"
 `
 }
 

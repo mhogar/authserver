@@ -2,7 +2,7 @@ package dependencies
 
 import (
 	sqladapter "authserver/database/sql_adapter"
-	"authserver/database/sql_adapter/postgres/migrations"
+	"authserver/database/sql_adapter/migrations"
 	"sync"
 
 	"github.com/mhogar/migrationrunner"
