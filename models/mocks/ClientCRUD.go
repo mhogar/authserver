@@ -37,3 +37,17 @@ func (_m *ClientCRUD) GetClientByID(ID uuid.UUID) (*models.Client, error) {
 
 	return r0, r1
 }
+
+// SaveClient provides a mock function with given fields: client
+func (_m *ClientCRUD) SaveClient(client *models.Client) error {
+	ret := _m.Called(client)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*models.Client) error); ok {
+		r0 = rf(client)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
