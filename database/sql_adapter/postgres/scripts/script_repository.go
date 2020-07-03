@@ -15,6 +15,30 @@ CREATE TABLE public."client" (
 `
 }
 
+// DropClientTableScript gets the DropClientTable script
+func (ScriptRepository) DropClientTableScript() string {
+	return `
+DROP TABLE public."client"
+`
+}
+
+// GetClientByIdScript gets the GetClientById script
+func (ScriptRepository) GetClientByIdScript() string {
+	return `
+SELECT c."id"
+	FROM "client" c
+	WHERE c."id" = $1
+`
+}
+
+// SaveClientScript gets the SaveClient script
+func (ScriptRepository) SaveClientScript() string {
+	return `
+INSERT INTO "client" ("id")
+	VALUES ($1)
+`
+}
+
 // CreateMigrationTableScript gets the CreateMigrationTable script
 func (ScriptRepository) CreateMigrationTableScript() string {
 	return `
@@ -25,55 +49,11 @@ CREATE TABLE IF NOT EXISTS public."migration" (
 `
 }
 
-// CreateUserTableScript gets the CreateUserTable script
-func (ScriptRepository) CreateUserTableScript() string {
-	return `
-CREATE TABLE  IF NOT EXISTS public."user" (
-	"id" uuid NOT NULL,
-	"username" varchar(30) NOT NULL,
-	"password_hash" bytea NOT NULL,
-	CONSTRAINT "user_pk" PRIMARY KEY ("id"),
-	CONSTRAINT "user_username_un" UNIQUE ("username")
-);
-`
-}
-
 // DeleteMigrationByTimestampScript gets the DeleteMigrationByTimestamp script
 func (ScriptRepository) DeleteMigrationByTimestampScript() string {
 	return `
 DELETE FROM "migration"
    WHERE "timestamp" = $1
-`
-}
-
-// DeleteUserScript gets the DeleteUser script
-func (ScriptRepository) DeleteUserScript() string {
-	return `
-DELETE FROM "user" u
-    WHERE u."id" = $1
-`
-}
-
-// DropClientTableScript gets the DropClientTable script
-func (ScriptRepository) DropClientTableScript() string {
-	return `
-DROP TABLE public."client"
-`
-}
-
-// DropUserTableScript gets the DropUserTable script
-func (ScriptRepository) DropUserTableScript() string {
-	return `
-DROP TABLE public."user"
-`
-}
-
-// GetClientByIdScript gets the GetClientById script
-func (ScriptRepository) GetClientByIdScript() string {
-	return `
-SELECT c."id"
-	FROM "client" c
-	WHERE c."id" = $1
 `
 }
 
@@ -95,6 +75,42 @@ SELECT m."timestamp"
 `
 }
 
+// SaveMigrationScript gets the SaveMigration script
+func (ScriptRepository) SaveMigrationScript() string {
+	return `
+INSERT INTO "migration" ("timestamp") 
+    VALUES ($1)
+`
+}
+
+// CreateUserTableScript gets the CreateUserTable script
+func (ScriptRepository) CreateUserTableScript() string {
+	return `
+CREATE TABLE  IF NOT EXISTS public."user" (
+	"id" uuid NOT NULL,
+	"username" varchar(30) NOT NULL,
+	"password_hash" bytea NOT NULL,
+	CONSTRAINT "user_pk" PRIMARY KEY ("id"),
+	CONSTRAINT "user_username_un" UNIQUE ("username")
+);
+`
+}
+
+// DeleteUserScript gets the DeleteUser script
+func (ScriptRepository) DeleteUserScript() string {
+	return `
+DELETE FROM "user" u
+    WHERE u."id" = $1
+`
+}
+
+// DropUserTableScript gets the DropUserTable script
+func (ScriptRepository) DropUserTableScript() string {
+	return `
+DROP TABLE public."user"
+`
+}
+
 // GetUserByIdScript gets the GetUserById script
 func (ScriptRepository) GetUserByIdScript() string {
 	return `
@@ -110,22 +126,6 @@ func (ScriptRepository) GetUserByUsernameScript() string {
 SELECT u."id", u."username", u."password_hash"
 	FROM "user" u
 	WHERE u."username" = $1
-`
-}
-
-// SaveClientScript gets the SaveClient script
-func (ScriptRepository) SaveClientScript() string {
-	return `
-INSERT INTO "client" ("id")
-	VALUES ($1)
-`
-}
-
-// SaveMigrationScript gets the SaveMigration script
-func (ScriptRepository) SaveMigrationScript() string {
-	return `
-INSERT INTO "migration" ("timestamp") 
-    VALUES ($1)
 `
 }
 
