@@ -9,16 +9,16 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type AccessTokenSuite struct {
+type AccessTokenTestSuite struct {
 	suite.Suite
 	Token *models.AccessToken
 }
 
-func (suite *AccessTokenSuite) SetupTest() {
+func (suite *AccessTokenTestSuite) SetupTest() {
 	suite.Token = models.CreateNewAccessToken(uuid.New(), uuid.New(), uuid.New())
 }
 
-func (suite *AccessTokenSuite) TestCreateNewAccessToken_CreatesAccessTokenWithSuppliedFields() {
+func (suite *AccessTokenTestSuite) TestCreateNewAccessToken_CreatesAccessTokenWithSuppliedFields() {
 	//arrange
 	userID := uuid.New()
 	clientID := uuid.New()
@@ -35,7 +35,7 @@ func (suite *AccessTokenSuite) TestCreateNewAccessToken_CreatesAccessTokenWithSu
 	suite.NotEqual(token.ScopeID, uuid.Nil)
 }
 
-func (suite *AccessTokenSuite) TestValidate_WithValidAccessToken_ReturnsValid() {
+func (suite *AccessTokenTestSuite) TestValidate_WithValidAccessToken_ReturnsValid() {
 	//act
 	err := suite.Token.Validate()
 
@@ -43,7 +43,7 @@ func (suite *AccessTokenSuite) TestValidate_WithValidAccessToken_ReturnsValid() 
 	suite.Equal(models.ValidateAccessTokenValid, err.Status)
 }
 
-func (suite *AccessTokenSuite) TestValidate_WithNilID_ReturnsAccessTokenInvalidID() {
+func (suite *AccessTokenTestSuite) TestValidate_WithNilID_ReturnsAccessTokenInvalidID() {
 	//arrange
 	suite.Token.ID = uuid.Nil
 
@@ -54,7 +54,7 @@ func (suite *AccessTokenSuite) TestValidate_WithNilID_ReturnsAccessTokenInvalidI
 	suite.Equal(models.ValidateAccessTokenInvalidID, err.Status)
 }
 
-func (suite *AccessTokenSuite) TestValidate_WithNilUserID_ReturnsAccessTokenInvalidUserID() {
+func (suite *AccessTokenTestSuite) TestValidate_WithNilUserID_ReturnsAccessTokenInvalidUserID() {
 	//arrange
 	suite.Token.UserID = uuid.Nil
 
@@ -65,7 +65,7 @@ func (suite *AccessTokenSuite) TestValidate_WithNilUserID_ReturnsAccessTokenInva
 	suite.Equal(models.ValidateAccessTokenInvalidUserID, err.Status)
 }
 
-func (suite *AccessTokenSuite) TestValidate_WithNilClientID_ReturnsAccessTokenInvalidClientID() {
+func (suite *AccessTokenTestSuite) TestValidate_WithNilClientID_ReturnsAccessTokenInvalidClientID() {
 	//arrange
 	suite.Token.ClientID = uuid.Nil
 
@@ -76,7 +76,7 @@ func (suite *AccessTokenSuite) TestValidate_WithNilClientID_ReturnsAccessTokenIn
 	suite.Equal(models.ValidateAccessTokenInvalidClientID, err.Status)
 }
 
-func (suite *AccessTokenSuite) TestValidate_WithNilScopeID_ReturnsAccessTokenInvalidScopeID() {
+func (suite *AccessTokenTestSuite) TestValidate_WithNilScopeID_ReturnsAccessTokenInvalidScopeID() {
 	//arrange
 	suite.Token.ScopeID = uuid.Nil
 
@@ -87,6 +87,6 @@ func (suite *AccessTokenSuite) TestValidate_WithNilScopeID_ReturnsAccessTokenInv
 	suite.Equal(models.ValidateAccessTokenInvalidScopeID, err.Status)
 }
 
-func TestAccessTokenSuite(t *testing.T) {
-	suite.Run(t, &AccessTokenSuite{})
+func TestAccessTokenTestSuite(t *testing.T) {
+	suite.Run(t, &AccessTokenTestSuite{})
 }

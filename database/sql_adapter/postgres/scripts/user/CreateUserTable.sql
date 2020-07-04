@@ -1,4 +1,4 @@
-CREATE TABLE  IF NOT EXISTS public."user" (
+CREATE TABLE "public"."user" (
 	"id" uuid NOT NULL,
 	"username" varchar(30) NOT NULL,
 	"password_hash" bytea NOT NULL,

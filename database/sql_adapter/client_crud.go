@@ -12,7 +12,7 @@ import (
 // Returns any errors.
 func (adapter *SQLAdapter) SaveClient(client *models.Client) error {
 	verr := client.Validate()
-	if verr.Status != models.ValidateUserValid {
+	if verr.Status != models.ValidateClientValid {
 		return commonhelpers.ChainError("error validating client model", verr)
 	}
 

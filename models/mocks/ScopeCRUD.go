@@ -35,3 +35,17 @@ func (_m *ScopeCRUD) GetScopeByName(name string) (*models.Scope, error) {
 
 	return r0, r1
 }
+
+// SaveScope provides a mock function with given fields: scope
+func (_m *ScopeCRUD) SaveScope(scope *models.Scope) error {
+	ret := _m.Called(scope)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*models.Scope) error); ok {
+		r0 = rf(scope)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}

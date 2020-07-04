@@ -34,7 +34,7 @@ jobs:
       script:
         - go test ./database/migration_runner/ -v -covermode=count -coverprofile=coverage.out
         - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
-    - name: Postgres Adapter Integration Tests
+    - name: Postgres Integration Tests
       services:
         - postgresql
       install:

@@ -8,7 +8,7 @@ type ScriptRepository struct {}
 // CreateClientTableScript gets the CreateClientTable script
 func (ScriptRepository) CreateClientTableScript() string {
 	return `
-CREATE TABLE public."client" (
+CREATE TABLE "public"."client" (
 	"id" uuid NOT NULL,
 	CONSTRAINT "client_pk" PRIMARY KEY ("id")
 );
@@ -18,7 +18,7 @@ CREATE TABLE public."client" (
 // DropClientTableScript gets the DropClientTable script
 func (ScriptRepository) DropClientTableScript() string {
 	return `
-DROP TABLE public."client"
+DROP TABLE "public"."client"
 `
 }
 
@@ -42,7 +42,7 @@ INSERT INTO "client" ("id")
 // CreateMigrationTableScript gets the CreateMigrationTable script
 func (ScriptRepository) CreateMigrationTableScript() string {
 	return `
-CREATE TABLE IF NOT EXISTS public."migration" (
+CREATE TABLE IF NOT EXISTS "public"."migration" (
     "timestamp" char(14) NOT NULL,
     CONSTRAINT "migration_pk" PRIMARY KEY ("timestamp")
 );
@@ -83,10 +83,46 @@ INSERT INTO "migration" ("timestamp")
 `
 }
 
+// CreateScopeTableScript gets the CreateScopeTable script
+func (ScriptRepository) CreateScopeTableScript() string {
+	return `
+CREATE TABLE "public"."scope" (
+	"id" uuid NOT NULL,
+	"name" varchar(15) NOT NULL,
+	CONSTRAINT "scope_pk" PRIMARY KEY ("id"),
+	CONSTRAINT "scope_name_un" UNIQUE ("name")
+);
+`
+}
+
+// DropScopeTableScript gets the DropScopeTable script
+func (ScriptRepository) DropScopeTableScript() string {
+	return `
+DROP TABLE "public"."scope"
+`
+}
+
+// GetScopeByNameScript gets the GetScopeByName script
+func (ScriptRepository) GetScopeByNameScript() string {
+	return `
+SELECT s."id", s."name"
+	FROM "scope" s
+	WHERE s."name" = $1
+`
+}
+
+// SaveScopeScript gets the SaveScope script
+func (ScriptRepository) SaveScopeScript() string {
+	return `
+INSERT INTO "scope" ("id", "name")
+	VALUES ($1, $2)
+`
+}
+
 // CreateUserTableScript gets the CreateUserTable script
 func (ScriptRepository) CreateUserTableScript() string {
 	return `
-CREATE TABLE  IF NOT EXISTS public."user" (
+CREATE TABLE "public"."user" (
 	"id" uuid NOT NULL,
 	"username" varchar(30) NOT NULL,
 	"password_hash" bytea NOT NULL,
@@ -107,7 +143,7 @@ DELETE FROM "user" u
 // DropUserTableScript gets the DropUserTable script
 func (ScriptRepository) DropUserTableScript() string {
 	return `
-DROP TABLE public."user"
+DROP TABLE "public"."user"
 `
 }
 

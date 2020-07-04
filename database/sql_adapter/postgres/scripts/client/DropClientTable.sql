@@ -1,1 +1,1 @@
-DROP TABLE public."client"
+DROP TABLE "public"."client"
