@@ -130,7 +130,7 @@ func (c TokenController) handlePasswordGrant(w http.ResponseWriter, body PostTok
 	}
 
 	//create a new access token
-	token := models.CreateNewAccessToken(user.ID, client.ID, scope.ID)
+	token := models.CreateNewAccessToken(user, client, scope)
 
 	//save the token
 	err = c.CRUD.SaveAccessToken(token)

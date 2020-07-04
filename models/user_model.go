@@ -9,7 +9,7 @@ import (
 // User ValidateError statuses.
 const (
 	ValidateUserValid               = iota
-	ValidateUserInvalidID           = iota
+	ValidateUserNilID               = iota
 	ValidateUserEmptyUsername       = iota
 	ValidateUserUsernameTooLong     = iota
 	ValidateUserInvalidPasswordHash = iota
@@ -58,7 +58,7 @@ func CreateNewUser(username string, passwordHash []byte) *User {
 // Returns a ValidateError indicating its result.
 func (u *User) Validate() ValidateError {
 	if u.ID == uuid.Nil {
-		return CreateValidateError(ValidateUserInvalidID, "id cannot be nil")
+		return CreateValidateError(ValidateUserNilID, "id cannot be nil")
 	}
 
 	if u.Username == "" {

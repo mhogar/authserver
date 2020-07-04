@@ -39,7 +39,7 @@ func (suite *ScopeTestSuite) TestValidate_WithValidScope_ReturnsValid() {
 	suite.Equal(models.ValidateScopeValid, err.Status)
 }
 
-func (suite *ScopeTestSuite) TestValidate_WithNilID_ReturnsScopeInvalidID() {
+func (suite *ScopeTestSuite) TestValidate_WithNilID_ReturnsScopeNilID() {
 	//arrange
 	suite.Scope.ID = uuid.Nil
 
@@ -47,7 +47,7 @@ func (suite *ScopeTestSuite) TestValidate_WithNilID_ReturnsScopeInvalidID() {
 	err := suite.Scope.Validate()
 
 	//assert
-	suite.Equal(models.ValidateScopeInvalidID, err.Status)
+	suite.Equal(models.ValidateScopeNilID, err.Status)
 }
 
 func (suite *ScopeTestSuite) TestValidate_WithEmptyName_ReturnsScopeInvalidName() {

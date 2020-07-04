@@ -9,7 +9,7 @@ import (
 // Scope ValidateError statuses.
 const (
 	ValidateScopeValid       = iota
-	ValidateScopeInvalidID   = iota
+	ValidateScopeNilID       = iota
 	ValidateScopeEmptyName   = iota
 	ValidateScopeNameTooLong = iota
 )
@@ -45,7 +45,7 @@ func CreateNewScope(name string) *Scope {
 // Returns a ValidateError indicating its result.
 func (s *Scope) Validate() ValidateError {
 	if s.ID == uuid.Nil {
-		return CreateValidateError(ValidateScopeInvalidID, "id cannot be nil")
+		return CreateValidateError(ValidateScopeNilID, "id cannot be nil")
 	}
 
 	if s.Name == "" {

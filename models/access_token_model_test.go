@@ -15,24 +15,28 @@ type AccessTokenTestSuite struct {
 }
 
 func (suite *AccessTokenTestSuite) SetupTest() {
-	suite.Token = models.CreateNewAccessToken(uuid.New(), uuid.New(), uuid.New())
+	suite.Token = models.CreateNewAccessToken(
+		models.CreateNewUser("username", []byte("password")),
+		models.CreateNewClient(),
+		models.CreateNewScope("name"),
+	)
 }
 
 func (suite *AccessTokenTestSuite) TestCreateNewAccessToken_CreatesAccessTokenWithSuppliedFields() {
 	//arrange
-	userID := uuid.New()
-	clientID := uuid.New()
-	scopeID := uuid.New()
+	user := models.CreateNewUser("", nil)
+	client := models.CreateNewClient()
+	scope := models.CreateNewScope("")
 
 	//act
-	token := models.CreateNewAccessToken(userID, clientID, scopeID)
+	token := models.CreateNewAccessToken(user, client, scope)
 
 	//assert
 	suite.Require().NotNil(token)
 	suite.NotEqual(token.ID, uuid.Nil)
-	suite.NotEqual(token.UserID, uuid.Nil)
-	suite.NotEqual(token.ClientID, uuid.Nil)
-	suite.NotEqual(token.ScopeID, uuid.Nil)
+	suite.Equal(token.User, user)
+	suite.Equal(token.Client, client)
+	suite.Equal(token.Scope, scope)
 }
 
 func (suite *AccessTokenTestSuite) TestValidate_WithValidAccessToken_ReturnsValid() {
@@ -51,40 +55,73 @@ func (suite *AccessTokenTestSuite) TestValidate_WithNilID_ReturnsAccessTokenInva
 	err := suite.Token.Validate()
 
 	//assert
-	suite.Equal(models.ValidateAccessTokenInvalidID, err.Status)
+	suite.Equal(models.ValidateAccessTokenNilID, err.Status)
 }
 
-func (suite *AccessTokenTestSuite) TestValidate_WithNilUserID_ReturnsAccessTokenInvalidUserID() {
+func (suite *AccessTokenTestSuite) TestValidate_WithNilUser_ReturnsAccessTokenNilUser() {
 	//arrange
-	suite.Token.UserID = uuid.Nil
+	suite.Token.User = nil
 
 	//act
 	err := suite.Token.Validate()
 
 	//assert
-	suite.Equal(models.ValidateAccessTokenInvalidUserID, err.Status)
+	suite.Equal(models.ValidateAccessTokenNilUser, err.Status)
 }
 
-func (suite *AccessTokenTestSuite) TestValidate_WithNilClientID_ReturnsAccessTokenInvalidClientID() {
+func (suite *AccessTokenTestSuite) TestValidate_WithInvalidUser_ReturnsAccessTokenInvalidUser() {
 	//arrange
-	suite.Token.ClientID = uuid.Nil
+	suite.Token.User = models.CreateNewUser("", nil)
 
 	//act
 	err := suite.Token.Validate()
 
 	//assert
-	suite.Equal(models.ValidateAccessTokenInvalidClientID, err.Status)
+	suite.Equal(models.ValidateAccessTokenInvalidUser, err.Status)
 }
 
-func (suite *AccessTokenTestSuite) TestValidate_WithNilScopeID_ReturnsAccessTokenInvalidScopeID() {
+func (suite *AccessTokenTestSuite) TestValidate_WithNilClient_ReturnsAccessTokenNilClient() {
 	//arrange
-	suite.Token.ScopeID = uuid.Nil
+	suite.Token.Client = nil
 
 	//act
 	err := suite.Token.Validate()
 
 	//assert
-	suite.Equal(models.ValidateAccessTokenInvalidScopeID, err.Status)
+	suite.Equal(models.ValidateAccessTokenNilClient, err.Status)
+}
+
+func (suite *AccessTokenTestSuite) TestValidate_WithInvalidClient_ReturnsAccessTokenInvalidClient() {
+	//arrange
+	suite.Token.Client = &models.Client{ID: uuid.Nil}
+
+	//act
+	err := suite.Token.Validate()
+
+	//assert
+	suite.Equal(models.ValidateAccessTokenInvalidClient, err.Status)
+}
+
+func (suite *AccessTokenTestSuite) TestValidate_WithNilScope_ReturnsAccessTokenNilScope() {
+	//arrange
+	suite.Token.Scope = nil
+
+	//act
+	err := suite.Token.Validate()
+
+	//assert
+	suite.Equal(models.ValidateAccessTokenNilScope, err.Status)
+}
+
+func (suite *AccessTokenTestSuite) TestValidate_WithInvalidScope_ReturnsAccessTokenInvalidScope() {
+	//arrange
+	suite.Token.Scope = models.CreateNewScope("")
+
+	//act
+	err := suite.Token.Validate()
+
+	//assert
+	suite.Equal(models.ValidateAccessTokenInvalidScope, err.Status)
 }
 
 func TestAccessTokenTestSuite(t *testing.T) {

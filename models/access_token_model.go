@@ -4,19 +4,22 @@ import "github.com/google/uuid"
 
 // AccessToken ValidateError statuses.
 const (
-	ValidateAccessTokenValid           = iota
-	ValidateAccessTokenInvalidID       = iota
-	ValidateAccessTokenInvalidUserID   = iota
-	ValidateAccessTokenInvalidClientID = iota
-	ValidateAccessTokenInvalidScopeID  = iota
+	ValidateAccessTokenValid         = iota
+	ValidateAccessTokenNilID         = iota
+	ValidateAccessTokenNilUser       = iota
+	ValidateAccessTokenInvalidUser   = iota
+	ValidateAccessTokenNilClient     = iota
+	ValidateAccessTokenInvalidClient = iota
+	ValidateAccessTokenNilScope      = iota
+	ValidateAccessTokenInvalidScope  = iota
 )
 
 // AccessToken represents the access token model.
 type AccessToken struct {
-	ID       uuid.UUID
-	UserID   uuid.UUID
-	ClientID uuid.UUID
-	ScopeID  uuid.UUID
+	ID     uuid.UUID
+	User   *User
+	Client *Client
+	Scope  *Scope
 }
 
 // AccessTokenCRUD is an interface for performing CRUD operations on an access token.
@@ -33,12 +36,12 @@ type AccessTokenCRUD interface {
 }
 
 // CreateNewAccessToken creates a access token model with a new id and the provided fields.
-func CreateNewAccessToken(userID uuid.UUID, clientID uuid.UUID, scopeID uuid.UUID) *AccessToken {
+func CreateNewAccessToken(user *User, client *Client, scope *Scope) *AccessToken {
 	return &AccessToken{
-		ID:       uuid.New(),
-		UserID:   userID,
-		ClientID: clientID,
-		ScopeID:  scopeID,
+		ID:     uuid.New(),
+		User:   user,
+		Client: client,
+		Scope:  scope,
 	}
 }
 
@@ -46,19 +49,34 @@ func CreateNewAccessToken(userID uuid.UUID, clientID uuid.UUID, scopeID uuid.UUI
 // Returns a ValidateError indicating its result.
 func (tk *AccessToken) Validate() ValidateError {
 	if tk.ID == uuid.Nil {
-		return CreateValidateError(ValidateAccessTokenInvalidID, "id cannot be nil")
+		return CreateValidateError(ValidateAccessTokenNilID, "id cannot be nil")
 	}
 
-	if tk.UserID == uuid.Nil {
-		return CreateValidateError(ValidateAccessTokenInvalidUserID, "user id cannot be nil")
+	if tk.User == nil {
+		return CreateValidateError(ValidateAccessTokenNilUser, "user cannot be nil")
 	}
 
-	if tk.ClientID == uuid.Nil {
-		return CreateValidateError(ValidateAccessTokenInvalidClientID, "client id cannot be nil")
+	verr := tk.User.Validate()
+	if verr.Status != ValidateUserValid {
+		return CreateValidateError(ValidateAccessTokenInvalidUser, "invalid user: "+verr.Error())
 	}
 
-	if tk.ScopeID == uuid.Nil {
-		return CreateValidateError(ValidateAccessTokenInvalidScopeID, "scope id cannot be nil")
+	if tk.Client == nil {
+		return CreateValidateError(ValidateAccessTokenNilClient, "client cannot be nil")
+	}
+
+	verr = tk.Client.Validate()
+	if verr.Status != ValidateClientValid {
+		return CreateValidateError(ValidateAccessTokenInvalidClient, "invalid client: "+verr.Error())
+	}
+
+	if tk.Scope == nil {
+		return CreateValidateError(ValidateAccessTokenNilScope, "scope cannot be nil")
+	}
+
+	verr = tk.Scope.Validate()
+	if verr.Status != ValidateScopeValid {
+		return CreateValidateError(ValidateAccessTokenInvalidScope, "invalid scope: "+verr.Error())
 	}
 
 	return ValidateError{ValidateAccessTokenValid, nil}

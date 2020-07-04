@@ -6,8 +6,8 @@ import (
 
 // Client ValidateError statuses.
 const (
-	ValidateClientValid     = iota
-	ValidateClientInvalidID = iota
+	ValidateClientValid = iota
+	ValidateClientNilID = iota
 )
 
 // Client represents the client model.
@@ -36,7 +36,7 @@ func CreateNewClient() *Client {
 // Returns a ValidateError indicating its result.
 func (c *Client) Validate() ValidateError {
 	if c.ID == uuid.Nil {
-		return CreateValidateError(ValidateClientInvalidID, "id cannot be nil")
+		return CreateValidateError(ValidateClientNilID, "id cannot be nil")
 	}
 
 	return ValidateError{ValidateClientValid, nil}

@@ -394,9 +394,9 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WithValidRequ
 	suite.CRUDMock.AssertCalled(suite.T(), "GetUserByUsername", body.Username)
 	suite.PasswordHasherMock.AssertCalled(suite.T(), "ComparePasswords", mock.Anything, body.Password)
 
-	suite.Equal(client.ID, token.ClientID)
-	suite.Equal(scope.ID, token.ScopeID)
-	suite.Equal(user.ID, token.UserID)
+	suite.Equal(client, token.Client)
+	suite.Equal(scope, token.Scope)
+	suite.Equal(user, token.User)
 
 	AssertAccessTokenResponse(&suite.Suite, w.Result(), token.ID.String())
 }

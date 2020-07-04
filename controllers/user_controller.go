@@ -156,23 +156,9 @@ func (c UserController) PatchUserPassword(w http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	//get the user
-	user, err := c.CRUD.GetUserByID(token.UserID)
-	if err != nil {
-		log.Println(commonhelpers.ChainError("error getting user by id", err))
-		sendInternalErrorResponse(w)
-		return
-	}
-
-	//check user was found
-	if user == nil {
-		sendErrorResponse(w, http.StatusUnauthorized, "no user for the provided access token")
-		return
-	}
-
 	//parse the body
 	var body PatchUserPasswordBody
-	err = parseJSONBody(req.Body, &body)
+	err := parseJSONBody(req.Body, &body)
 	if err != nil {
 		log.Println(commonhelpers.ChainError("error parsing PatchUserPassword request body", err))
 		sendErrorResponse(w, http.StatusBadRequest, "invalid json body")
@@ -186,7 +172,7 @@ func (c UserController) PatchUserPassword(w http.ResponseWriter, req *http.Reque
 	}
 
 	//validate old password
-	err = c.PasswordHasher.ComparePasswords(user.PasswordHash, body.OldPassword)
+	err = c.PasswordHasher.ComparePasswords(token.User.PasswordHash, body.OldPassword)
 	if err != nil {
 		log.Println(commonhelpers.ChainError("error comparing password hashes", err))
 		sendErrorResponse(w, http.StatusBadRequest, "old password is invalid")
@@ -210,8 +196,8 @@ func (c UserController) PatchUserPassword(w http.ResponseWriter, req *http.Reque
 	}
 
 	//update the user
-	user.PasswordHash = hash
-	err = c.CRUD.UpdateUser(user)
+	token.User.PasswordHash = hash
+	err = c.CRUD.UpdateUser(token.User)
 	if err != nil {
 		log.Println(commonhelpers.ChainError("error updating user", err))
 		sendInternalErrorResponse(w)
