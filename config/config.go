@@ -67,6 +67,8 @@ func InitConfig(dir string) error {
 		return commonhelpers.ChainError("error parsing config file", err)
 	}
 
+	//set the config
+	viper.Set("root_dir", cfg.RootDir)
 	viper.Set("password_criteria", cfg.PasswordCriteriaConfig)
 	viper.Set("database", cfg.DatabaseConfig)
 
