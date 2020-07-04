@@ -64,7 +64,7 @@ func (suite *ClientCRUDTestSuite) TestSaveClient_WithInvalidClient_ReturnsError(
 	err := suite.Tx.SaveClient(client)
 
 	//assert
-	commonhelpers.AssertError(&suite.Suite, err, "error", "model")
+	commonhelpers.AssertError(&suite.Suite, err, "error", "client model")
 }
 
 func (suite *ClientCRUDTestSuite) TestGetClientById_WhereClientNotFound_ReturnsNilClient() {
@@ -79,8 +79,7 @@ func (suite *ClientCRUDTestSuite) TestGetClientById_WhereClientNotFound_ReturnsN
 func (suite *ClientCRUDTestSuite) TestGetClientById_GetsTheClientWithId() {
 	//arrange
 	client := models.CreateNewClient()
-	err := suite.Tx.SaveClient(client)
-	suite.Require().NoError(err)
+	SaveClient(&suite.Suite, suite.Tx, client)
 
 	//act
 	resultClient, err := suite.Tx.GetClientByID(client.ID)
@@ -92,4 +91,9 @@ func (suite *ClientCRUDTestSuite) TestGetClientById_GetsTheClientWithId() {
 
 func TestClientCRUDTestSuite(t *testing.T) {
 	suite.Run(t, &ClientCRUDTestSuite{})
+}
+
+func SaveClient(suite *suite.Suite, tx *sqladapter.SQLTransaction, client *models.Client) {
+	err := tx.SaveClient(client)
+	suite.Require().NoError(err)
 }

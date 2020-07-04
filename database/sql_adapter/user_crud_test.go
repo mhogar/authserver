@@ -59,7 +59,7 @@ func (suite *UserCRUDTestSuite) TestSaveUser_WithInvalidUser_ReturnsError() {
 	err := suite.Tx.SaveUser(models.CreateNewUser("", nil))
 
 	//assert
-	commonhelpers.AssertError(&suite.Suite, err, "error", "model")
+	commonhelpers.AssertError(&suite.Suite, err, "error", "user model")
 }
 
 func (suite *UserCRUDTestSuite) TestGetUserById_WhereUserNotFound_ReturnsNilUser() {
@@ -73,9 +73,8 @@ func (suite *UserCRUDTestSuite) TestGetUserById_WhereUserNotFound_ReturnsNilUser
 
 func (suite *UserCRUDTestSuite) TestGetUserById_GetsTheUserWithId() {
 	//arrange
-	user := models.CreateNewUser("user.name", []byte("password"))
-	err := suite.Tx.SaveUser(user)
-	suite.Require().NoError(err)
+	user := models.CreateNewUser("username", []byte("password"))
+	SaveUser(&suite.Suite, suite.Tx, user)
 
 	//act
 	resultUser, err := suite.Tx.GetUserByID(user.ID)
@@ -96,9 +95,8 @@ func (suite *UserCRUDTestSuite) TestGetUserByUsername_WhereUserNotFound_ReturnsN
 
 func (suite *UserCRUDTestSuite) TestGetUserByUsernameGetsTheUserWithUsername() {
 	//arrange
-	user := models.CreateNewUser("user.name", []byte("password"))
-	err := suite.Tx.SaveUser(user)
-	suite.Require().NoError(err)
+	user := models.CreateNewUser("username", []byte("password"))
+	SaveUser(&suite.Suite, suite.Tx, user)
 
 	//act
 	resultUser, err := suite.Tx.GetUserByUsername(user.Username)
@@ -113,12 +111,12 @@ func (suite *UserCRUDTestSuite) TestUpdateUser_WithInvalidUser_ReturnsError() {
 	err := suite.Tx.UpdateUser(models.CreateNewUser("", nil))
 
 	//assert
-	commonhelpers.AssertError(&suite.Suite, err, "error", "model")
+	commonhelpers.AssertError(&suite.Suite, err, "error", "user model")
 }
 
 func (suite *UserCRUDTestSuite) TestUpdateUser_WithNoUserToUpdate_ReturnsNilError() {
 	//act
-	err := suite.Tx.UpdateUser(models.CreateNewUser("user.name", []byte("password")))
+	err := suite.Tx.UpdateUser(models.CreateNewUser("username", []byte("password")))
 
 	//assert
 	suite.NoError(err)
@@ -126,13 +124,12 @@ func (suite *UserCRUDTestSuite) TestUpdateUser_WithNoUserToUpdate_ReturnsNilErro
 
 func (suite *UserCRUDTestSuite) TestUpdateUser_UpdatesUserWithId() {
 	//arrange
-	user := models.CreateNewUser("user.name", []byte("password"))
-	err := suite.Tx.SaveUser(user)
-	suite.Require().NoError(err)
+	user := models.CreateNewUser("username", []byte("password"))
+	SaveUser(&suite.Suite, suite.Tx, user)
 
 	//act
-	user.Username = "user.name2"
-	err = suite.Tx.UpdateUser(user)
+	user.Username = "username2"
+	err := suite.Tx.UpdateUser(user)
 
 	//assert
 	suite.Require().NoError(err)
@@ -152,12 +149,11 @@ func (suite *UserCRUDTestSuite) TestDeleteUser_WithNoUserToDelete_ReturnsNilErro
 
 func (suite *UserCRUDTestSuite) TestDeleteUser_DeletesUserWithId() {
 	//arrange
-	user := models.CreateNewUser("user.name", []byte("password"))
-	err := suite.Tx.SaveUser(user)
-	suite.Require().NoError(err)
+	user := models.CreateNewUser("username", []byte("password"))
+	SaveUser(&suite.Suite, suite.Tx, user)
 
 	//act
-	err = suite.Tx.DeleteUser(user)
+	err := suite.Tx.DeleteUser(user)
 
 	//assert
 	suite.Require().NoError(err)
@@ -169,4 +165,9 @@ func (suite *UserCRUDTestSuite) TestDeleteUser_DeletesUserWithId() {
 
 func TestUserCRUDTestSuite(t *testing.T) {
 	suite.Run(t, &UserCRUDTestSuite{})
+}
+
+func SaveUser(suite *suite.Suite, tx *sqladapter.SQLTransaction, user *models.User) {
+	err := tx.SaveUser(user)
+	suite.Require().NoError(err)
 }

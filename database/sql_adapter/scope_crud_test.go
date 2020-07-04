@@ -61,7 +61,7 @@ func (suite *ScopeCRUDTestSuite) TestSaveScope_WithInvalidScope_ReturnsError() {
 	err := suite.Tx.SaveScope(scope)
 
 	//assert
-	commonhelpers.AssertError(&suite.Suite, err, "error", "model")
+	commonhelpers.AssertError(&suite.Suite, err, "error", "scope model")
 }
 
 func (suite *ScopeCRUDTestSuite) TestGetScopeByName_WhereScopeNotFound_ReturnsNilScope() {
@@ -76,8 +76,7 @@ func (suite *ScopeCRUDTestSuite) TestGetScopeByName_WhereScopeNotFound_ReturnsNi
 func (suite *ScopeCRUDTestSuite) TestGetScopeByName_GetsTheScopeWithName() {
 	//arrange
 	scope := models.CreateNewScope("name")
-	err := suite.Tx.SaveScope(scope)
-	suite.Require().NoError(err)
+	SaveScope(&suite.Suite, suite.Tx, scope)
 
 	//act
 	resultScope, err := suite.Tx.GetScopeByName(scope.Name)
@@ -89,4 +88,9 @@ func (suite *ScopeCRUDTestSuite) TestGetScopeByName_GetsTheScopeWithName() {
 
 func TestScopeCRUDTestSuite(t *testing.T) {
 	suite.Run(t, &ScopeCRUDTestSuite{})
+}
+
+func SaveScope(suite *suite.Suite, tx *sqladapter.SQLTransaction, scope *models.Scope) {
+	err := tx.SaveScope(scope)
+	suite.Require().NoError(err)
 }

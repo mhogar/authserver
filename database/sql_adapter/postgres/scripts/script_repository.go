@@ -5,6 +5,61 @@ package scripts
 // ScriptRepository is an implementation of the sql script repository interface that fetches scripts laoded from sql files.
 type ScriptRepository struct {}
 
+// CreateAccessTokenTableScript gets the CreateAccessTokenTable script
+func (ScriptRepository) CreateAccessTokenTableScript() string {
+	return `
+CREATE TABLE "public"."access_token" (
+	"id" uuid NOT NULL,
+	"user_id" uuid NOT NULL,
+	"client_id" uuid NOT NULL,
+	"scope_id" uuid NOT NULL,
+	CONSTRAINT "access_token_pk" PRIMARY KEY ("id"),
+	CONSTRAINT "access_token_user_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE CASCADE,
+	CONSTRAINT "access_token_client_fk" FOREIGN KEY ("client_id") REFERENCES "public"."client"("id") ON DELETE CASCADE,
+	CONSTRAINT "access_token_scope_fk" FOREIGN KEY ("scope_id") REFERENCES "public"."scope"("id") ON DELETE CASCADE
+);
+`
+}
+
+// DeleteAccessTokenScript gets the DeleteAccessToken script
+func (ScriptRepository) DeleteAccessTokenScript() string {
+	return `
+DELETE FROM "access_token" tk
+    WHERE tk."id" = $1
+`
+}
+
+// DropAccessTokenTableScript gets the DropAccessTokenTable script
+func (ScriptRepository) DropAccessTokenTableScript() string {
+	return `
+DROP TABLE "public"."access_token"
+`
+}
+
+// GetAccessTokenByIdScript gets the GetAccessTokenById script
+func (ScriptRepository) GetAccessTokenByIdScript() string {
+	return `
+SELECT
+    tk."id",
+    u."id", u."username", u."password_hash",
+    c."id",
+    s."id", s."name"
+FROM "access_token" tk
+    INNER JOIN "user" u ON u."id" = tk."user_id"
+    INNER JOIN "client" c ON c."id" = tk."client_id"
+    INNER JOIN "scope" s ON s."id" = tk."scope_id"
+WHERE tk."id" = $1
+`
+}
+
+// SaveAccessTokenScript gets the SaveAccessToken script
+func (ScriptRepository) SaveAccessTokenScript() string {
+	return `
+INSERT INTO "access_token" ("id", "user_id", "client_id", "scope_id")
+	VALUES ($1, $2, $3, $4)
+`
+}
+
 // CreateClientTableScript gets the CreateClientTable script
 func (ScriptRepository) CreateClientTableScript() string {
 	return `

@@ -41,17 +41,35 @@ func (m m20200628151601) Up() error {
 		return commonhelpers.ChainError("error executing create scope table script", err)
 	}
 
+	//create the access_token table
+	ctx, cancel = m.DB.CreateStandardTimeoutContext()
+	_, err = m.DB.SQLExecuter.ExecContext(ctx, m.DB.SQLDriver.CreateAccessTokenTableScript())
+	cancel()
+
+	if err != nil {
+		return commonhelpers.ChainError("error executing create access token table script", err)
+	}
+
 	return nil
 }
 
 func (m m20200628151601) Down() error {
-	//drop the user table
+	//drop the access token table
 	ctx, cancel := m.DB.CreateStandardTimeoutContext()
-	_, err := m.DB.SQLExecuter.ExecContext(ctx, m.DB.SQLDriver.DropUserTableScript())
+	_, err := m.DB.SQLExecuter.ExecContext(ctx, m.DB.SQLDriver.DropAccessTokenTableScript())
 	cancel()
 
 	if err != nil {
-		return commonhelpers.ChainError("error executing drop user table script", err)
+		return commonhelpers.ChainError("error executing drop access token table script", err)
+	}
+
+	//drop the scope table
+	ctx, cancel = m.DB.CreateStandardTimeoutContext()
+	_, err = m.DB.SQLExecuter.ExecContext(ctx, m.DB.SQLDriver.DropScopeTableScript())
+	cancel()
+
+	if err != nil {
+		return commonhelpers.ChainError("error executing drop scope table script", err)
 	}
 
 	//drop the client table
@@ -63,13 +81,13 @@ func (m m20200628151601) Down() error {
 		return commonhelpers.ChainError("error executing drop client table script", err)
 	}
 
-	//drop the scope table
+	//drop the user table
 	ctx, cancel = m.DB.CreateStandardTimeoutContext()
-	_, err = m.DB.SQLExecuter.ExecContext(ctx, m.DB.SQLDriver.DropScopeTableScript())
+	_, err = m.DB.SQLExecuter.ExecContext(ctx, m.DB.SQLDriver.DropUserTableScript())
 	cancel()
 
 	if err != nil {
-		return commonhelpers.ChainError("error executing drop scope table script", err)
+		return commonhelpers.ChainError("error executing drop user table script", err)
 	}
 
 	return nil

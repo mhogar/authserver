@@ -57,7 +57,7 @@ func (suite *MigrationCRUDTestSuite) TestCreateMigration_WithInvalidTimestamp_Re
 	err := suite.Tx.CreateMigration("invalid")
 
 	//assert
-	commonhelpers.AssertError(&suite.Suite, err, "error", "model")
+	commonhelpers.AssertError(&suite.Suite, err, "error", "migration model")
 }
 
 func (suite *MigrationCRUDTestSuite) TestGetMigrationByTimestamp_WhereTimestampNotFound_ReturnsNilMigration() {
