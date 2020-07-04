@@ -15,8 +15,10 @@ import (
 
 // UserController handles requests to "/user" endpoints
 type UserController struct {
-	UserCRUD                  models.UserCRUD
-	AccessTokenCRUD           models.AccessTokenCRUD
+	CRUD interface {
+		models.UserCRUD
+		models.AccessTokenCRUD
+	}
 	PasswordHasher            helpers.PasswordHasher
 	PasswordCriteriaValidator helpers.PasswordCriteriaValidator
 }
@@ -30,7 +32,7 @@ type PostUserBody struct {
 // PostUser handles Post requests to "/user"
 func (c UserController) PostUser(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	//check user has a valid access token
-	token := parseAuthHeader(c.AccessTokenCRUD, w, req)
+	token := parseAuthHeader(c.CRUD, w, req)
 	if token == nil {
 		return
 	}
@@ -51,7 +53,7 @@ func (c UserController) PostUser(w http.ResponseWriter, req *http.Request, _ htt
 	}
 
 	//validate username is unique
-	otherUser, err := c.UserCRUD.GetUserByUsername(body.Username)
+	otherUser, err := c.CRUD.GetUserByUsername(body.Username)
 	if err != nil {
 		log.Println(commonhelpers.ChainError("error getting user by username", err))
 		sendInternalErrorResponse(w)
@@ -81,7 +83,7 @@ func (c UserController) PostUser(w http.ResponseWriter, req *http.Request, _ htt
 
 	//save the user
 	user := models.CreateNewUser(body.Username, hash)
-	err = c.UserCRUD.SaveUser(user)
+	err = c.CRUD.SaveUser(user)
 	if err != nil {
 		log.Println(commonhelpers.ChainError("error saving user", err))
 		sendInternalErrorResponse(w)
@@ -95,7 +97,7 @@ func (c UserController) PostUser(w http.ResponseWriter, req *http.Request, _ htt
 // DeleteUser handles DELETE requests to "/user"
 func (c UserController) DeleteUser(w http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	//check user has a valid access token
-	token := parseAuthHeader(c.AccessTokenCRUD, w, req)
+	token := parseAuthHeader(c.CRUD, w, req)
 	if token == nil {
 		return
 	}
@@ -116,7 +118,7 @@ func (c UserController) DeleteUser(w http.ResponseWriter, req *http.Request, par
 	}
 
 	//get the user
-	user, err := c.UserCRUD.GetUserByID(id)
+	user, err := c.CRUD.GetUserByID(id)
 	if err != nil {
 		log.Println(commonhelpers.ChainError("error fetching user by id", err))
 		sendInternalErrorResponse(w)
@@ -129,7 +131,7 @@ func (c UserController) DeleteUser(w http.ResponseWriter, req *http.Request, par
 	}
 
 	//delete the user
-	err = c.UserCRUD.DeleteUser(user)
+	err = c.CRUD.DeleteUser(user)
 	if err != nil {
 		log.Println(commonhelpers.ChainError("error deleting user", err))
 		sendInternalErrorResponse(w)
@@ -149,13 +151,13 @@ type PatchUserPasswordBody struct {
 // PatchUserPassword handles PATCH requests to "/user/password"
 func (c UserController) PatchUserPassword(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	//get the access token
-	token := parseAuthHeader(c.AccessTokenCRUD, w, req)
+	token := parseAuthHeader(c.CRUD, w, req)
 	if token == nil {
 		return
 	}
 
 	//get the user
-	user, err := c.UserCRUD.GetUserByID(token.UserID)
+	user, err := c.CRUD.GetUserByID(token.UserID)
 	if err != nil {
 		log.Println(commonhelpers.ChainError("error getting user by id", err))
 		sendInternalErrorResponse(w)
@@ -209,7 +211,7 @@ func (c UserController) PatchUserPassword(w http.ResponseWriter, req *http.Reque
 
 	//update the user
 	user.PasswordHash = hash
-	err = c.UserCRUD.UpdateUser(user)
+	err = c.CRUD.UpdateUser(user)
 	if err != nil {
 		log.Println(commonhelpers.ChainError("error updating user", err))
 		sendInternalErrorResponse(w)

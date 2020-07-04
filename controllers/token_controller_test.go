@@ -10,8 +10,8 @@ import (
 
 	"github.com/stretchr/testify/mock"
 
+	databasemocks "authserver/database/mocks"
 	helpermocks "authserver/helpers/mocks"
-	modelmocks "authserver/models/mocks"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
@@ -19,26 +19,17 @@ import (
 
 type TokenControllerTestSuite struct {
 	suite.Suite
-	UserCRUDMock        modelmocks.UserCRUD
-	ClientCRUDMock      modelmocks.ClientCRUD
-	ScopeCRUDMock       modelmocks.ScopeCRUD
-	AccessTokenCRUDMock modelmocks.AccessTokenCRUD
-	PasswordHasherMock  helpermocks.PasswordHasher
-	TokenController     controllers.TokenController
+	CRUDMock           databasemocks.CRUDOperations
+	PasswordHasherMock helpermocks.PasswordHasher
+	TokenController    controllers.TokenController
 }
 
 func (suite *TokenControllerTestSuite) SetupTest() {
-	suite.UserCRUDMock = modelmocks.UserCRUD{}
-	suite.ClientCRUDMock = modelmocks.ClientCRUD{}
-	suite.ScopeCRUDMock = modelmocks.ScopeCRUD{}
-	suite.AccessTokenCRUDMock = modelmocks.AccessTokenCRUD{}
+	suite.CRUDMock = databasemocks.CRUDOperations{}
 	suite.PasswordHasherMock = helpermocks.PasswordHasher{}
 	suite.TokenController = controllers.TokenController{
-		UserCRUD:        &suite.UserCRUDMock,
-		ClientCRUD:      &suite.ClientCRUDMock,
-		ScopeCRUD:       &suite.ScopeCRUDMock,
-		AccessTokenCRUD: &suite.AccessTokenCRUDMock,
-		PasswordHasher:  &suite.PasswordHasherMock,
+		CRUD:           &suite.CRUDMock,
+		PasswordHasher: &suite.PasswordHasherMock,
 	}
 }
 
@@ -175,7 +166,7 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WithErrorGett
 	}
 	req := CreateRequest(&suite.Suite, "", body)
 
-	suite.ClientCRUDMock.On("GetClientByID", mock.Anything).Return(nil, errors.New(""))
+	suite.CRUDMock.On("GetClientByID", mock.Anything).Return(nil, errors.New(""))
 
 	//act
 	suite.TokenController.PostToken(w, req, nil)
@@ -199,7 +190,7 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WhereClientWi
 	}
 	req := CreateRequest(&suite.Suite, "", body)
 
-	suite.ClientCRUDMock.On("GetClientByID", mock.Anything).Return(nil, nil)
+	suite.CRUDMock.On("GetClientByID", mock.Anything).Return(nil, nil)
 
 	//act
 	suite.TokenController.PostToken(w, req, nil)
@@ -223,8 +214,8 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WithErrorGett
 	}
 	req := CreateRequest(&suite.Suite, "", body)
 
-	suite.ClientCRUDMock.On("GetClientByID", mock.Anything).Return(&models.Client{}, nil)
-	suite.ScopeCRUDMock.On("GetScopeByName", mock.Anything).Return(nil, errors.New(""))
+	suite.CRUDMock.On("GetClientByID", mock.Anything).Return(&models.Client{}, nil)
+	suite.CRUDMock.On("GetScopeByName", mock.Anything).Return(nil, errors.New(""))
 
 	//act
 	suite.TokenController.PostToken(w, req, nil)
@@ -248,8 +239,8 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WhereNoScopeW
 	}
 	req := CreateRequest(&suite.Suite, "", body)
 
-	suite.ClientCRUDMock.On("GetClientByID", mock.Anything).Return(&models.Client{}, nil)
-	suite.ScopeCRUDMock.On("GetScopeByName", mock.Anything).Return(nil, nil)
+	suite.CRUDMock.On("GetClientByID", mock.Anything).Return(&models.Client{}, nil)
+	suite.CRUDMock.On("GetScopeByName", mock.Anything).Return(nil, nil)
 
 	//act
 	suite.TokenController.PostToken(w, req, nil)
@@ -273,9 +264,9 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WithErrorGett
 	}
 	req := CreateRequest(&suite.Suite, "", body)
 
-	suite.ClientCRUDMock.On("GetClientByID", mock.Anything).Return(&models.Client{}, nil)
-	suite.ScopeCRUDMock.On("GetScopeByName", mock.Anything).Return(&models.Scope{}, nil)
-	suite.UserCRUDMock.On("GetUserByUsername", mock.Anything).Return(nil, errors.New(""))
+	suite.CRUDMock.On("GetClientByID", mock.Anything).Return(&models.Client{}, nil)
+	suite.CRUDMock.On("GetScopeByName", mock.Anything).Return(&models.Scope{}, nil)
+	suite.CRUDMock.On("GetUserByUsername", mock.Anything).Return(nil, errors.New(""))
 
 	//act
 	suite.TokenController.PostToken(w, req, nil)
@@ -299,9 +290,9 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WhereUserWith
 	}
 	req := CreateRequest(&suite.Suite, "", body)
 
-	suite.ClientCRUDMock.On("GetClientByID", mock.Anything).Return(&models.Client{}, nil)
-	suite.ScopeCRUDMock.On("GetScopeByName", mock.Anything).Return(&models.Scope{}, nil)
-	suite.UserCRUDMock.On("GetUserByUsername", mock.Anything).Return(nil, nil)
+	suite.CRUDMock.On("GetClientByID", mock.Anything).Return(&models.Client{}, nil)
+	suite.CRUDMock.On("GetScopeByName", mock.Anything).Return(&models.Scope{}, nil)
+	suite.CRUDMock.On("GetUserByUsername", mock.Anything).Return(nil, nil)
 
 	//act
 	suite.TokenController.PostToken(w, req, nil)
@@ -325,9 +316,9 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WherePassword
 	}
 	req := CreateRequest(&suite.Suite, "", body)
 
-	suite.ClientCRUDMock.On("GetClientByID", mock.Anything).Return(&models.Client{}, nil)
-	suite.ScopeCRUDMock.On("GetScopeByName", mock.Anything).Return(&models.Scope{}, nil)
-	suite.UserCRUDMock.On("GetUserByUsername", mock.Anything).Return(&models.User{}, nil)
+	suite.CRUDMock.On("GetClientByID", mock.Anything).Return(&models.Client{}, nil)
+	suite.CRUDMock.On("GetScopeByName", mock.Anything).Return(&models.Scope{}, nil)
+	suite.CRUDMock.On("GetUserByUsername", mock.Anything).Return(&models.User{}, nil)
 	suite.PasswordHasherMock.On("ComparePasswords", mock.Anything, mock.Anything).Return(errors.New(""))
 
 	//act
@@ -352,11 +343,11 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WithErrorSavi
 	}
 	req := CreateRequest(&suite.Suite, "", body)
 
-	suite.ClientCRUDMock.On("GetClientByID", mock.Anything).Return(&models.Client{}, nil)
-	suite.ScopeCRUDMock.On("GetScopeByName", mock.Anything).Return(&models.Scope{}, nil)
-	suite.UserCRUDMock.On("GetUserByUsername", mock.Anything).Return(&models.User{}, nil)
+	suite.CRUDMock.On("GetClientByID", mock.Anything).Return(&models.Client{}, nil)
+	suite.CRUDMock.On("GetScopeByName", mock.Anything).Return(&models.Scope{}, nil)
+	suite.CRUDMock.On("GetUserByUsername", mock.Anything).Return(&models.User{}, nil)
 	suite.PasswordHasherMock.On("ComparePasswords", mock.Anything, mock.Anything).Return(nil)
-	suite.AccessTokenCRUDMock.On("SaveAccessToken", mock.Anything).Return(errors.New(""))
+	suite.CRUDMock.On("SaveAccessToken", mock.Anything).Return(errors.New(""))
 
 	//act
 	suite.TokenController.PostToken(w, req, nil)
@@ -386,11 +377,11 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WithValidRequ
 	scope := &models.Scope{ID: uuid.New()}
 	user := &models.User{ID: uuid.New()}
 
-	suite.ClientCRUDMock.On("GetClientByID", mock.Anything).Return(client, nil)
-	suite.ScopeCRUDMock.On("GetScopeByName", mock.Anything).Return(scope, nil)
-	suite.UserCRUDMock.On("GetUserByUsername", mock.Anything).Return(user, nil)
+	suite.CRUDMock.On("GetClientByID", mock.Anything).Return(client, nil)
+	suite.CRUDMock.On("GetScopeByName", mock.Anything).Return(scope, nil)
+	suite.CRUDMock.On("GetUserByUsername", mock.Anything).Return(user, nil)
 	suite.PasswordHasherMock.On("ComparePasswords", mock.Anything, mock.Anything).Return(nil)
-	suite.AccessTokenCRUDMock.On("SaveAccessToken", mock.Anything).Run(func(args mock.Arguments) {
+	suite.CRUDMock.On("SaveAccessToken", mock.Anything).Run(func(args mock.Arguments) {
 		token = args.Get(0).(*models.AccessToken)
 	}).Return(nil)
 
@@ -398,9 +389,9 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WithValidRequ
 	suite.TokenController.PostToken(w, req, nil)
 
 	//assert
-	suite.ClientCRUDMock.AssertCalled(suite.T(), "GetClientByID", clientID)
-	suite.ScopeCRUDMock.AssertCalled(suite.T(), "GetScopeByName", body.Scope)
-	suite.UserCRUDMock.AssertCalled(suite.T(), "GetUserByUsername", body.Username)
+	suite.CRUDMock.AssertCalled(suite.T(), "GetClientByID", clientID)
+	suite.CRUDMock.AssertCalled(suite.T(), "GetScopeByName", body.Scope)
+	suite.CRUDMock.AssertCalled(suite.T(), "GetUserByUsername", body.Username)
 	suite.PasswordHasherMock.AssertCalled(suite.T(), "ComparePasswords", mock.Anything, body.Password)
 
 	suite.Equal(client.ID, token.ClientID)
@@ -412,11 +403,11 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WithValidRequ
 
 func (suite *TokenControllerTestSuite) TestDeleteToken_AuthorizationHeaderTests() {
 	setupTest := func() {
-		suite.AccessTokenCRUDMock = modelmocks.AccessTokenCRUD{}
-		suite.TokenController.AccessTokenCRUD = &suite.AccessTokenCRUDMock
+		suite.CRUDMock = databasemocks.CRUDOperations{}
+		suite.TokenController.CRUD = &suite.CRUDMock
 	}
 
-	RunAuthHeaderTests(&suite.Suite, &suite.AccessTokenCRUDMock, setupTest, suite.TokenController.DeleteToken)
+	RunAuthHeaderTests(&suite.Suite, &suite.CRUDMock, setupTest, suite.TokenController.DeleteToken)
 }
 
 func (suite *TokenControllerTestSuite) TestDeleteToken_WithErrorDeletingAccessToken_ReturnsInternalServerError() {
@@ -424,8 +415,8 @@ func (suite *TokenControllerTestSuite) TestDeleteToken_WithErrorDeletingAccessTo
 	w := httptest.NewRecorder()
 	req := CreateRequest(&suite.Suite, uuid.New().String(), nil)
 
-	suite.AccessTokenCRUDMock.On("GetAccessTokenByID", mock.Anything).Return(&models.AccessToken{}, nil)
-	suite.AccessTokenCRUDMock.On("DeleteAccessToken", mock.Anything).Return(errors.New(""))
+	suite.CRUDMock.On("GetAccessTokenByID", mock.Anything).Return(&models.AccessToken{}, nil)
+	suite.CRUDMock.On("DeleteAccessToken", mock.Anything).Return(errors.New(""))
 
 	//act
 	suite.TokenController.DeleteToken(w, req, nil)
@@ -443,15 +434,15 @@ func (suite *TokenControllerTestSuite) TestDeleteToken_WithValidRequest_ReturnsO
 
 	req := CreateRequest(&suite.Suite, tokenID.String(), nil)
 
-	suite.AccessTokenCRUDMock.On("GetAccessTokenByID", mock.Anything).Return(accessToken, nil)
-	suite.AccessTokenCRUDMock.On("DeleteAccessToken", mock.Anything).Return(nil)
+	suite.CRUDMock.On("GetAccessTokenByID", mock.Anything).Return(accessToken, nil)
+	suite.CRUDMock.On("DeleteAccessToken", mock.Anything).Return(nil)
 
 	//act
 	suite.TokenController.DeleteToken(w, req, nil)
 
 	//assert
-	suite.AccessTokenCRUDMock.AssertCalled(suite.T(), "GetAccessTokenByID", tokenID)
-	suite.AccessTokenCRUDMock.AssertCalled(suite.T(), "DeleteAccessToken", accessToken)
+	suite.CRUDMock.AssertCalled(suite.T(), "GetAccessTokenByID", tokenID)
+	suite.CRUDMock.AssertCalled(suite.T(), "DeleteAccessToken", accessToken)
 
 	AssertSuccessResponse(&suite.Suite, w.Result())
 }

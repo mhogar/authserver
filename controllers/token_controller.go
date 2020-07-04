@@ -12,10 +12,12 @@ import (
 
 // TokenController handles requests to "/token" endpoints
 type TokenController struct {
-	models.UserCRUD
-	models.ClientCRUD
-	models.ScopeCRUD
-	models.AccessTokenCRUD
+	CRUD interface {
+		models.UserCRUD
+		models.ClientCRUD
+		models.ScopeCRUD
+		models.AccessTokenCRUD
+	}
 	helpers.PasswordHasher
 }
 
@@ -95,19 +97,19 @@ func (c TokenController) handlePasswordGrant(w http.ResponseWriter, body PostTok
 	}
 
 	//get the client
-	client := parseClient(c.ClientCRUD, w, body.ClientID)
+	client := parseClient(c.CRUD, w, body.ClientID)
 	if client == nil {
 		return nil
 	}
 
 	//get the scope
-	scope := parseScope(c.ScopeCRUD, w, body.Scope)
+	scope := parseScope(c.CRUD, w, body.Scope)
 	if scope == nil {
 		return nil
 	}
 
 	//get the user
-	user, err := c.UserCRUD.GetUserByUsername(body.Username)
+	user, err := c.CRUD.GetUserByUsername(body.Username)
 	if err != nil {
 		log.Println(commonhelpers.ChainError("error getting user by username", err))
 		sendInternalErrorResponse(w)
@@ -131,7 +133,7 @@ func (c TokenController) handlePasswordGrant(w http.ResponseWriter, body PostTok
 	token := models.CreateNewAccessToken(user.ID, client.ID, scope.ID)
 
 	//save the token
-	err = c.AccessTokenCRUD.SaveAccessToken(token)
+	err = c.CRUD.SaveAccessToken(token)
 	if err != nil {
 		log.Println(commonhelpers.ChainError("error saving access token", err))
 		sendInternalErrorResponse(w)
@@ -144,13 +146,13 @@ func (c TokenController) handlePasswordGrant(w http.ResponseWriter, body PostTok
 // DeleteToken handles DELETE requests to "/token"
 func (c TokenController) DeleteToken(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	//get the token
-	token := parseAuthHeader(c.AccessTokenCRUD, w, req)
+	token := parseAuthHeader(c.CRUD, w, req)
 	if token == nil {
 		return
 	}
 
 	//delete the token
-	err := c.AccessTokenCRUD.DeleteAccessToken(token)
+	err := c.CRUD.DeleteAccessToken(token)
 	if err != nil {
 		log.Println(commonhelpers.ChainError("error deleting access token", err))
 		sendInternalErrorResponse(w)
