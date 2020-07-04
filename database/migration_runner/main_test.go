@@ -7,6 +7,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -17,8 +18,22 @@ type MigrationRunnerTestSuite struct {
 }
 
 func (suite *MigrationRunnerTestSuite) SetupTest() {
+	viper.Reset()
 	suite.DBConnectionMock = databasemocks.DBConnection{}
 	suite.MigrationRunnerMock = mocks.MigrationRunner{}
+}
+
+func (suite *MigrationRunnerTestSuite) TestRun_SetsDbKeyConfigVariable() {
+	//arrange
+	dbKey := "a database key"
+
+	suite.DBConnectionMock.On("OpenConnection").Return(errors.New(""))
+
+	//act
+	migrationrunner.Run(&suite.DBConnectionMock, &suite.MigrationRunnerMock, dbKey, false)
+
+	//assert
+	suite.Equal(dbKey, viper.GetString("db_key"))
 }
 
 func (suite *MigrationRunnerTestSuite) TestRun_WithErrorOpeningDatabaseConnection_ReturnsError() {
@@ -28,7 +43,7 @@ func (suite *MigrationRunnerTestSuite) TestRun_WithErrorOpeningDatabaseConnectio
 	suite.DBConnectionMock.On("OpenConnection").Return(errors.New(message))
 
 	//act
-	err := migrationrunner.Run(&suite.DBConnectionMock, &suite.MigrationRunnerMock, false)
+	err := migrationrunner.Run(&suite.DBConnectionMock, &suite.MigrationRunnerMock, "", false)
 
 	//assert
 	suite.Require().Error(err)
@@ -44,7 +59,7 @@ func (suite *MigrationRunnerTestSuite) TestRun_WithErrorPingingDatabase_ReturnsE
 	suite.DBConnectionMock.On("Ping").Return(errors.New(message))
 
 	//act
-	err := migrationrunner.Run(&suite.DBConnectionMock, &suite.MigrationRunnerMock, false)
+	err := migrationrunner.Run(&suite.DBConnectionMock, &suite.MigrationRunnerMock, "", false)
 
 	//assert
 	suite.DBConnectionMock.AssertCalled(suite.T(), "CloseConnection")
@@ -61,7 +76,7 @@ func (suite *MigrationRunnerTestSuite) TestRun_WithDownFalse_RunsUpMigration() {
 	suite.MigrationRunnerMock.On("MigrateUp").Return(nil)
 
 	//act
-	err := migrationrunner.Run(&suite.DBConnectionMock, &suite.MigrationRunnerMock, false)
+	err := migrationrunner.Run(&suite.DBConnectionMock, &suite.MigrationRunnerMock, "", false)
 
 	//assert
 	suite.MigrationRunnerMock.AssertCalled(suite.T(), "MigrateUp")
@@ -81,7 +96,7 @@ func (suite *MigrationRunnerTestSuite) TestRun_WithErrorRunningUpMigration_Retur
 	suite.MigrationRunnerMock.On("MigrateUp").Return(errors.New(message))
 
 	//act
-	err := migrationrunner.Run(&suite.DBConnectionMock, &suite.MigrationRunnerMock, false)
+	err := migrationrunner.Run(&suite.DBConnectionMock, &suite.MigrationRunnerMock, "", false)
 
 	//assert
 	suite.MigrationRunnerMock.AssertCalled(suite.T(), "MigrateUp")
@@ -100,7 +115,7 @@ func (suite *MigrationRunnerTestSuite) TestRun_WithDownTrue_RunsDownMigration() 
 	suite.MigrationRunnerMock.On("MigrateDown").Return(nil)
 
 	//act
-	err := migrationrunner.Run(&suite.DBConnectionMock, &suite.MigrationRunnerMock, true)
+	err := migrationrunner.Run(&suite.DBConnectionMock, &suite.MigrationRunnerMock, "", true)
 
 	//assert
 	suite.MigrationRunnerMock.AssertCalled(suite.T(), "MigrateDown")
@@ -120,7 +135,7 @@ func (suite *MigrationRunnerTestSuite) TestRun_WithErrorRunningDownMigration_Ret
 	suite.MigrationRunnerMock.On("MigrateDown").Return(errors.New(message))
 
 	//act
-	err := migrationrunner.Run(&suite.DBConnectionMock, &suite.MigrationRunnerMock, true)
+	err := migrationrunner.Run(&suite.DBConnectionMock, &suite.MigrationRunnerMock, "", true)
 
 	//assert
 	suite.MigrationRunnerMock.AssertCalled(suite.T(), "MigrateDown")
