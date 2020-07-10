@@ -19,16 +19,18 @@ func main() {
 	}
 
 	//parse flags
-	dbKey := flag.String("db", "core", "The database to run the migrations against")
 	down := flag.Bool("down", false, "Run migrate down instead of migrate up")
+	dbKey := flag.String("db", "core", "The database to run the migrations against")
 	flag.Parse()
+
+	viper.Set("db_key", *dbKey)
 
 	migrationRunner := migrationrunner.MigrationRunner{
 		MigrationRepository: dependencies.ResolveMigrationRepository(),
 		MigrationCRUD:       dependencies.ResolveDatabase(),
 	}
 
-	err = Run(dependencies.ResolveDatabase(), migrationRunner, *dbKey, *down)
+	err = Run(dependencies.ResolveDatabase(), migrationRunner, *down)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,9 +43,7 @@ type MigrationRunner interface {
 }
 
 // Run connects to the database and runs the migration runner. Returns any errors.
-func Run(db database.DBConnection, migrationRunner MigrationRunner, dbKey string, down bool) error {
-	viper.Set("db_key", dbKey)
-
+func Run(db database.DBConnection, migrationRunner MigrationRunner, down bool) error {
 	//open the db connection
 	err := db.OpenConnection()
 	if err != nil {
