@@ -16,7 +16,7 @@ jobs:
         - go get github.com/mattn/goveralls
       script: 
         - go build
-        - go test ./controllers/ ./models/ ./helpers/ ./router/ -v -covermode=count -coverprofile=coverage.out
+        - go test ./controllers/ ./models/ ./helpers/ ./router/ ./server/ -v -covermode=count -coverprofile=coverage.out
         - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
     - name: MigrationRunner
       before_install:
@@ -28,7 +28,7 @@ jobs:
         - go test -v -covermode=count -coverprofile=coverage.out
         - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
     - stage: Integration Tests
-      name: Postgres Integration Tests
+      name: Postgres SQLAdapter
       services:
         - postgresql
       install:
