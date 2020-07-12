@@ -65,7 +65,6 @@ func (suite *RunnerTestSuite) TestRun_WithErrorStartingServer_ReturnsError() {
 	suite.DBConnectionMock.On("OpenConnection").Return(nil)
 	suite.DBConnectionMock.On("Ping").Return(nil)
 	suite.ServerMock.On("Start").Return(errors.New(message))
-	suite.ServerMock.On("Close").Return()
 
 	//act
 	err := suite.Runner.Run()
@@ -74,12 +73,11 @@ func (suite *RunnerTestSuite) TestRun_WithErrorStartingServer_ReturnsError() {
 	commonhelpers.AssertError(&suite.Suite, err, message)
 }
 
-func (suite *RunnerTestSuite) TestRun_StartsServerAndDefersClose() {
+func (suite *RunnerTestSuite) TestRun_StartsServer() {
 	//arrange
 	suite.DBConnectionMock.On("OpenConnection").Return(nil)
 	suite.DBConnectionMock.On("Ping").Return(nil)
 	suite.ServerMock.On("Start").Return(nil)
-	suite.ServerMock.On("Close").Return()
 
 	//act
 	err := suite.Runner.Run()
@@ -90,7 +88,6 @@ func (suite *RunnerTestSuite) TestRun_StartsServerAndDefersClose() {
 	suite.DBConnectionMock.AssertCalled(suite.T(), "OpenConnection")
 	suite.DBConnectionMock.AssertCalled(suite.T(), "Ping")
 	suite.ServerMock.AssertCalled(suite.T(), "Start")
-	suite.ServerMock.AssertCalled(suite.T(), "Close")
 }
 
 func TestRunnerTestSuite(t *testing.T) {

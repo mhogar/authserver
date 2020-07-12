@@ -36,6 +36,5 @@ func (s Runner) Run() error {
 	}
 
 	//start the server
-	defer s.Server.Close()
 	return s.Server.Start()
 }
