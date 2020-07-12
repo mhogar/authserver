@@ -1,0 +1,13 @@
+root_dir: .
+
+database:
+    connection_strings:
+        integration: postgres://postgres:@localhost/travis_ci_test?sslmode=disable
+    timeout: 3000
+
+password_criteria:
+    min_length: 8
+    require_lower_case: true
+    require_upper_case: true
+    require_digit: true
+    require_symbol: true

@@ -1,7 +1,8 @@
 package controllers
 
 import (
-	"authserver/helpers"
+	helpers "authserver/helpers"
+	commonhelpers "authserver/helpers/common"
 	"authserver/models"
 	"log"
 	"net/http"
@@ -11,10 +12,12 @@ import (
 
 // TokenController handles requests to "/token" endpoints
 type TokenController struct {
-	models.UserCRUD
-	models.ClientCRUD
-	models.ScopeCRUD
-	models.AccessTokenCRUD
+	CRUD interface {
+		models.UserCRUD
+		models.ClientCRUD
+		models.ScopeCRUD
+		models.AccessTokenCRUD
+	}
 	helpers.PasswordHasher
 }
 
@@ -39,7 +42,7 @@ func (c TokenController) PostToken(w http.ResponseWriter, req *http.Request, _ h
 	//parse the body
 	err := parseJSONBody(req.Body, &body)
 	if err != nil {
-		log.Println(helpers.ChainError("error parsing PostToken request body", err))
+		log.Println(commonhelpers.ChainError("error parsing PostToken request body", err))
 		sendOAuthErrorResponse(w, http.StatusBadRequest, "invalid_request", "invalid json body")
 		return
 	}
@@ -94,21 +97,21 @@ func (c TokenController) handlePasswordGrant(w http.ResponseWriter, body PostTok
 	}
 
 	//get the client
-	client := parseClient(c.ClientCRUD, w, body.ClientID)
+	client := parseClient(c.CRUD, w, body.ClientID)
 	if client == nil {
 		return nil
 	}
 
 	//get the scope
-	scope := parseScope(c.ScopeCRUD, w, body.Scope)
+	scope := parseScope(c.CRUD, w, body.Scope)
 	if scope == nil {
 		return nil
 	}
 
 	//get the user
-	user, err := c.UserCRUD.GetUserByUsername(body.Username)
+	user, err := c.CRUD.GetUserByUsername(body.Username)
 	if err != nil {
-		log.Println(helpers.ChainError("error getting user by username", err))
+		log.Println(commonhelpers.ChainError("error getting user by username", err))
 		sendInternalErrorResponse(w)
 		return nil
 	}
@@ -121,18 +124,18 @@ func (c TokenController) handlePasswordGrant(w http.ResponseWriter, body PostTok
 	//validate the password
 	err = c.PasswordHasher.ComparePasswords(user.PasswordHash, body.Password)
 	if err != nil {
-		log.Println(helpers.ChainError("error comparing password hashes", err))
+		log.Println(commonhelpers.ChainError("error comparing password hashes", err))
 		sendErrorResponse(w, http.StatusBadRequest, "invalid username and/or password")
 		return nil
 	}
 
 	//create a new access token
-	token := models.CreateNewAccessToken(user.ID, client.ID, scope.ID)
+	token := models.CreateNewAccessToken(user, client, scope)
 
 	//save the token
-	err = c.AccessTokenCRUD.SaveAccessToken(token)
+	err = c.CRUD.SaveAccessToken(token)
 	if err != nil {
-		log.Println(helpers.ChainError("error saving access token", err))
+		log.Println(commonhelpers.ChainError("error saving access token", err))
 		sendInternalErrorResponse(w)
 		return nil
 	}
@@ -143,15 +146,15 @@ func (c TokenController) handlePasswordGrant(w http.ResponseWriter, body PostTok
 // DeleteToken handles DELETE requests to "/token"
 func (c TokenController) DeleteToken(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	//get the token
-	token := parseAuthHeader(c.AccessTokenCRUD, w, req)
+	token := parseAuthHeader(c.CRUD, w, req)
 	if token == nil {
 		return
 	}
 
 	//delete the token
-	err := c.AccessTokenCRUD.DeleteAccessToken(token)
+	err := c.CRUD.DeleteAccessToken(token)
 	if err != nil {
-		log.Println(helpers.ChainError("error deleting access token", err))
+		log.Println(commonhelpers.ChainError("error deleting access token", err))
 		sendInternalErrorResponse(w)
 		return
 	}

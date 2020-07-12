@@ -1,15 +1,21 @@
 package models
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 )
 
 // Scope ValidateError statuses.
 const (
 	ValidateScopeValid       = iota
-	ValidateScopeInvalidID   = iota
-	ValidateScopeInvalidName = iota
+	ValidateScopeNilID       = iota
+	ValidateScopeEmptyName   = iota
+	ValidateScopeNameTooLong = iota
 )
+
+// ScopeNameMaxLength is the max length a scope's name can be.
+const ScopeNameMaxLength = 15
 
 // Scope represents the scope model.
 type Scope struct {
@@ -19,6 +25,9 @@ type Scope struct {
 
 // ScopeCRUD is an interface for performing CRUD operations on a scope.
 type ScopeCRUD interface {
+	// SaveScope saves the scope and returns any errors.
+	SaveScope(scope *Scope) error
+
 	// GetScopeByName fetches the scope with the matching name.
 	// If no scopes are found, returns nil scope. Also returns any errors.
 	GetScopeByName(name string) (*Scope, error)
@@ -36,11 +45,15 @@ func CreateNewScope(name string) *Scope {
 // Returns a ValidateError indicating its result.
 func (s *Scope) Validate() ValidateError {
 	if s.ID == uuid.Nil {
-		return CreateValidateError(ValidateScopeInvalidID, "id cannot be nil")
+		return CreateValidateError(ValidateScopeNilID, "id cannot be nil")
 	}
 
 	if s.Name == "" {
-		return CreateValidateError(ValidateScopeInvalidName, "name cannot be empty")
+		return CreateValidateError(ValidateScopeEmptyName, "name cannot be empty")
+	}
+
+	if len(s.Name) > ScopeNameMaxLength {
+		return CreateValidateError(ValidateScopeNameTooLong, fmt.Sprint("name cannot be longer than", ScopeNameMaxLength, "characters"))
 	}
 
 	return ValidateError{ValidateScopeValid, nil}

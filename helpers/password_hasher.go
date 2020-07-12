@@ -1,6 +1,8 @@
 package helpers
 
 import (
+	commonhelpers "authserver/helpers/common"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -20,7 +22,7 @@ type BCryptPasswordHasher struct{}
 func (BCryptPasswordHasher) HashPassword(password string) ([]byte, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, ChainError("bcrypt generate hash from password error", err)
+		return nil, commonhelpers.ChainError("bcrypt generate hash from password error", err)
 	}
 
 	return hash, nil
@@ -30,7 +32,7 @@ func (BCryptPasswordHasher) HashPassword(password string) ([]byte, error) {
 func (BCryptPasswordHasher) ComparePasswords(hash []byte, password string) error {
 	err := bcrypt.CompareHashAndPassword(hash, []byte(password))
 	if err != nil {
-		return ChainError("bcrypt compare hash and password error", err)
+		return commonhelpers.ChainError("bcrypt compare hash and password error", err)
 	}
 
 	return nil

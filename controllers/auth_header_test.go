@@ -1,7 +1,7 @@
 package controllers_test
 
 import (
-	modelmocks "authserver/models/mocks"
+	databasemocks "authserver/database/mocks"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-func RunAuthHeaderTests(suite *suite.Suite, accessTokenCRUDMock *modelmocks.AccessTokenCRUD, setupTest func(), actFunc httprouter.Handle) {
+func RunAuthHeaderTests(suite *suite.Suite, CRUDMock *databasemocks.CRUDOperations, setupTest func(), actFunc httprouter.Handle) {
 	setupTest()
 	suite.Run("NoBearerToken_ReturnsUnauthorized", func() {
 		var req *http.Request
@@ -54,7 +54,7 @@ func RunAuthHeaderTests(suite *suite.Suite, accessTokenCRUDMock *modelmocks.Acce
 		w := httptest.NewRecorder()
 		req := CreateRequest(suite, uuid.New().String(), nil)
 
-		accessTokenCRUDMock.On("GetAccessTokenByID", mock.Anything).Return(nil, errors.New(""))
+		CRUDMock.On("GetAccessTokenByID", mock.Anything).Return(nil, errors.New(""))
 
 		//act
 		actFunc(w, req, nil)
@@ -69,7 +69,7 @@ func RunAuthHeaderTests(suite *suite.Suite, accessTokenCRUDMock *modelmocks.Acce
 		w := httptest.NewRecorder()
 		req := CreateRequest(suite, uuid.New().String(), nil)
 
-		accessTokenCRUDMock.On("GetAccessTokenByID", mock.Anything).Return(nil, nil)
+		CRUDMock.On("GetAccessTokenByID", mock.Anything).Return(nil, nil)
 
 		//act
 		actFunc(w, req, nil)

@@ -14,17 +14,13 @@ func ResolveRequestHandler() controllers.RequestHandler {
 	requestHandlerOnce.Do(func() {
 		requestHandler = &controllers.RequestHandle{
 			UserController: controllers.UserController{
-				UserCRUD:                  ResolveDatabase(),
-				AccessTokenCRUD:           ResolveDatabase(),
+				CRUD:                      ResolveDatabase(),
 				PasswordHasher:            ResolvePasswordHasher(),
 				PasswordCriteriaValidator: ResolvePasswordCriteriaValidator(),
 			},
 			TokenController: controllers.TokenController{
-				UserCRUD:        ResolveDatabase(),
-				ClientCRUD:      ResolveDatabase(),
-				ScopeCRUD:       ResolveDatabase(),
-				AccessTokenCRUD: ResolveDatabase(),
-				PasswordHasher:  ResolvePasswordHasher(),
+				CRUD:           ResolveDatabase(),
+				PasswordHasher: ResolvePasswordHasher(),
 			},
 		}
 	})

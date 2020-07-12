@@ -9,16 +9,16 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type ClientSuite struct {
+type ClientTestSuite struct {
 	suite.Suite
 	Client *models.Client
 }
 
-func (suite *ClientSuite) SetupTest() {
+func (suite *ClientTestSuite) SetupTest() {
 	suite.Client = models.CreateNewClient()
 }
 
-func (suite *ClientSuite) TestCreateNewClient_CreatesClientWithSuppliedFields() {
+func (suite *ClientTestSuite) TestCreateNewClient_CreatesClientWithSuppliedFields() {
 	//act
 	client := models.CreateNewClient()
 
@@ -27,7 +27,7 @@ func (suite *ClientSuite) TestCreateNewClient_CreatesClientWithSuppliedFields() 
 	suite.NotEqual(client.ID, uuid.Nil)
 }
 
-func (suite *ClientSuite) TestValidate_WithValidClient_ReturnsValid() {
+func (suite *ClientTestSuite) TestValidate_WithValidClient_ReturnsValid() {
 	//act
 	err := suite.Client.Validate()
 
@@ -35,7 +35,7 @@ func (suite *ClientSuite) TestValidate_WithValidClient_ReturnsValid() {
 	suite.Equal(models.ValidateClientValid, err.Status)
 }
 
-func (suite *ClientSuite) TestValidate_WithNilID_ReturnsClientInvalidID() {
+func (suite *ClientTestSuite) TestValidate_WithNilID_ReturnsClientNilID() {
 	//arrange
 	suite.Client.ID = uuid.Nil
 
@@ -43,9 +43,9 @@ func (suite *ClientSuite) TestValidate_WithNilID_ReturnsClientInvalidID() {
 	err := suite.Client.Validate()
 
 	//assert
-	suite.Equal(models.ValidateClientInvalidID, err.Status)
+	suite.Equal(models.ValidateClientNilID, err.Status)
 }
 
-func TestClientSuite(t *testing.T) {
-	suite.Run(t, &ClientSuite{})
+func TestClientTestSuite(t *testing.T) {
+	suite.Run(t, &ClientTestSuite{})
 }

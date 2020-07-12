@@ -6,8 +6,8 @@ import (
 
 // Client ValidateError statuses.
 const (
-	ValidateClientValid     = iota
-	ValidateClientInvalidID = iota
+	ValidateClientValid = iota
+	ValidateClientNilID = iota
 )
 
 // Client represents the client model.
@@ -17,6 +17,9 @@ type Client struct {
 
 // ClientCRUD is an interface for performing CRUD operations on a client.
 type ClientCRUD interface {
+	// SaveClient saves the client and returns any errors.
+	SaveClient(client *Client) error
+
 	// GetClientByID fetches the client associated with the id.
 	// If no clients are found, returns nil client. Also returns any errors.
 	GetClientByID(ID uuid.UUID) (*Client, error)
@@ -33,7 +36,7 @@ func CreateNewClient() *Client {
 // Returns a ValidateError indicating its result.
 func (c *Client) Validate() ValidateError {
 	if c.ID == uuid.Nil {
-		return CreateValidateError(ValidateClientInvalidID, "id cannot be nil")
+		return CreateValidateError(ValidateClientNilID, "id cannot be nil")
 	}
 
 	return ValidateError{ValidateClientValid, nil}

@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"authserver/helpers"
+	commonhelpers "authserver/helpers/common"
 	"authserver/models"
 	"log"
 	"net/http"
@@ -21,7 +21,7 @@ func parseClient(clientCRUD models.ClientCRUD, w http.ResponseWriter, clientIDSt
 	//parse the client id
 	clientID, err := uuid.Parse(clientIDStr)
 	if err != nil {
-		log.Println(helpers.ChainError("error parsing client id", err))
+		log.Println(commonhelpers.ChainError("error parsing client id", err))
 		sendOAuthErrorResponse(w, http.StatusUnauthorized, "invalid_client", "client_id was in invalid format")
 		return nil
 	}
@@ -29,7 +29,7 @@ func parseClient(clientCRUD models.ClientCRUD, w http.ResponseWriter, clientIDSt
 	//get the client
 	client, err := clientCRUD.GetClientByID(clientID)
 	if err != nil {
-		log.Println(helpers.ChainError("error getting client by id", err))
+		log.Println(commonhelpers.ChainError("error getting client by id", err))
 		sendInternalErrorResponse(w)
 		return nil
 	}
@@ -46,7 +46,7 @@ func parseScope(scopeCRUD models.ScopeCRUD, w http.ResponseWriter, name string) 
 	//get the scope
 	scope, err := scopeCRUD.GetScopeByName(name)
 	if err != nil {
-		log.Println(helpers.ChainError("error getting scope by name", err))
+		log.Println(commonhelpers.ChainError("error getting scope by name", err))
 		sendInternalErrorResponse(w)
 		return nil
 	}
@@ -70,7 +70,7 @@ func parseAuthHeader(accessTokenCRUD models.AccessTokenCRUD, w http.ResponseWrit
 	//parse the token
 	tokenID, err := uuid.Parse(splitTokens[1])
 	if err != nil {
-		log.Println(helpers.ChainError("error parsing access token id", err))
+		log.Println(commonhelpers.ChainError("error parsing access token id", err))
 		sendErrorResponse(w, http.StatusUnauthorized, "bearer token was in invalid format")
 		return nil
 	}
@@ -78,7 +78,7 @@ func parseAuthHeader(accessTokenCRUD models.AccessTokenCRUD, w http.ResponseWrit
 	//fetch the token
 	token, err := accessTokenCRUD.GetAccessTokenByID(tokenID)
 	if err != nil {
-		log.Println(helpers.ChainError("error getting access token by id", err))
+		log.Println(commonhelpers.ChainError("error getting access token by id", err))
 		sendInternalErrorResponse(w)
 		return nil
 	}
