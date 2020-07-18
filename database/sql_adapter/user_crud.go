@@ -4,6 +4,8 @@ import (
 	commonhelpers "authserver/helpers/common"
 	"authserver/models"
 	"database/sql"
+	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 )
@@ -12,8 +14,8 @@ import (
 // Returns any errors.
 func (adapter *SQLAdapter) SaveUser(user *models.User) error {
 	verr := user.Validate()
-	if verr.Status != models.ValidateUserValid {
-		return commonhelpers.ChainError("error validating user model", verr)
+	if verr != models.ValidateUserValid {
+		return errors.New(fmt.Sprint("error validating user model:", verr))
 	}
 
 	ctx, cancel := adapter.CreateStandardTimeoutContext()
@@ -62,8 +64,8 @@ func (adapter *SQLAdapter) GetUserByUsername(username string) (*models.User, err
 // Returns any errors.
 func (adapter *SQLAdapter) UpdateUser(user *models.User) error {
 	verr := user.Validate()
-	if verr.Status != models.ValidateUserValid {
-		return commonhelpers.ChainError("error validating user model", verr)
+	if verr != models.ValidateUserValid {
+		return errors.New(fmt.Sprint("error validating user model:", verr))
 	}
 
 	ctx, cancel := adapter.CreateStandardTimeoutContext()

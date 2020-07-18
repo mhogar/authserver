@@ -33,10 +33,10 @@ func (suite *ScopeTestSuite) TestCreateNewScope_CreatesScopeWithSuppliedFields()
 
 func (suite *ScopeTestSuite) TestValidate_WithValidScope_ReturnsValid() {
 	//act
-	err := suite.Scope.Validate()
+	verr := suite.Scope.Validate()
 
 	//assert
-	suite.Equal(models.ValidateScopeValid, err.Status)
+	suite.Equal(models.ValidateScopeValid, verr)
 }
 
 func (suite *ScopeTestSuite) TestValidate_WithNilID_ReturnsScopeNilID() {
@@ -44,10 +44,10 @@ func (suite *ScopeTestSuite) TestValidate_WithNilID_ReturnsScopeNilID() {
 	suite.Scope.ID = uuid.Nil
 
 	//act
-	err := suite.Scope.Validate()
+	verr := suite.Scope.Validate()
 
 	//assert
-	suite.Equal(models.ValidateScopeNilID, err.Status)
+	suite.Equal(models.ValidateScopeNilID, verr)
 }
 
 func (suite *ScopeTestSuite) TestValidate_WithEmptyName_ReturnsScopeInvalidName() {
@@ -55,10 +55,10 @@ func (suite *ScopeTestSuite) TestValidate_WithEmptyName_ReturnsScopeInvalidName(
 	suite.Scope.Name = ""
 
 	//act
-	err := suite.Scope.Validate()
+	verr := suite.Scope.Validate()
 
 	//assert
-	suite.Equal(models.ValidateScopeEmptyName, err.Status)
+	suite.Equal(models.ValidateScopeEmptyName, verr)
 }
 
 func (suite *ScopeTestSuite) TestValidate_ScopeNameMaxLengthTestCases() {
@@ -70,10 +70,10 @@ func (suite *ScopeTestSuite) TestValidate_ScopeNameMaxLengthTestCases() {
 		suite.Scope.Name = name
 
 		//act
-		err := suite.Scope.Validate()
+		verr := suite.Scope.Validate()
 
 		//assert
-		suite.Equal(expectedValidateError, err.Status)
+		suite.Equal(expectedValidateError, verr)
 	}
 
 	name = "aaaaaaaaaaaaaaa" //15 chars

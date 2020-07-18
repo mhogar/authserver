@@ -41,10 +41,10 @@ func (suite *AccessTokenTestSuite) TestCreateNewAccessToken_CreatesAccessTokenWi
 
 func (suite *AccessTokenTestSuite) TestValidate_WithValidAccessToken_ReturnsValid() {
 	//act
-	err := suite.Token.Validate()
+	verr := suite.Token.Validate()
 
 	//assert
-	suite.Equal(models.ValidateAccessTokenValid, err.Status)
+	suite.Equal(models.ValidateAccessTokenValid, verr)
 }
 
 func (suite *AccessTokenTestSuite) TestValidate_WithNilID_ReturnsAccessTokenInvalidID() {
@@ -52,10 +52,10 @@ func (suite *AccessTokenTestSuite) TestValidate_WithNilID_ReturnsAccessTokenInva
 	suite.Token.ID = uuid.Nil
 
 	//act
-	err := suite.Token.Validate()
+	verr := suite.Token.Validate()
 
 	//assert
-	suite.Equal(models.ValidateAccessTokenNilID, err.Status)
+	suite.Equal(models.ValidateAccessTokenNilID, verr)
 }
 
 func (suite *AccessTokenTestSuite) TestValidate_WithNilUser_ReturnsAccessTokenNilUser() {
@@ -63,10 +63,10 @@ func (suite *AccessTokenTestSuite) TestValidate_WithNilUser_ReturnsAccessTokenNi
 	suite.Token.User = nil
 
 	//act
-	err := suite.Token.Validate()
+	verr := suite.Token.Validate()
 
 	//assert
-	suite.Equal(models.ValidateAccessTokenNilUser, err.Status)
+	suite.Equal(models.ValidateAccessTokenNilUser, verr)
 }
 
 func (suite *AccessTokenTestSuite) TestValidate_WithInvalidUser_ReturnsAccessTokenInvalidUser() {
@@ -74,10 +74,10 @@ func (suite *AccessTokenTestSuite) TestValidate_WithInvalidUser_ReturnsAccessTok
 	suite.Token.User = models.CreateNewUser("", nil)
 
 	//act
-	err := suite.Token.Validate()
+	verr := suite.Token.Validate()
 
 	//assert
-	suite.Equal(models.ValidateAccessTokenInvalidUser, err.Status)
+	suite.Equal(models.ValidateAccessTokenInvalidUser, verr)
 }
 
 func (suite *AccessTokenTestSuite) TestValidate_WithNilClient_ReturnsAccessTokenNilClient() {
@@ -85,10 +85,10 @@ func (suite *AccessTokenTestSuite) TestValidate_WithNilClient_ReturnsAccessToken
 	suite.Token.Client = nil
 
 	//act
-	err := suite.Token.Validate()
+	verr := suite.Token.Validate()
 
 	//assert
-	suite.Equal(models.ValidateAccessTokenNilClient, err.Status)
+	suite.Equal(models.ValidateAccessTokenNilClient, verr)
 }
 
 func (suite *AccessTokenTestSuite) TestValidate_WithInvalidClient_ReturnsAccessTokenInvalidClient() {
@@ -96,10 +96,10 @@ func (suite *AccessTokenTestSuite) TestValidate_WithInvalidClient_ReturnsAccessT
 	suite.Token.Client = &models.Client{ID: uuid.Nil}
 
 	//act
-	err := suite.Token.Validate()
+	verr := suite.Token.Validate()
 
 	//assert
-	suite.Equal(models.ValidateAccessTokenInvalidClient, err.Status)
+	suite.Equal(models.ValidateAccessTokenInvalidClient, verr)
 }
 
 func (suite *AccessTokenTestSuite) TestValidate_WithNilScope_ReturnsAccessTokenNilScope() {
@@ -107,10 +107,10 @@ func (suite *AccessTokenTestSuite) TestValidate_WithNilScope_ReturnsAccessTokenN
 	suite.Token.Scope = nil
 
 	//act
-	err := suite.Token.Validate()
+	verr := suite.Token.Validate()
 
 	//assert
-	suite.Equal(models.ValidateAccessTokenNilScope, err.Status)
+	suite.Equal(models.ValidateAccessTokenNilScope, verr)
 }
 
 func (suite *AccessTokenTestSuite) TestValidate_WithInvalidScope_ReturnsAccessTokenInvalidScope() {
@@ -118,10 +118,10 @@ func (suite *AccessTokenTestSuite) TestValidate_WithInvalidScope_ReturnsAccessTo
 	suite.Token.Scope = models.CreateNewScope("")
 
 	//act
-	err := suite.Token.Validate()
+	verr := suite.Token.Validate()
 
 	//assert
-	suite.Equal(models.ValidateAccessTokenInvalidScope, err.Status)
+	suite.Equal(models.ValidateAccessTokenInvalidScope, verr)
 }
 
 func TestAccessTokenTestSuite(t *testing.T) {

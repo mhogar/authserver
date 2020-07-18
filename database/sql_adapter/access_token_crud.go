@@ -4,6 +4,8 @@ import (
 	commonhelpers "authserver/helpers/common"
 	"authserver/models"
 	"database/sql"
+	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 )
@@ -12,8 +14,8 @@ import (
 // Returns any errors.
 func (adapter *SQLAdapter) SaveAccessToken(token *models.AccessToken) error {
 	verr := token.Validate()
-	if verr.Status != models.ValidateAccessTokenValid {
-		return commonhelpers.ChainError("error validating access token model", verr)
+	if verr != models.ValidateAccessTokenValid {
+		return errors.New(fmt.Sprint("error validating access token model:", verr))
 	}
 
 	ctx, cancel := adapter.CreateStandardTimeoutContext()

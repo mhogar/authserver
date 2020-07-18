@@ -32,10 +32,10 @@ func (suite *MigrationTestSuite) TestCreateNewMigration_CreatesMigrationWithSupp
 
 func (suite *MigrationTestSuite) TestValidate_WithValidMigration_ReturnsModelValid() {
 	//act
-	err := suite.Migration.Validate()
+	verr := suite.Migration.Validate()
 
 	//assert
-	suite.EqualValues(models.ValidateMigrationValid, err.Status)
+	suite.EqualValues(models.ValidateMigrationValid, verr)
 }
 
 func (suite *MigrationTestSuite) TestValidate_WithVariousInvalidTimestamps_ReturnsError() {
@@ -45,10 +45,10 @@ func (suite *MigrationTestSuite) TestValidate_WithVariousInvalidTimestamps_Retur
 		suite.Migration.Timestamp = timestamp
 
 		//act
-		err := suite.Migration.Validate()
+		verr := suite.Migration.Validate()
 
 		//assert
-		suite.EqualValues(models.ValidateMigrationInvalidTimestamp, err.Status)
+		suite.EqualValues(models.ValidateMigrationInvalidTimestamp, verr)
 	}
 
 	timestamp = "0001010100000"

@@ -1,17 +1,15 @@
 package models
 
 import (
-	"fmt"
-
 	"github.com/google/uuid"
 )
 
 // Scope ValidateError statuses.
 const (
-	ValidateScopeValid       = iota
-	ValidateScopeNilID       = iota
-	ValidateScopeEmptyName   = iota
-	ValidateScopeNameTooLong = iota
+	ValidateScopeValid       = 0x0
+	ValidateScopeNilID       = 0x1
+	ValidateScopeEmptyName   = 0x2
+	ValidateScopeNameTooLong = 0x4
 )
 
 // ScopeNameMaxLength is the max length a scope's name can be.
@@ -42,19 +40,19 @@ func CreateNewScope(name string) *Scope {
 }
 
 // Validate validates the client model has valid fields.
-// Returns a ValidateError indicating its result.
-func (s *Scope) Validate() ValidateError {
+// Returns an int indicating which fields are invalid.
+func (s *Scope) Validate() int {
+	code := ValidateScopeValid
+
 	if s.ID == uuid.Nil {
-		return CreateValidateError(ValidateScopeNilID, "id cannot be nil")
+		code |= ValidateScopeNilID
 	}
 
 	if s.Name == "" {
-		return CreateValidateError(ValidateScopeEmptyName, "name cannot be empty")
+		code |= ValidateScopeEmptyName
+	} else if len(s.Name) > ScopeNameMaxLength {
+		code |= ValidateScopeNameTooLong
 	}
 
-	if len(s.Name) > ScopeNameMaxLength {
-		return CreateValidateError(ValidateScopeNameTooLong, fmt.Sprint("name cannot be longer than", ScopeNameMaxLength, "characters"))
-	}
-
-	return ValidateError{ValidateScopeValid, nil}
+	return code
 }

@@ -4,6 +4,8 @@ import (
 	commonhelpers "authserver/helpers/common"
 	"authserver/models"
 	"database/sql"
+	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 )
@@ -12,8 +14,8 @@ import (
 // Returns any errors.
 func (adapter *SQLAdapter) SaveClient(client *models.Client) error {
 	verr := client.Validate()
-	if verr.Status != models.ValidateClientValid {
-		return commonhelpers.ChainError("error validating client model", verr)
+	if verr != models.ValidateClientValid {
+		return errors.New(fmt.Sprint("error validating client model:", verr))
 	}
 
 	ctx, cancel := adapter.CreateStandardTimeoutContext()

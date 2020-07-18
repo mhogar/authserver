@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -46,35 +47,40 @@ func (c UserController) PostUser(w http.ResponseWriter, req *http.Request, _ htt
 		return
 	}
 
-	//validate the body fields
-	if body.Username == "" || body.Password == "" {
-		sendErrorResponse(w, http.StatusBadRequest, "username and password cannot be empty")
+	//create the user model
+	user := models.CreateNewUser(body.Username, nil)
+
+	//validate the username
+	verr := user.Validate()
+	if verr&models.ValidateUserEmptyUsername != 0 {
+		sendErrorResponse(w, http.StatusBadRequest, "username cannot be empty")
+		return
+	} else if verr&models.ValidateUserUsernameTooLong != 0 {
+		sendErrorResponse(w, http.StatusBadRequest, fmt.Sprint("username cannot be longer than ", models.UserUsernameMaxLength, " characters"))
 		return
 	}
 
 	//validate username is unique
 	otherUser, err := c.CRUD.GetUserByUsername(body.Username)
 	if err != nil {
-		log.Println(commonhelpers.ChainError("error getting user by username", err))
 		sendInternalErrorResponse(w)
 		return
 	}
-
 	if otherUser != nil {
-		sendErrorResponse(w, http.StatusBadRequest, "an user with that username already exists")
+		sendErrorResponse(w, http.StatusBadRequest, "a user with that username already exists")
 		return
 	}
 
 	//validate password meets criteria
-	verr := c.PasswordCriteriaValidator.ValidatePasswordCriteria(body.Password)
-	if verr.Status != helpers.ValidatePasswordCriteriaValid {
-		log.Println(commonhelpers.ChainError("error validating password criteria", verr))
+	vperr := c.PasswordCriteriaValidator.ValidatePasswordCriteria(body.Password)
+	if vperr.Status != helpers.ValidatePasswordCriteriaValid {
+		log.Println(commonhelpers.ChainError("error validating password criteria", vperr))
 		sendErrorResponse(w, http.StatusBadRequest, "password does not meet minimum criteria")
 		return
 	}
 
 	//hash the password
-	hash, err := c.PasswordHasher.HashPassword(body.Password)
+	user.PasswordHash, err = c.PasswordHasher.HashPassword(body.Password)
 	if err != nil {
 		log.Println(commonhelpers.ChainError("error generating password hash", err))
 		sendInternalErrorResponse(w)
@@ -82,7 +88,6 @@ func (c UserController) PostUser(w http.ResponseWriter, req *http.Request, _ htt
 	}
 
 	//save the user
-	user := models.CreateNewUser(body.Username, hash)
 	err = c.CRUD.SaveUser(user)
 	if err != nil {
 		log.Println(commonhelpers.ChainError("error saving user", err))
@@ -162,12 +167,6 @@ func (c UserController) PatchUserPassword(w http.ResponseWriter, req *http.Reque
 	if err != nil {
 		log.Println(commonhelpers.ChainError("error parsing PatchUserPassword request body", err))
 		sendErrorResponse(w, http.StatusBadRequest, "invalid json body")
-		return
-	}
-
-	//validate the body fields
-	if body.OldPassword == "" || body.NewPassword == "" {
-		sendErrorResponse(w, http.StatusBadRequest, "old password and new password cannot be empty")
 		return
 	}
 

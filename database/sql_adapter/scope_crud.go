@@ -4,14 +4,16 @@ import (
 	commonhelpers "authserver/helpers/common"
 	"authserver/models"
 	"database/sql"
+	"errors"
+	"fmt"
 )
 
 // SaveScope validates the scope model is valid and inserts a new row into the scope table.
 // Returns any errors.
 func (adapter *SQLAdapter) SaveScope(scope *models.Scope) error {
 	verr := scope.Validate()
-	if verr.Status != models.ValidateScopeValid {
-		return commonhelpers.ChainError("error validating scope model", verr)
+	if verr != models.ValidateScopeValid {
+		return errors.New(fmt.Sprint("error validating scope model:", verr))
 	}
 
 	ctx, cancel := adapter.CreateStandardTimeoutContext()

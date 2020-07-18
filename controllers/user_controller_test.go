@@ -8,6 +8,7 @@ import (
 	"authserver/models"
 	"bytes"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -61,34 +62,42 @@ func (suite *UserControllerTestSuite) TestPostUser_WithInvalidJSONBody_ReturnsBa
 	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "invalid json body")
 }
 
-func (suite *UserControllerTestSuite) TestPostUser_WithInvalidBodyFields_ReturnsBadRequest() {
-	var body controllers.PostUserBody
-
-	testCase := func() {
-		//arrange
-		w := httptest.NewRecorder()
-		req := CreateRequest(&suite.Suite, uuid.New().String(), body)
-
-		suite.CRUDMock.On("GetAccessTokenByID", mock.Anything).Return(&models.AccessToken{}, nil)
-
-		//act
-		suite.UserController.PostUser(w, req, nil)
-
-		//assert
-		AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "username", "password", "cannot be empty")
-	}
-
-	body = controllers.PostUserBody{
+func (suite *UserControllerTestSuite) TestPostUser_WithEmptyUsername_ReturnsBadRequest() {
+	//arrange
+	body := controllers.PostUserBody{
 		Username: "",
 		Password: "password",
 	}
-	suite.Run("EmptyUsername", testCase)
 
-	body = controllers.PostUserBody{
-		Username: "username",
-		Password: "",
+	w := httptest.NewRecorder()
+	req := CreateRequest(&suite.Suite, uuid.New().String(), body)
+
+	suite.CRUDMock.On("GetAccessTokenByID", mock.Anything).Return(&models.AccessToken{}, nil)
+
+	//act
+	suite.UserController.PostUser(w, req, nil)
+
+	//assert
+	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "username cannot be empty")
+}
+
+func (suite *UserControllerTestSuite) TestPostUser_WithUsernameLongerThanMax_ReturnsBadRequest() {
+	//arrange
+	body := controllers.PostUserBody{
+		Username: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", //31 chars
+		Password: "password",
 	}
-	suite.Run("EmptyPassword", testCase)
+
+	w := httptest.NewRecorder()
+	req := CreateRequest(&suite.Suite, uuid.New().String(), body)
+
+	suite.CRUDMock.On("GetAccessTokenByID", mock.Anything).Return(&models.AccessToken{}, nil)
+
+	//act
+	suite.UserController.PostUser(w, req, nil)
+
+	//assert
+	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "username cannot be longer", fmt.Sprint(models.UserUsernameMaxLength))
 }
 
 func (suite *UserControllerTestSuite) TestPostUser_WithErrorGettingUserByUsername_ReturnsInternalServerError() {
@@ -383,36 +392,6 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithInvalidJSONBody_
 
 	//assert
 	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "invalid json body")
-}
-
-func (suite *UserControllerTestSuite) TestPatchUserPassword_WithInvalidBodyFields_ReturnsBadRequest() {
-	var body controllers.PatchUserPasswordBody
-
-	testCase := func() {
-		//arrange
-		w := httptest.NewRecorder()
-		req := CreateRequest(&suite.Suite, uuid.New().String(), body)
-
-		suite.CRUDMock.On("GetAccessTokenByID", mock.Anything).Return(&models.AccessToken{}, nil)
-
-		//act
-		suite.UserController.PatchUserPassword(w, req, nil)
-
-		//assert
-		AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "old password", "new password", "cannot be empty")
-	}
-
-	body = controllers.PatchUserPasswordBody{
-		OldPassword: "",
-		NewPassword: "new password",
-	}
-	suite.Run("EmptyUsername", testCase)
-
-	body = controllers.PatchUserPasswordBody{
-		OldPassword: "old password",
-		NewPassword: "",
-	}
-	suite.Run("EmptyPassword", testCase)
 }
 
 func (suite *UserControllerTestSuite) TestPatchUserPassword_WhereOldPasswordIsInvalid_ReturnsBadRequest() {

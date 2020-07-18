@@ -8,8 +8,8 @@ import (
 
 // Migration ValidateError statuses.
 const (
-	ValidateMigrationValid            = iota
-	ValidateMigrationInvalidTimestamp = iota
+	ValidateMigrationValid            = 0x0
+	ValidateMigrationInvalidTimestamp = 0x1
 )
 
 // Migration represents the migration model.
@@ -34,12 +34,15 @@ func CreateNewMigration(timestamp string) *Migration {
 }
 
 // Validate validates the migration is a valid migration model.
-// Returns a ValidateError indicating its result.
-func (m Migration) Validate() ValidateError {
+// Returns an int indicating which fields are invalid.
+func (m Migration) Validate() int {
+	code := ValidateMigrationValid
+
 	matched, _ := regexp.MatchString(`^\d{14}$`, m.Timestamp)
 	if !matched {
-		return CreateValidateError(ValidateMigrationInvalidTimestamp, "timestamp is in invalid format")
+		code |= ValidateMigrationInvalidTimestamp
+		//return CreateValidateError(ValidateMigrationInvalidTimestamp, "timestamp is in invalid format")
 	}
 
-	return ValidateError{ValidateMigrationValid, nil}
+	return code
 }

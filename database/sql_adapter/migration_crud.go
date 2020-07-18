@@ -3,6 +3,8 @@ package sqladapter
 import (
 	commonhelpers "authserver/helpers/common"
 	"authserver/models"
+	"errors"
+	"fmt"
 )
 
 // Setup creates the migration table if it does not already exist.
@@ -24,8 +26,8 @@ func (adapter *SQLAdapter) CreateMigration(timestamp string) error {
 	//create and validate migration model
 	migration := models.CreateNewMigration(timestamp)
 	verr := migration.Validate()
-	if verr.Status != models.ValidateMigrationValid {
-		return commonhelpers.ChainError("error validating migration model", verr)
+	if verr != models.ValidateMigrationValid {
+		return errors.New(fmt.Sprint("error validating migration model:", verr))
 	}
 
 	ctx, cancel := adapter.CreateStandardTimeoutContext()
