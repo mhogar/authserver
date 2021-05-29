@@ -2,7 +2,6 @@ package router
 
 import (
 	requesterror "authserver/common/request_error"
-	"authserver/controllers"
 	commonhelpers "authserver/helpers/common"
 	"authserver/models"
 	"log"
@@ -10,11 +9,6 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 )
-
-type TokenHandle struct {
-	TokenControl  controllers.TokenControl
-	Authenticator Authenticator
-}
 
 // PostTokenBody is the struct the body of requests to PostToken should be parsed into
 type PostTokenBody struct {
@@ -31,7 +25,7 @@ type PostTokenPasswordGrantBody struct {
 }
 
 // PostToken handles POST requests to "/token"
-func (h TokenHandle) PostToken(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+func (h RouteHandler) PostToken(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	var body PostTokenBody
 
 	//parse the body
@@ -69,7 +63,7 @@ func (h TokenHandle) PostToken(w http.ResponseWriter, req *http.Request, _ httpr
 	})
 }
 
-func (h TokenHandle) handlePasswordGrant(w http.ResponseWriter, body PostTokenPasswordGrantBody) *models.AccessToken {
+func (h RouteHandler) handlePasswordGrant(w http.ResponseWriter, body PostTokenPasswordGrantBody) *models.AccessToken {
 	//validate parameters
 	if body.Username == "" {
 		sendOAuthErrorResponse(w, http.StatusBadRequest, "invalid_request", "missing username parameter")
@@ -91,7 +85,7 @@ func (h TokenHandle) handlePasswordGrant(w http.ResponseWriter, body PostTokenPa
 		return nil
 	}
 
-	token, rerr := h.TokenControl.CreateTokenFromPassword(body.Username, body.Password, body.ClientID, body.Scope)
+	token, rerr := h.Control.CreateTokenFromPassword(body.Username, body.Password, body.ClientID, body.Scope)
 	if rerr.Type == requesterror.ErrorTypeClient {
 		sendOAuthErrorResponse(w, http.StatusBadRequest, rerr.ErrorName, rerr.Error())
 		return nil
@@ -104,7 +98,7 @@ func (h TokenHandle) handlePasswordGrant(w http.ResponseWriter, body PostTokenPa
 }
 
 // DeleteToken handles DELETE requests to "/token"
-func (h TokenHandle) DeleteToken(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+func (h RouteHandler) DeleteToken(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	//authenticate the user
 	token, rerr := h.Authenticator.Authenticate(req)
 	if rerr.Type == requesterror.ErrorTypeClient {
@@ -116,7 +110,7 @@ func (h TokenHandle) DeleteToken(w http.ResponseWriter, req *http.Request, _ htt
 	}
 
 	//delete the token
-	rerr = h.TokenControl.DeleteToken(token)
+	rerr = h.Control.DeleteToken(token)
 	if rerr.Type == requesterror.ErrorTypeClient {
 		sendErrorResponse(w, http.StatusBadRequest, rerr.Error())
 		return

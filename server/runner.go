@@ -1,6 +1,7 @@
 package server
 
 import (
+	"authserver/controllers"
 	"authserver/database"
 	commonhelpers "authserver/helpers/common"
 	"authserver/router"
@@ -17,9 +18,10 @@ type Server interface {
 
 // Runner encapsulates dependences and runs the server.
 type Runner struct {
-	DBConnection database.DBConnection
-	Handlers     router.Handlers
-	Server       Server
+	DBConnection  database.DBConnection
+	Control       controllers.Controllers
+	Authenticator router.Authenticator
+	Server        Server
 }
 
 // Run runs the server and returns any errors.

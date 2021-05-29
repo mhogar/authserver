@@ -7,17 +7,10 @@ import (
 	"github.com/google/uuid"
 
 	requesterror "authserver/common/request_error"
-	"authserver/controllers"
 	commonhelpers "authserver/helpers/common"
 
 	"github.com/julienschmidt/httprouter"
 )
-
-// UserControl handles requests to "/user" endpoints
-type UserHandle struct {
-	UserControl   controllers.UserController
-	Authenticator Authenticator
-}
 
 // PostUserBody is the struct the body of requests to PostUser should be parsed into
 type PostUserBody struct {
@@ -26,7 +19,7 @@ type PostUserBody struct {
 }
 
 // PostUser handles Post requests to "/user"
-func (h UserHandle) PostUser(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+func (h RouteHandler) PostUser(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	//authenticate the user
 	_, rerr := h.Authenticator.Authenticate(req)
 	if rerr.Type == requesterror.ErrorTypeClient {
@@ -47,7 +40,7 @@ func (h UserHandle) PostUser(w http.ResponseWriter, req *http.Request, _ httprou
 	}
 
 	//create the user
-	_, rerr = h.UserControl.CreateUser(body.Username, body.Password)
+	_, rerr = h.Control.CreateUser(body.Username, body.Password)
 	if rerr.Type == requesterror.ErrorTypeClient {
 		sendErrorResponse(w, http.StatusBadRequest, rerr.Error())
 		return
@@ -61,7 +54,7 @@ func (h UserHandle) PostUser(w http.ResponseWriter, req *http.Request, _ httprou
 }
 
 // DeleteUser handles DELETE requests to "/user"
-func (h UserHandle) DeleteUser(w http.ResponseWriter, req *http.Request, params httprouter.Params) {
+func (h RouteHandler) DeleteUser(w http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	//authenticate the user
 	_, rerr := h.Authenticator.Authenticate(req)
 	if rerr.Type == requesterror.ErrorTypeClient {
@@ -88,7 +81,7 @@ func (h UserHandle) DeleteUser(w http.ResponseWriter, req *http.Request, params 
 	}
 
 	//delete the user
-	rerr = h.UserControl.DeleteUser(id)
+	rerr = h.Control.DeleteUser(id)
 	if rerr.Type == requesterror.ErrorTypeClient {
 		sendErrorResponse(w, http.StatusBadRequest, rerr.Error())
 		return
@@ -108,7 +101,7 @@ type PatchUserPasswordBody struct {
 }
 
 // PatchUserPassword handles PATCH requests to "/user/password"
-func (h UserHandle) PatchUserPassword(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+func (h RouteHandler) PatchUserPassword(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	//authenticate the user
 	token, rerr := h.Authenticator.Authenticate(req)
 	if rerr.Type == requesterror.ErrorTypeClient {
@@ -129,7 +122,7 @@ func (h UserHandle) PatchUserPassword(w http.ResponseWriter, req *http.Request, 
 	}
 
 	//update the password
-	rerr = h.UserControl.UpdateUserPassword(token.User, body.OldPassword, body.NewPassword)
+	rerr = h.Control.UpdateUserPassword(token.User, body.OldPassword, body.NewPassword)
 	if rerr.Type == requesterror.ErrorTypeClient {
 		sendErrorResponse(w, http.StatusBadRequest, rerr.Error())
 		return
