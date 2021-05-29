@@ -1,7 +1,8 @@
-package controllers
+package router
 
 import (
-	helpers "authserver/helpers"
+	requesterror "authserver/common/request_error"
+	"authserver/controllers"
 	commonhelpers "authserver/helpers/common"
 	"authserver/models"
 	"log"
@@ -10,15 +11,9 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-// TokenController handles requests to "/token" endpoints
-type TokenController struct {
-	CRUD interface {
-		models.UserCRUD
-		models.ClientCRUD
-		models.ScopeCRUD
-		models.AccessTokenCRUD
-	}
-	helpers.PasswordHasher
+type TokenHandle struct {
+	TokenControl  controllers.TokenControl
+	Authenticator Authenticator
 }
 
 // PostTokenBody is the struct the body of requests to PostToken should be parsed into
@@ -36,7 +31,7 @@ type PostTokenPasswordGrantBody struct {
 }
 
 // PostToken handles POST requests to "/token"
-func (c TokenController) PostToken(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+func (h TokenHandle) PostToken(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	var body PostTokenBody
 
 	//parse the body
@@ -58,7 +53,7 @@ func (c TokenController) PostToken(w http.ResponseWriter, req *http.Request, _ h
 	//choose the workflow based on the grant type
 	switch body.GrantType {
 	case "password":
-		token = c.handlePasswordGrant(w, body.PostTokenPasswordGrantBody)
+		token = h.handlePasswordGrant(w, body.PostTokenPasswordGrantBody)
 	default:
 		sendOAuthErrorResponse(w, http.StatusBadRequest, "unsupported_grant_type", "")
 	}
@@ -74,7 +69,7 @@ func (c TokenController) PostToken(w http.ResponseWriter, req *http.Request, _ h
 	})
 }
 
-func (c TokenController) handlePasswordGrant(w http.ResponseWriter, body PostTokenPasswordGrantBody) *models.AccessToken {
+func (h TokenHandle) handlePasswordGrant(w http.ResponseWriter, body PostTokenPasswordGrantBody) *models.AccessToken {
 	//validate parameters
 	if body.Username == "" {
 		sendOAuthErrorResponse(w, http.StatusBadRequest, "invalid_request", "missing username parameter")
@@ -96,47 +91,12 @@ func (c TokenController) handlePasswordGrant(w http.ResponseWriter, body PostTok
 		return nil
 	}
 
-	//get the client
-	client := parseClient(c.CRUD, w, body.ClientID)
-	if client == nil {
+	token, rerr := h.TokenControl.CreateTokenFromPassword(body.Username, body.Password, body.ClientID, body.Scope)
+	if rerr.Type == requesterror.ErrorTypeClient {
+		sendOAuthErrorResponse(w, http.StatusBadRequest, rerr.ErrorName, rerr.Error())
 		return nil
-	}
-
-	//get the scope
-	scope := parseScope(c.CRUD, w, body.Scope)
-	if scope == nil {
-		return nil
-	}
-
-	//get the user
-	user, err := c.CRUD.GetUserByUsername(body.Username)
-	if err != nil {
-		log.Println(commonhelpers.ChainError("error getting user by username", err))
-		sendInternalErrorResponse(w)
-		return nil
-	}
-
-	if user == nil {
-		sendErrorResponse(w, http.StatusBadRequest, "invalid username and/or password")
-		return nil
-	}
-
-	//validate the password
-	err = c.PasswordHasher.ComparePasswords(user.PasswordHash, body.Password)
-	if err != nil {
-		log.Println(commonhelpers.ChainError("error comparing password hashes", err))
-		sendErrorResponse(w, http.StatusBadRequest, "invalid username and/or password")
-		return nil
-	}
-
-	//create a new access token
-	token := models.CreateNewAccessToken(user, client, scope)
-
-	//save the token
-	err = c.CRUD.SaveAccessToken(token)
-	if err != nil {
-		log.Println(commonhelpers.ChainError("error saving access token", err))
-		sendInternalErrorResponse(w)
+	} else if rerr.Type == requesterror.ErrorTypeInternal {
+		sendInternalErrorResponse(w, rerr.Error())
 		return nil
 	}
 
@@ -144,18 +104,24 @@ func (c TokenController) handlePasswordGrant(w http.ResponseWriter, body PostTok
 }
 
 // DeleteToken handles DELETE requests to "/token"
-func (c TokenController) DeleteToken(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
-	//get the token
-	token := parseAuthHeader(c.CRUD, w, req)
-	if token == nil {
+func (h TokenHandle) DeleteToken(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+	//authenticate the user
+	token, rerr := h.Authenticator.Authenticate(req)
+	if rerr.Type == requesterror.ErrorTypeClient {
+		sendErrorResponse(w, http.StatusUnauthorized, rerr.Error())
+		return
+	} else if rerr.Type == requesterror.ErrorTypeInternal {
+		sendInternalErrorResponse(w, rerr.Error())
 		return
 	}
 
 	//delete the token
-	err := c.CRUD.DeleteAccessToken(token)
-	if err != nil {
-		log.Println(commonhelpers.ChainError("error deleting access token", err))
-		sendInternalErrorResponse(w)
+	rerr = h.TokenControl.DeleteToken(token)
+	if rerr.Type == requesterror.ErrorTypeClient {
+		sendErrorResponse(w, http.StatusBadRequest, rerr.Error())
+		return
+	} else if rerr.Type == requesterror.ErrorTypeInternal {
+		sendInternalErrorResponse(w, rerr.Error())
 		return
 	}
 

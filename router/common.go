@@ -1,4 +1,4 @@
-package controllers
+package router
 
 import (
 	"log"
@@ -34,9 +34,9 @@ type AccessTokenResponse struct {
 	TokenType   string `json:"token_type"`
 }
 
-// PanicHandler is the function to be called if a panic is encountered
-func PanicHandler(w http.ResponseWriter, req *http.Request, info interface{}) {
+// panicHandler is the function to be called if a panic is encountered
+func panicHandler(w http.ResponseWriter, req *http.Request, info interface{}) {
 	log.Println(info)
 
-	sendInternalErrorResponse(w)
+	sendInternalErrorResponse(w, "an internal error occurred")
 }

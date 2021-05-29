@@ -1,4 +1,4 @@
-package controllers
+package router
 
 import (
 	"net/http"
@@ -6,8 +6,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-// RequestHandler is an interface that encapsulates all other handler interfaces
-type RequestHandler interface {
+type Handlers interface {
 	UserHandler
 	TokenHandler
 }
@@ -33,8 +32,7 @@ type TokenHandler interface {
 	DeleteToken(http.ResponseWriter, *http.Request, httprouter.Params)
 }
 
-// RequestHandle is an implementation of RequestHandler that uses controllers to satisfy the interface's methods
-type RequestHandle struct {
-	UserController
-	TokenController
+type Handles struct {
+	UserHandle
+	TokenHandle
 }

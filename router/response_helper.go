@@ -1,4 +1,4 @@
-package controllers
+package router
 
 import (
 	"encoding/json"
@@ -43,6 +43,6 @@ func sendErrorResponse(w http.ResponseWriter, status int, messsage string) {
 	})
 }
 
-func sendInternalErrorResponse(w http.ResponseWriter) {
-	sendErrorResponse(w, http.StatusInternalServerError, "an internal error occurred")
+func sendInternalErrorResponse(w http.ResponseWriter, messsage string) {
+	sendErrorResponse(w, http.StatusInternalServerError, messsage)
 }

@@ -25,14 +25,14 @@ type UserControllerTestSuite struct {
 	CRUDMock                      databasemocks.CRUDOperations
 	PasswordHasherMock            helpermocks.PasswordHasher
 	PasswordCriteriaValidatorMock helpermocks.PasswordCriteriaValidator
-	UserController                controllers.UserController
+	UserControl                   controllers.UserControl
 }
 
 func (suite *UserControllerTestSuite) SetupTest() {
 	suite.CRUDMock = databasemocks.CRUDOperations{}
 	suite.PasswordHasherMock = helpermocks.PasswordHasher{}
 	suite.PasswordCriteriaValidatorMock = helpermocks.PasswordCriteriaValidator{}
-	suite.UserController = controllers.UserController{
+	suite.UserControl = controllers.UserControl{
 		CRUD:                      &suite.CRUDMock,
 		PasswordHasher:            &suite.PasswordHasherMock,
 		PasswordCriteriaValidator: &suite.PasswordCriteriaValidatorMock,
@@ -42,10 +42,10 @@ func (suite *UserControllerTestSuite) SetupTest() {
 func (suite *UserControllerTestSuite) TestPostUser_AuthorizationHeaderTests() {
 	setupTest := func() {
 		suite.CRUDMock = databasemocks.CRUDOperations{}
-		suite.UserController.CRUD = &suite.CRUDMock
+		suite.UserControl.CRUD = &suite.CRUDMock
 	}
 
-	RunAuthHeaderTests(&suite.Suite, &suite.CRUDMock, setupTest, suite.UserController.PostUser)
+	RunAuthHeaderTests(&suite.Suite, &suite.CRUDMock, setupTest, suite.UserControl.PostUser)
 }
 
 func (suite *UserControllerTestSuite) TestPostUser_WithInvalidJSONBody_ReturnsBadRequest() {
@@ -56,7 +56,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WithInvalidJSONBody_ReturnsBa
 	suite.CRUDMock.On("GetAccessTokenByID", mock.Anything).Return(&models.AccessToken{}, nil)
 
 	//act
-	suite.UserController.PostUser(w, req, nil)
+	suite.UserControl.PostUser(w, req, nil)
 
 	//assert
 	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "invalid json body")
@@ -75,7 +75,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WithEmptyUsername_ReturnsBadR
 	suite.CRUDMock.On("GetAccessTokenByID", mock.Anything).Return(&models.AccessToken{}, nil)
 
 	//act
-	suite.UserController.PostUser(w, req, nil)
+	suite.UserControl.PostUser(w, req, nil)
 
 	//assert
 	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "username cannot be empty")
@@ -94,7 +94,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WithUsernameLongerThanMax_Ret
 	suite.CRUDMock.On("GetAccessTokenByID", mock.Anything).Return(&models.AccessToken{}, nil)
 
 	//act
-	suite.UserController.PostUser(w, req, nil)
+	suite.UserControl.PostUser(w, req, nil)
 
 	//assert
 	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "username cannot be longer", fmt.Sprint(models.UserUsernameMaxLength))
@@ -114,7 +114,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WithErrorGettingUserByUsernam
 	suite.CRUDMock.On("GetUserByUsername", body.Username).Return(nil, errors.New(""))
 
 	//act
-	suite.UserController.PostUser(w, req, nil)
+	suite.UserControl.PostUser(w, req, nil)
 
 	//assert
 	AssertInternalServerErrorResponse(&suite.Suite, w.Result())
@@ -134,7 +134,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WithNonUniqueUsername_Returns
 	suite.CRUDMock.On("GetUserByUsername", body.Username).Return(&models.User{}, nil)
 
 	//act
-	suite.UserController.PostUser(w, req, nil)
+	suite.UserControl.PostUser(w, req, nil)
 
 	//assert
 	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "username already exists")
@@ -155,7 +155,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WherePasswordDoesNotMeetCrite
 	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(helpers.CreateValidatePasswordCriteriaError(helpers.ValidatePasswordCriteriaTooShort, ""))
 
 	//act
-	suite.UserController.PostUser(w, req, nil)
+	suite.UserControl.PostUser(w, req, nil)
 
 	//assert
 	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "password", "not", "minimum criteria")
@@ -177,7 +177,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WithErrorHashingNewPassword_R
 	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(nil, errors.New(""))
 
 	//act
-	suite.UserController.PostUser(w, req, nil)
+	suite.UserControl.PostUser(w, req, nil)
 
 	//assert
 	AssertInternalServerErrorResponse(&suite.Suite, w.Result())
@@ -200,7 +200,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WithErrorCreatingUser_Returns
 	suite.CRUDMock.On("SaveUser", mock.Anything).Return(errors.New(""))
 
 	//act
-	suite.UserController.PostUser(w, req, nil)
+	suite.UserControl.PostUser(w, req, nil)
 
 	//assert
 	AssertInternalServerErrorResponse(&suite.Suite, w.Result())
@@ -227,7 +227,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WithValidRequest_ReturnsOK() 
 	suite.CRUDMock.On("SaveUser", mock.Anything).Return(nil)
 
 	//act
-	suite.UserController.PostUser(w, req, nil)
+	suite.UserControl.PostUser(w, req, nil)
 
 	//assert
 	suite.CRUDMock.AssertCalled(suite.T(), "GetAccessTokenByID", tokenID)
@@ -244,10 +244,10 @@ func (suite *UserControllerTestSuite) TestPostUser_WithValidRequest_ReturnsOK() 
 func (suite *UserControllerTestSuite) TestDeleteUser_AuthorizationHeaderTests() {
 	setupTest := func() {
 		suite.CRUDMock = databasemocks.CRUDOperations{}
-		suite.UserController.CRUD = &suite.CRUDMock
+		suite.UserControl.CRUD = &suite.CRUDMock
 	}
 
-	RunAuthHeaderTests(&suite.Suite, &suite.CRUDMock, setupTest, suite.UserController.DeleteUser)
+	RunAuthHeaderTests(&suite.Suite, &suite.CRUDMock, setupTest, suite.UserControl.DeleteUser)
 }
 
 func (suite *UserControllerTestSuite) TestDeleteUser_WithoutIdInParams_ReturnsBadRequest() {
@@ -258,7 +258,7 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WithoutIdInParams_ReturnsBa
 	suite.CRUDMock.On("GetAccessTokenByID", mock.Anything).Return(&models.AccessToken{}, nil)
 
 	//act
-	suite.UserController.DeleteUser(w, req, make(httprouter.Params, 0))
+	suite.UserControl.DeleteUser(w, req, make(httprouter.Params, 0))
 
 	//assert
 	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "id must be present")
@@ -277,7 +277,7 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WithIdInInvalidFormat_Retur
 	suite.CRUDMock.On("GetAccessTokenByID", mock.Anything).Return(&models.AccessToken{}, nil)
 
 	//act
-	suite.UserController.DeleteUser(w, req, params)
+	suite.UserControl.DeleteUser(w, req, params)
 
 	//assert
 	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "id", "invalid format")
@@ -297,7 +297,7 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WithErrorGettingUserById_Re
 	suite.CRUDMock.On("GetUserByID", mock.Anything).Return(nil, errors.New(""))
 
 	//act
-	suite.UserController.DeleteUser(w, req, params)
+	suite.UserControl.DeleteUser(w, req, params)
 
 	//assert
 	AssertInternalServerErrorResponse(&suite.Suite, w.Result())
@@ -317,7 +317,7 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WhereUserIsNotFound_Returns
 	suite.CRUDMock.On("GetUserByID", mock.Anything).Return(nil, nil)
 
 	//act
-	suite.UserController.DeleteUser(w, req, params)
+	suite.UserControl.DeleteUser(w, req, params)
 
 	//assert
 	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "user not found")
@@ -338,7 +338,7 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WithErrorDeletingUser_Retur
 	suite.CRUDMock.On("DeleteUser", mock.Anything).Return(errors.New(""))
 
 	//act
-	suite.UserController.DeleteUser(w, req, params)
+	suite.UserControl.DeleteUser(w, req, params)
 
 	//assert
 	AssertInternalServerErrorResponse(&suite.Suite, w.Result())
@@ -361,7 +361,7 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WithValidRequest_ReturnsOK(
 	suite.CRUDMock.On("DeleteUser", mock.Anything).Return(nil)
 
 	//act
-	suite.UserController.DeleteUser(w, req, params)
+	suite.UserControl.DeleteUser(w, req, params)
 
 	//assert
 	suite.CRUDMock.AssertCalled(suite.T(), "GetAccessTokenByID", tokenID)
@@ -374,10 +374,10 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WithValidRequest_ReturnsOK(
 func (suite *UserControllerTestSuite) TestPatchUserPassword_AuthorizationHeaderTests() {
 	setupTest := func() {
 		suite.CRUDMock = databasemocks.CRUDOperations{}
-		suite.UserController.CRUD = &suite.CRUDMock
+		suite.UserControl.CRUD = &suite.CRUDMock
 	}
 
-	RunAuthHeaderTests(&suite.Suite, &suite.CRUDMock, setupTest, suite.UserController.PatchUserPassword)
+	RunAuthHeaderTests(&suite.Suite, &suite.CRUDMock, setupTest, suite.UserControl.PatchUserPassword)
 }
 
 func (suite *UserControllerTestSuite) TestPatchUserPassword_WithInvalidJSONBody_ReturnsBadRequest() {
@@ -388,7 +388,7 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithInvalidJSONBody_
 	suite.CRUDMock.On("GetAccessTokenByID", mock.Anything).Return(&models.AccessToken{}, nil)
 
 	//act
-	suite.UserController.PatchUserPassword(w, req, nil)
+	suite.UserControl.PatchUserPassword(w, req, nil)
 
 	//assert
 	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "invalid json body")
@@ -408,7 +408,7 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WhereOldPasswordIsIn
 	suite.PasswordHasherMock.On("ComparePasswords", mock.Anything, mock.Anything).Return(errors.New(""))
 
 	//act
-	suite.UserController.PatchUserPassword(w, req, nil)
+	suite.UserControl.PatchUserPassword(w, req, nil)
 
 	//assert
 	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "old password", "invalid")
@@ -429,7 +429,7 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WhereNewPasswordDoes
 	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(helpers.CreateValidatePasswordCriteriaError(helpers.ValidatePasswordCriteriaTooShort, ""))
 
 	//act
-	suite.UserController.PatchUserPassword(w, req, nil)
+	suite.UserControl.PatchUserPassword(w, req, nil)
 
 	//assert
 	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "password", "not", "minimum criteria")
@@ -451,7 +451,7 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithErrorHashingNewP
 	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(nil, errors.New(""))
 
 	//act
-	suite.UserController.PatchUserPassword(w, req, nil)
+	suite.UserControl.PatchUserPassword(w, req, nil)
 
 	//assert
 	AssertInternalServerErrorResponse(&suite.Suite, w.Result())
@@ -474,7 +474,7 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithErrorUpdatingUse
 	suite.CRUDMock.On("UpdateUser", mock.Anything).Return(errors.New(""))
 
 	//act
-	suite.UserController.PatchUserPassword(w, req, nil)
+	suite.UserControl.PatchUserPassword(w, req, nil)
 
 	//assert
 	AssertInternalServerErrorResponse(&suite.Suite, w.Result())
@@ -506,7 +506,7 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithValidRequest_Ret
 	suite.CRUDMock.On("UpdateUser", mock.Anything).Return(nil)
 
 	//act
-	suite.UserController.PatchUserPassword(w, req, nil)
+	suite.UserControl.PatchUserPassword(w, req, nil)
 
 	//assert
 	suite.CRUDMock.AssertCalled(suite.T(), "GetAccessTokenByID", tokenID)

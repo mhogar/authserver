@@ -1,7 +1,6 @@
 package server
 
 import (
-	"authserver/controllers"
 	"authserver/database"
 	"authserver/router"
 	"fmt"
@@ -14,11 +13,11 @@ type HTTPServer struct {
 }
 
 // CreateHTTPServerRunner creates a server runner using an http server.
-func CreateHTTPServerRunner(DBConnection database.DBConnection, requestHandler controllers.RequestHandler) Runner {
+func CreateHTTPServerRunner(DBConnection database.DBConnection, handlers router.Handlers) Runner {
 	server := &HTTPServer{
 		Server: http.Server{
 			Addr:    ":8080",
-			Handler: router.CreateRouter(requestHandler),
+			Handler: router.CreateRouter(handlers),
 		},
 	}
 

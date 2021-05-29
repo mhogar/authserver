@@ -21,13 +21,13 @@ type TokenControllerTestSuite struct {
 	suite.Suite
 	CRUDMock           databasemocks.CRUDOperations
 	PasswordHasherMock helpermocks.PasswordHasher
-	TokenController    controllers.TokenController
+	TokenControl       controllers.TokenControl
 }
 
 func (suite *TokenControllerTestSuite) SetupTest() {
 	suite.CRUDMock = databasemocks.CRUDOperations{}
 	suite.PasswordHasherMock = helpermocks.PasswordHasher{}
-	suite.TokenController = controllers.TokenController{
+	suite.TokenControl = controllers.TokenControl{
 		CRUD:           &suite.CRUDMock,
 		PasswordHasher: &suite.PasswordHasherMock,
 	}
@@ -39,7 +39,7 @@ func (suite *TokenControllerTestSuite) TestPostToken_WithInvalidJSONBody_Returns
 	req := CreateRequest(&suite.Suite, "", "invalid")
 
 	//act
-	suite.TokenController.PostToken(w, req, nil)
+	suite.TokenControl.PostToken(w, req, nil)
 
 	//assert
 	AssertOAuthErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "invalid_request", "invalid json body")
@@ -53,7 +53,7 @@ func (suite *TokenControllerTestSuite) TestPostToken_WithMissingGrantType_Return
 	req := CreateRequest(&suite.Suite, "", body)
 
 	//act
-	suite.TokenController.PostToken(w, req, nil)
+	suite.TokenControl.PostToken(w, req, nil)
 
 	//assert
 	AssertOAuthErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "invalid_request", "missing grant_type parameter")
@@ -69,7 +69,7 @@ func (suite *TokenControllerTestSuite) TestPostToken_WithUnsupportedGrantType_Re
 	req := CreateRequest(&suite.Suite, "", body)
 
 	//act
-	suite.TokenController.PostToken(w, req, nil)
+	suite.TokenControl.PostToken(w, req, nil)
 
 	//assert
 	AssertOAuthErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "unsupported_grant_type", "")
@@ -90,7 +90,7 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WithMissingPa
 		req := CreateRequest(&suite.Suite, "", body)
 
 		//act
-		suite.TokenController.PostToken(w, req, nil)
+		suite.TokenControl.PostToken(w, req, nil)
 
 		//assert
 		AssertOAuthErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "invalid_request", expectedErrorDescription)
@@ -145,7 +145,7 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WithClientIDi
 	req := CreateRequest(&suite.Suite, "", body)
 
 	//act
-	suite.TokenController.PostToken(w, req, nil)
+	suite.TokenControl.PostToken(w, req, nil)
 
 	//assert
 	AssertOAuthErrorResponse(&suite.Suite, w.Result(), http.StatusUnauthorized, "invalid_client", "client_id", "invalid format")
@@ -169,7 +169,7 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WithErrorGett
 	suite.CRUDMock.On("GetClientByID", mock.Anything).Return(nil, errors.New(""))
 
 	//act
-	suite.TokenController.PostToken(w, req, nil)
+	suite.TokenControl.PostToken(w, req, nil)
 
 	//assert
 	AssertInternalServerErrorResponse(&suite.Suite, w.Result())
@@ -193,7 +193,7 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WhereClientWi
 	suite.CRUDMock.On("GetClientByID", mock.Anything).Return(nil, nil)
 
 	//act
-	suite.TokenController.PostToken(w, req, nil)
+	suite.TokenControl.PostToken(w, req, nil)
 
 	//assert
 	AssertOAuthErrorResponse(&suite.Suite, w.Result(), http.StatusUnauthorized, "invalid_client", "")
@@ -218,7 +218,7 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WithErrorGett
 	suite.CRUDMock.On("GetScopeByName", mock.Anything).Return(nil, errors.New(""))
 
 	//act
-	suite.TokenController.PostToken(w, req, nil)
+	suite.TokenControl.PostToken(w, req, nil)
 
 	//assert
 	AssertInternalServerErrorResponse(&suite.Suite, w.Result())
@@ -243,7 +243,7 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WhereNoScopeW
 	suite.CRUDMock.On("GetScopeByName", mock.Anything).Return(nil, nil)
 
 	//act
-	suite.TokenController.PostToken(w, req, nil)
+	suite.TokenControl.PostToken(w, req, nil)
 
 	//assert
 	AssertOAuthErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "invalid_scope", "")
@@ -269,7 +269,7 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WithErrorGett
 	suite.CRUDMock.On("GetUserByUsername", mock.Anything).Return(nil, errors.New(""))
 
 	//act
-	suite.TokenController.PostToken(w, req, nil)
+	suite.TokenControl.PostToken(w, req, nil)
 
 	//assert
 	AssertInternalServerErrorResponse(&suite.Suite, w.Result())
@@ -295,7 +295,7 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WhereUserWith
 	suite.CRUDMock.On("GetUserByUsername", mock.Anything).Return(nil, nil)
 
 	//act
-	suite.TokenController.PostToken(w, req, nil)
+	suite.TokenControl.PostToken(w, req, nil)
 
 	//assert
 	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "invalid", "username", "password")
@@ -322,7 +322,7 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WherePassword
 	suite.PasswordHasherMock.On("ComparePasswords", mock.Anything, mock.Anything).Return(errors.New(""))
 
 	//act
-	suite.TokenController.PostToken(w, req, nil)
+	suite.TokenControl.PostToken(w, req, nil)
 
 	//assert
 	AssertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "invalid", "username", "password")
@@ -350,7 +350,7 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WithErrorSavi
 	suite.CRUDMock.On("SaveAccessToken", mock.Anything).Return(errors.New(""))
 
 	//act
-	suite.TokenController.PostToken(w, req, nil)
+	suite.TokenControl.PostToken(w, req, nil)
 
 	//assert
 	AssertInternalServerErrorResponse(&suite.Suite, w.Result())
@@ -386,7 +386,7 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WithValidRequ
 	}).Return(nil)
 
 	//act
-	suite.TokenController.PostToken(w, req, nil)
+	suite.TokenControl.PostToken(w, req, nil)
 
 	//assert
 	suite.CRUDMock.AssertCalled(suite.T(), "GetClientByID", clientID)
@@ -404,10 +404,10 @@ func (suite *TokenControllerTestSuite) TestPostToken_PasswordGrant_WithValidRequ
 func (suite *TokenControllerTestSuite) TestDeleteToken_AuthorizationHeaderTests() {
 	setupTest := func() {
 		suite.CRUDMock = databasemocks.CRUDOperations{}
-		suite.TokenController.CRUD = &suite.CRUDMock
+		suite.TokenControl.CRUD = &suite.CRUDMock
 	}
 
-	RunAuthHeaderTests(&suite.Suite, &suite.CRUDMock, setupTest, suite.TokenController.DeleteToken)
+	RunAuthHeaderTests(&suite.Suite, &suite.CRUDMock, setupTest, suite.TokenControl.DeleteToken)
 }
 
 func (suite *TokenControllerTestSuite) TestDeleteToken_WithErrorDeletingAccessToken_ReturnsInternalServerError() {
@@ -419,7 +419,7 @@ func (suite *TokenControllerTestSuite) TestDeleteToken_WithErrorDeletingAccessTo
 	suite.CRUDMock.On("DeleteAccessToken", mock.Anything).Return(errors.New(""))
 
 	//act
-	suite.TokenController.DeleteToken(w, req, nil)
+	suite.TokenControl.DeleteToken(w, req, nil)
 
 	//assert
 	AssertInternalServerErrorResponse(&suite.Suite, w.Result())
@@ -438,7 +438,7 @@ func (suite *TokenControllerTestSuite) TestDeleteToken_WithValidRequest_ReturnsO
 	suite.CRUDMock.On("DeleteAccessToken", mock.Anything).Return(nil)
 
 	//act
-	suite.TokenController.DeleteToken(w, req, nil)
+	suite.TokenControl.DeleteToken(w, req, nil)
 
 	//assert
 	suite.CRUDMock.AssertCalled(suite.T(), "GetAccessTokenByID", tokenID)
