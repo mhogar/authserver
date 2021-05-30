@@ -13,7 +13,7 @@ type ConfigPasswordCriteriaValidator struct{}
 
 // ValidatePasswordCriteria validates the password meets the standard minimum complexity criteria.
 func (ConfigPasswordCriteriaValidator) ValidatePasswordCriteria(password string) ValidatePasswordCriteriaError {
-	criteria := viper.Get("password").(config.PasswordCriteriaConfig)
+	criteria := viper.Get("password_criteria").(config.PasswordCriteriaConfig)
 
 	//validate min length
 	if len(password) < criteria.MinLength {

@@ -31,7 +31,7 @@ func (suite *ConfigPasswordCriteriaValidatorTestSuite) TestValidatePasswordCrite
 	var password string
 
 	testCase := func() {
-		viper.Set("password", suite.Criteria)
+		viper.Set("password_criteria", suite.Criteria)
 
 		verr := suite.ConfigPasswordCriteriaValidator.ValidatePasswordCriteria(password)
 		suite.Equal(expectedStatus, verr.Status)
@@ -55,7 +55,7 @@ func (suite *ConfigPasswordCriteriaValidatorTestSuite) TestValidatePasswordCrite
 	var password string
 
 	testCase := func() {
-		viper.Set("password", suite.Criteria)
+		viper.Set("password_criteria", suite.Criteria)
 
 		verr := suite.ConfigPasswordCriteriaValidator.ValidatePasswordCriteria(password)
 		suite.Equal(expectedStatus, verr.Status)
@@ -85,7 +85,7 @@ func (suite *ConfigPasswordCriteriaValidatorTestSuite) TestValidatePasswordCrite
 	var password string
 
 	testCase := func() {
-		viper.Set("password", suite.Criteria)
+		viper.Set("password_criteria", suite.Criteria)
 
 		verr := suite.ConfigPasswordCriteriaValidator.ValidatePasswordCriteria(password)
 		suite.Equal(expectedStatus, verr.Status)
@@ -115,7 +115,7 @@ func (suite *ConfigPasswordCriteriaValidatorTestSuite) TestValidatePasswordCrite
 	var password string
 
 	testCase := func() {
-		viper.Set("password", suite.Criteria)
+		viper.Set("password_criteria", suite.Criteria)
 
 		verr := suite.ConfigPasswordCriteriaValidator.ValidatePasswordCriteria(password)
 		suite.Equal(expectedStatus, verr.Status)
@@ -145,7 +145,7 @@ func (suite *ConfigPasswordCriteriaValidatorTestSuite) TestValidatePasswordCrite
 	var password string
 
 	testCase := func() {
-		viper.Set("password", suite.Criteria)
+		viper.Set("password_criteria", suite.Criteria)
 
 		verr := suite.ConfigPasswordCriteriaValidator.ValidatePasswordCriteria(password)
 		suite.Equal(expectedStatus, verr.Status)

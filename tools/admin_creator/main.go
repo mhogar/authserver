@@ -7,7 +7,9 @@ import (
 	"authserver/controllers"
 	"authserver/database"
 	"authserver/dependencies"
+	"authserver/models"
 	"flag"
+	"fmt"
 	"log"
 
 	"github.com/spf13/viper"
@@ -27,18 +29,20 @@ func main() {
 
 	viper.Set("db_key", *dbKey)
 
-	err = Run(dependencies.ResolveDatabase(), dependencies.ResolveControllers(), *username, *password)
+	user, err := Run(dependencies.ResolveDatabase(), dependencies.ResolveControllers(), *username, *password)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	fmt.Println("Created user:", user.ID.String())
 }
 
 // Run connects to the database and runs the admin creator. Returns any errors.
-func Run(db database.DBConnection, c controllers.UserController, username string, password string) error {
+func Run(db database.DBConnection, c controllers.UserController, username string, password string) (*models.User, error) {
 	//open the db connection
 	err := db.OpenConnection()
 	if err != nil {
-		return common.ChainError("could not open database connection", err)
+		return nil, common.ChainError("could not open database connection", err)
 	}
 
 	defer db.CloseConnection()
@@ -46,14 +50,14 @@ func Run(db database.DBConnection, c controllers.UserController, username string
 	//check db is connected
 	err = db.Ping()
 	if err != nil {
-		return common.ChainError("could not reach database", err)
+		return nil, common.ChainError("could not reach database", err)
 	}
 
 	//save the user
-	_, rerr := c.CreateUser(username, password)
+	user, rerr := c.CreateUser(username, password)
 	if rerr.Type != requesterror.ErrorTypeNone {
-		return rerr
+		return nil, rerr
 	}
 
-	return nil
+	return user, nil
 }

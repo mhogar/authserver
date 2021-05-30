@@ -4,6 +4,7 @@ import (
 	requesterror "authserver/common/request_error"
 	controllermocks "authserver/controllers/mocks"
 	databasemocks "authserver/database/mocks"
+	"authserver/models"
 	admincreator "authserver/tools/admin_creator"
 	"errors"
 	"testing"
@@ -32,9 +33,10 @@ func (suite *AdminCreatorTestSuite) TestRun_WithErrorOpeningDatabaseConnection_R
 	suite.DBConnectionMock.On("OpenConnection").Return(errors.New(message))
 
 	//act
-	err := admincreator.Run(&suite.DBConnectionMock, &suite.ControllersMock, username, password)
+	user, err := admincreator.Run(&suite.DBConnectionMock, &suite.ControllersMock, username, password)
 
 	//assert
+	suite.Nil(user)
 	suite.Require().Error(err)
 	suite.Contains(err.Error(), message)
 }
@@ -51,11 +53,12 @@ func (suite *AdminCreatorTestSuite) TestRun_WithErrorPingingDatabase_ReturnsErro
 	suite.DBConnectionMock.On("Ping").Return(errors.New(message))
 
 	//act
-	err := admincreator.Run(&suite.DBConnectionMock, &suite.ControllersMock, username, password)
+	user, err := admincreator.Run(&suite.DBConnectionMock, &suite.ControllersMock, username, password)
 
 	//assert
 	suite.DBConnectionMock.AssertCalled(suite.T(), "CloseConnection")
 
+	suite.Nil(user)
 	suite.Require().Error(err)
 	suite.Contains(err.Error(), message)
 }
@@ -73,11 +76,12 @@ func (suite *AdminCreatorTestSuite) TestRun_WithErrorCreatingUser_ReturnsError()
 	suite.ControllersMock.On("CreateUser", mock.Anything, mock.Anything).Return(nil, requesterror.ClientError(message))
 
 	//act
-	err := admincreator.Run(&suite.DBConnectionMock, &suite.ControllersMock, username, password)
+	user, err := admincreator.Run(&suite.DBConnectionMock, &suite.ControllersMock, username, password)
 
 	//assert
 	suite.DBConnectionMock.AssertCalled(suite.T(), "CloseConnection")
 
+	suite.Nil(user)
 	suite.Require().Error(err)
 	suite.Contains(err.Error(), message)
 }
@@ -90,10 +94,10 @@ func (suite *AdminCreatorTestSuite) TestRun_WithNoErrors_ReturnsNoErrors() {
 	suite.DBConnectionMock.On("OpenConnection").Return(nil)
 	suite.DBConnectionMock.On("CloseConnection").Return(nil)
 	suite.DBConnectionMock.On("Ping").Return(nil)
-	suite.ControllersMock.On("CreateUser", mock.Anything, mock.Anything).Return(nil, requesterror.NoError())
+	suite.ControllersMock.On("CreateUser", mock.Anything, mock.Anything).Return(&models.User{}, requesterror.NoError())
 
 	//act
-	err := admincreator.Run(&suite.DBConnectionMock, &suite.ControllersMock, username, password)
+	user, err := admincreator.Run(&suite.DBConnectionMock, &suite.ControllersMock, username, password)
 
 	//assert
 	suite.DBConnectionMock.AssertCalled(suite.T(), "OpenConnection")
@@ -102,6 +106,7 @@ func (suite *AdminCreatorTestSuite) TestRun_WithNoErrors_ReturnsNoErrors() {
 	suite.DBConnectionMock.AssertCalled(suite.T(), "CloseConnection")
 
 	suite.NoError(err)
+	suite.NotNil(user)
 }
 
 func TestAdminCreatorTestSuite(t *testing.T) {
