@@ -1,10 +1,6 @@
-
-authserver
-
-database/migration_runner/migration_runner
-
 .vscode/
-
 config.local.yml
 
-main
+authserver
+tools/migration_runner/migration_runner
+tools/admin_creator/admin_creator

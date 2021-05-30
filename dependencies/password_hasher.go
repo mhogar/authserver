@@ -5,13 +5,13 @@ import (
 	"sync"
 )
 
-var passwordHasherOnce sync.Once
+var createPasswordHasherOnce sync.Once
 var passwordHasher passwordhelpers.PasswordHasher
 
 // ResolvePasswordHasher resolves the PasswordHasher dependency.
 // Only the first call to this function will create a new PasswordHasher, after which it will be retrieved from memory.
 func ResolvePasswordHasher() passwordhelpers.PasswordHasher {
-	passwordHasherOnce.Do(func() {
+	createPasswordHasherOnce.Do(func() {
 		passwordHasher = passwordhelpers.BCryptPasswordHasher{}
 	})
 	return passwordHasher

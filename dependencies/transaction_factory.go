@@ -6,13 +6,13 @@ import (
 	"sync"
 )
 
-var transactionFactoryOnce sync.Once
+var createTransactionFactoryOnce sync.Once
 var transactionFactory databasepkg.TransactionFactory
 
 // ResolveTransactionFactory resolves the TransactionFactory dependency.
 // Only the first call to this function will create a new TransactionFactory, after which it will be retrieved from memory.
 func ResolveTransactionFactory() databasepkg.TransactionFactory {
-	transactionFactoryOnce.Do(func() {
+	createTransactionFactoryOnce.Do(func() {
 		transactionFactory = sqladapter.SQLTransactionFactory{
 			DB: ResolveDatabase().(*sqladapter.SQLDB),
 		}
