@@ -1,8 +1,8 @@
 package controllers
 
 import (
+	"authserver/common"
 	requesterror "authserver/common/request_error"
-	commonhelpers "authserver/helpers/common"
 	"authserver/models"
 	"log"
 
@@ -13,7 +13,7 @@ func parseClient(clientCRUD models.ClientCRUD, clientID uuid.UUID) (*models.Clie
 	//get the client
 	client, err := clientCRUD.GetClientByID(clientID)
 	if err != nil {
-		log.Println(commonhelpers.ChainError("error getting client by id", err))
+		log.Println(common.ChainError("error getting client by id", err))
 		return nil, requesterror.OAuthInternalError()
 	}
 
@@ -29,7 +29,7 @@ func parseScope(scopeCRUD models.ScopeCRUD, name string) (*models.Scope, request
 	//get the scope
 	scope, err := scopeCRUD.GetScopeByName(name)
 	if err != nil {
-		log.Println(commonhelpers.ChainError("error getting scope by name", err))
+		log.Println(common.ChainError("error getting scope by name", err))
 		return nil, requesterror.OAuthInternalError()
 	}
 

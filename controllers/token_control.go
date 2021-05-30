@@ -1,9 +1,9 @@
 package controllers
 
 import (
+	"authserver/common"
 	requesterror "authserver/common/request_error"
-	helpers "authserver/helpers"
-	commonhelpers "authserver/helpers/common"
+	passwordhelpers "authserver/controllers/password_helpers"
 	"authserver/models"
 	"log"
 
@@ -18,7 +18,7 @@ type TokenControl struct {
 		models.ScopeCRUD
 		models.AccessTokenCRUD
 	}
-	helpers.PasswordHasher
+	passwordhelpers.PasswordHasher
 }
 
 // PostToken handles POST requests to "/token"
@@ -38,7 +38,7 @@ func (c TokenControl) CreateTokenFromPassword(username string, password string, 
 	//get the user
 	user, err := c.CRUD.GetUserByUsername(username)
 	if err != nil {
-		log.Println(commonhelpers.ChainError("error getting user by username", err))
+		log.Println(common.ChainError("error getting user by username", err))
 		return nil, requesterror.OAuthInternalError()
 	}
 
@@ -50,7 +50,7 @@ func (c TokenControl) CreateTokenFromPassword(username string, password string, 
 	//validate the password
 	err = c.PasswordHasher.ComparePasswords(user.PasswordHash, password)
 	if err != nil {
-		log.Println(commonhelpers.ChainError("error comparing password hashes", err))
+		log.Println(common.ChainError("error comparing password hashes", err))
 		return nil, requesterror.OAuthClientError("invalid_grant", "invalid username and/or password")
 	}
 
@@ -60,7 +60,7 @@ func (c TokenControl) CreateTokenFromPassword(username string, password string, 
 	//save the token
 	err = c.CRUD.SaveAccessToken(token)
 	if err != nil {
-		log.Println(commonhelpers.ChainError("error saving access token", err))
+		log.Println(common.ChainError("error saving access token", err))
 		return nil, requesterror.OAuthInternalError()
 	}
 
@@ -71,7 +71,7 @@ func (c TokenControl) DeleteToken(token *models.AccessToken) requesterror.Reques
 	//delete the token
 	err := c.CRUD.DeleteAccessToken(token)
 	if err != nil {
-		log.Println(commonhelpers.ChainError("error deleting access token", err))
+		log.Println(common.ChainError("error deleting access token", err))
 		return requesterror.InternalError()
 	}
 

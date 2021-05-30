@@ -1,4 +1,4 @@
-package helpers
+package passwordhelpers
 
 import (
 	"authserver/config"

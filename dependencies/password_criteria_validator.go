@@ -1,18 +1,18 @@
 package dependencies
 
 import (
-	"authserver/helpers"
+	passwordhelpers "authserver/controllers/password_helpers"
 	"sync"
 )
 
 var passwordCriteriaValidatorOnce sync.Once
-var passwordCriteriaValidator helpers.PasswordCriteriaValidator
+var passwordCriteriaValidator passwordhelpers.PasswordCriteriaValidator
 
 // ResolvePasswordCriteriaValidator resolves the PasswordCriteriaValidator dependency.
 // Only the first call to this function will create a new PasswordCriteriaValidator, after which it will be retrieved from the cache.
-func ResolvePasswordCriteriaValidator() helpers.PasswordCriteriaValidator {
+func ResolvePasswordCriteriaValidator() passwordhelpers.PasswordCriteriaValidator {
 	passwordCriteriaValidatorOnce.Do(func() {
-		passwordCriteriaValidator = helpers.ConfigPasswordCriteriaValidator{}
+		passwordCriteriaValidator = passwordhelpers.ConfigPasswordCriteriaValidator{}
 	})
 	return passwordCriteriaValidator
 }

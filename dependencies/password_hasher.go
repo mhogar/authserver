@@ -1,18 +1,18 @@
 package dependencies
 
 import (
-	"authserver/helpers"
+	passwordhelpers "authserver/controllers/password_helpers"
 	"sync"
 )
 
 var passwordHasherOnce sync.Once
-var passwordHasher helpers.PasswordHasher
+var passwordHasher passwordhelpers.PasswordHasher
 
 // ResolvePasswordHasher resolves the PasswordHasher dependency.
 // Only the first call to this function will create a new PasswordHasher, after which it will be retrieved from the cache.
-func ResolvePasswordHasher() helpers.PasswordHasher {
+func ResolvePasswordHasher() passwordhelpers.PasswordHasher {
 	passwordHasherOnce.Do(func() {
-		passwordHasher = helpers.BCryptPasswordHasher{}
+		passwordHasher = passwordhelpers.BCryptPasswordHasher{}
 	})
 	return passwordHasher
 }

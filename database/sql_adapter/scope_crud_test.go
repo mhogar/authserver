@@ -1,10 +1,10 @@
 package sqladapter_test
 
 import (
+	"authserver/common"
 	"authserver/config"
 	sqladapter "authserver/database/sql_adapter"
 	"authserver/dependencies"
-	commonhelpers "authserver/helpers/common"
 	"authserver/models"
 	"testing"
 
@@ -61,7 +61,7 @@ func (suite *ScopeCRUDTestSuite) TestSaveScope_WithInvalidScope_ReturnsError() {
 	err := suite.Tx.SaveScope(scope)
 
 	//assert
-	commonhelpers.AssertError(&suite.Suite, err, "error", "scope model")
+	common.AssertError(&suite.Suite, err, "error", "scope model")
 }
 
 func (suite *ScopeCRUDTestSuite) TestGetScopeByName_WhereScopeNotFound_ReturnsNilScope() {

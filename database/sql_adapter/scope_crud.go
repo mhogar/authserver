@@ -1,7 +1,7 @@
 package sqladapter
 
 import (
-	commonhelpers "authserver/helpers/common"
+	"authserver/common"
 	"authserver/models"
 	"database/sql"
 	"errors"
@@ -21,7 +21,7 @@ func (adapter *SQLAdapter) SaveScope(scope *models.Scope) error {
 	cancel()
 
 	if err != nil {
-		return commonhelpers.ChainError("error executing save scope statement", err)
+		return common.ChainError("error executing save scope statement", err)
 	}
 
 	return nil
@@ -35,7 +35,7 @@ func (adapter *SQLAdapter) GetScopeByName(name string) (*models.Scope, error) {
 	defer cancel()
 
 	if err != nil {
-		return nil, commonhelpers.ChainError("error executing get scope by name query", err)
+		return nil, common.ChainError("error executing get scope by name query", err)
 	}
 	defer rows.Close()
 
@@ -47,7 +47,7 @@ func readScopeData(rows *sql.Rows) (*models.Scope, error) {
 	if !rows.Next() {
 		err := rows.Err()
 		if err != nil {
-			return nil, commonhelpers.ChainError("error preparing next row", err)
+			return nil, common.ChainError("error preparing next row", err)
 		}
 
 		//return no results
@@ -58,7 +58,7 @@ func readScopeData(rows *sql.Rows) (*models.Scope, error) {
 	scope := &models.Scope{}
 	err := rows.Scan(&scope.ID, &scope.Name)
 	if err != nil {
-		return nil, commonhelpers.ChainError("error reading row", err)
+		return nil, common.ChainError("error reading row", err)
 	}
 
 	return scope, nil

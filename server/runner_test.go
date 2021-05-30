@@ -1,9 +1,9 @@
 package server_test
 
 import (
+	"authserver/common"
 	controllermocks "authserver/controllers/mocks"
 	databasemocks "authserver/database/mocks"
-	commonhelpers "authserver/helpers/common"
 	routermocks "authserver/router/mocks"
 	"authserver/server"
 	"authserver/server/mocks"
@@ -45,7 +45,7 @@ func (suite *RunnerTestSuite) TestRun_WithErrorOpeningDBConnection_ReturnsError(
 	err := suite.Runner.Run()
 
 	//assert
-	commonhelpers.AssertError(&suite.Suite, err, message)
+	common.AssertError(&suite.Suite, err, message)
 }
 
 func (suite *RunnerTestSuite) TestRun_WithPingingDatabase_ReturnsError() {
@@ -59,7 +59,7 @@ func (suite *RunnerTestSuite) TestRun_WithPingingDatabase_ReturnsError() {
 	err := suite.Runner.Run()
 
 	//assert
-	commonhelpers.AssertError(&suite.Suite, err, message)
+	common.AssertError(&suite.Suite, err, message)
 }
 
 func (suite *RunnerTestSuite) TestRun_WithErrorStartingServer_ReturnsError() {
@@ -74,7 +74,7 @@ func (suite *RunnerTestSuite) TestRun_WithErrorStartingServer_ReturnsError() {
 	err := suite.Runner.Run()
 
 	//assert
-	commonhelpers.AssertError(&suite.Suite, err, message)
+	common.AssertError(&suite.Suite, err, message)
 }
 
 func (suite *RunnerTestSuite) TestRun_StartsServer() {

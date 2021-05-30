@@ -1,9 +1,9 @@
 package router_test
 
 import (
+	"authserver/common"
 	requesterror "authserver/common/request_error"
 	databasemocks "authserver/database/mocks"
-	commonhelpers "authserver/helpers/common"
 	"authserver/router"
 	"errors"
 	"net/http"
@@ -37,7 +37,7 @@ func (suite *OAuthAuthenticatorTestSuite) TestAuthenticate_WithNoBearerToken_Ret
 		//assert
 		suite.Nil(token)
 
-		commonhelpers.AssertError(&suite.Suite, rerr, "no bearer token")
+		common.AssertError(&suite.Suite, rerr, "no bearer token")
 		suite.Equal(requesterror.ErrorTypeClient, rerr.Type)
 	}
 
@@ -58,7 +58,7 @@ func (suite *OAuthAuthenticatorTestSuite) TestAuthenticate_WithBearerTokenInInva
 	//assert
 	suite.Nil(token)
 
-	commonhelpers.AssertError(&suite.Suite, rerr, "bearer token", "invalid format")
+	common.AssertError(&suite.Suite, rerr, "bearer token", "invalid format")
 	suite.Equal(requesterror.ErrorTypeClient, rerr.Type)
 }
 
@@ -73,7 +73,7 @@ func (suite *OAuthAuthenticatorTestSuite) TestAuthenticate_WithErrorFetchingAcce
 	//assert
 	suite.Nil(token)
 
-	commonhelpers.AssertInternalError(&suite.Suite, rerr)
+	common.AssertInternalError(&suite.Suite, rerr)
 	suite.Equal(requesterror.ErrorTypeInternal, rerr.Type)
 }
 
@@ -88,7 +88,7 @@ func (suite *OAuthAuthenticatorTestSuite) TestAuthenticate_WhereAccessTokenWithI
 	//assert
 	suite.Nil(token)
 
-	commonhelpers.AssertError(&suite.Suite, rerr, "bearer token", "invalid")
+	common.AssertError(&suite.Suite, rerr, "bearer token", "invalid")
 	suite.Equal(requesterror.ErrorTypeClient, rerr.Type)
 }
 

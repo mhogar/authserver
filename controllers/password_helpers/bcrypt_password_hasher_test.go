@@ -1,7 +1,7 @@
-package helpers_test
+package passwordhelpers_test
 
 import (
-	"authserver/helpers"
+	passwordhelpers "authserver/controllers/password_helpers"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -9,11 +9,11 @@ import (
 
 type BCryptPasswordHasherTestSuite struct {
 	suite.Suite
-	BCryptPasswordHasher helpers.BCryptPasswordHasher
+	BCryptPasswordHasher passwordhelpers.BCryptPasswordHasher
 }
 
 func (suite *BCryptPasswordHasherTestSuite) SetupTest() {
-	suite.BCryptPasswordHasher = helpers.BCryptPasswordHasher{}
+	suite.BCryptPasswordHasher = passwordhelpers.BCryptPasswordHasher{}
 }
 
 func (suite *BCryptPasswordHasherTestSuite) TestHashPassword_WithNoError_ReturnsHashAndNilError() {

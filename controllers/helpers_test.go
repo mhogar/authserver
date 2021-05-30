@@ -1,8 +1,8 @@
 package controllers_test
 
 import (
+	"authserver/common"
 	requesterror "authserver/common/request_error"
-	commonhelpers "authserver/helpers/common"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -15,13 +15,13 @@ func AssertNoError(suite *suite.Suite, err requesterror.RequestError) {
 func AssertClientError(suite *suite.Suite, err requesterror.RequestError, expectedSubStrs ...string) {
 	suite.Require().NotNil(err)
 	suite.Equal(requesterror.ErrorTypeClient, err.Type)
-	commonhelpers.AssertContainsSubstrings(suite, err.Error(), expectedSubStrs...)
+	common.AssertContainsSubstrings(suite, err.Error(), expectedSubStrs...)
 }
 
 func AssertInternalError(suite *suite.Suite, err requesterror.RequestError) {
 	suite.Require().NotNil(err)
 	suite.Equal(requesterror.ErrorTypeInternal, err.Type)
-	commonhelpers.AssertContainsSubstrings(suite, err.Error(), "internal error")
+	common.AssertContainsSubstrings(suite, err.Error(), "internal error")
 }
 
 func AssertOAuthNoError(suite *suite.Suite, err requesterror.OAuthRequestError) {

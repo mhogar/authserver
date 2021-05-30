@@ -1,10 +1,10 @@
 package main
 
 import (
+	"authserver/common"
 	"authserver/config"
 	"authserver/database"
 	"authserver/dependencies"
-	commonhelpers "authserver/helpers/common"
 	"flag"
 	"log"
 
@@ -47,7 +47,7 @@ func Run(db database.DBConnection, migrationRunner MigrationRunner, down bool) e
 	//open the db connection
 	err := db.OpenConnection()
 	if err != nil {
-		return commonhelpers.ChainError("could not create database connection", err)
+		return common.ChainError("could not create database connection", err)
 	}
 
 	defer db.CloseConnection()
@@ -55,7 +55,7 @@ func Run(db database.DBConnection, migrationRunner MigrationRunner, down bool) e
 	//check db is connected
 	err = db.Ping()
 	if err != nil {
-		return commonhelpers.ChainError("could not reach database", err)
+		return common.ChainError("could not reach database", err)
 	}
 
 	//run the migrations
@@ -66,7 +66,7 @@ func Run(db database.DBConnection, migrationRunner MigrationRunner, down bool) e
 	}
 
 	if err != nil {
-		return commonhelpers.ChainError("error running migrations", err)
+		return common.ChainError("error running migrations", err)
 	}
 
 	return nil

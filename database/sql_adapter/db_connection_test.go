@@ -1,10 +1,10 @@
 package sqladapter_test
 
 import (
+	"authserver/common"
 	"authserver/config"
 	sqladapter "authserver/database/sql_adapter"
 	"authserver/dependencies"
-	commonhelpers "authserver/helpers/common"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -31,7 +31,7 @@ func (suite *DbConnectionTestSuite) TestOpenConnection_WhereConnectionStringIsNo
 	err := suite.DB.OpenConnection()
 
 	//assert
-	commonhelpers.AssertError(&suite.Suite, err, "no connection string", dbKey)
+	common.AssertError(&suite.Suite, err, "no connection string", dbKey)
 }
 
 func (suite *DbConnectionTestSuite) TestCloseConnection_WithValidConnection_ReturnsNoError() {

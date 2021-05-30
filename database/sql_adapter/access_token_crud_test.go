@@ -1,10 +1,10 @@
 package sqladapter_test
 
 import (
+	"authserver/common"
 	"authserver/config"
 	sqladapter "authserver/database/sql_adapter"
 	"authserver/dependencies"
-	commonhelpers "authserver/helpers/common"
 	"authserver/models"
 	"testing"
 
@@ -59,7 +59,7 @@ func (suite *AccessTokenCRUDTestSuite) TestSaveAccessToken_WithInvalidAccessToke
 	err := suite.Tx.SaveAccessToken(models.CreateNewAccessToken(nil, nil, nil))
 
 	//assert
-	commonhelpers.AssertError(&suite.Suite, err, "error", "access token model")
+	common.AssertError(&suite.Suite, err, "error", "access token model")
 }
 
 func (suite *AccessTokenCRUDTestSuite) TestGetAccessTokenById_WhereAccessTokenNotFound_ReturnsNilAccessToken() {

@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/uuid"
 
+	"authserver/common"
 	requesterror "authserver/common/request_error"
-	commonhelpers "authserver/helpers/common"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -34,7 +34,7 @@ func (h RouteHandler) PostUser(w http.ResponseWriter, req *http.Request, _ httpr
 	var body PostUserBody
 	err := parseJSONBody(req.Body, &body)
 	if err != nil {
-		log.Println(commonhelpers.ChainError("error parsing PostUser request body", err))
+		log.Println(common.ChainError("error parsing PostUser request body", err))
 		sendErrorResponse(w, http.StatusBadRequest, "invalid json body")
 		return
 	}
@@ -68,7 +68,7 @@ func (h RouteHandler) DeleteUser(w http.ResponseWriter, req *http.Request, param
 	//parse the id
 	id, err := uuid.Parse(params.ByName("id"))
 	if err != nil {
-		log.Println(commonhelpers.ChainError("error parsing user id", err))
+		log.Println(common.ChainError("error parsing user id", err))
 		sendErrorResponse(w, http.StatusBadRequest, "id is in invalid format")
 		return
 	}
@@ -109,7 +109,7 @@ func (h RouteHandler) PatchUserPassword(w http.ResponseWriter, req *http.Request
 	var body PatchUserPasswordBody
 	err := parseJSONBody(req.Body, &body)
 	if err != nil {
-		log.Println(commonhelpers.ChainError("error parsing PatchUserPassword request body", err))
+		log.Println(common.ChainError("error parsing PatchUserPassword request body", err))
 		sendErrorResponse(w, http.StatusBadRequest, "invalid json body")
 		return
 	}

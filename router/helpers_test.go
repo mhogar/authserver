@@ -1,7 +1,7 @@
 package router_test
 
 import (
-	commonhelpers "authserver/helpers/common"
+	"authserver/common"
 	"authserver/router"
 	"bytes"
 	"encoding/json"
@@ -54,7 +54,7 @@ func AssertErrorResponse(suite *suite.Suite, res *http.Response, expectedStatus 
 	suite.Equal(expectedStatus, status)
 	suite.False(errRes.Success)
 
-	commonhelpers.AssertContainsSubstrings(suite, errRes.Error, expectedErrorSubStrings...)
+	common.AssertContainsSubstrings(suite, errRes.Error, expectedErrorSubStrings...)
 }
 
 func AssertInternalServerErrorResponse(suite *suite.Suite, res *http.Response) {
@@ -68,7 +68,7 @@ func AssertOAuthErrorResponse(suite *suite.Suite, res *http.Response, expectedSt
 	suite.Equal(expectedStatus, status)
 	suite.Contains(errRes.Error, expectedError)
 
-	commonhelpers.AssertContainsSubstrings(suite, errRes.ErrorDescription, expectedDescriptionSubStrings...)
+	common.AssertContainsSubstrings(suite, errRes.ErrorDescription, expectedDescriptionSubStrings...)
 }
 
 func AssertAccessTokenResponse(suite *suite.Suite, res *http.Response, expectedTokenID string) {

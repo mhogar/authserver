@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/mock"
 
+	passwordhelpermocks "authserver/controllers/password_helpers/mocks"
 	databasemocks "authserver/database/mocks"
-	helpermocks "authserver/helpers/mocks"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
@@ -18,13 +18,13 @@ import (
 type TokenControlTestSuite struct {
 	suite.Suite
 	CRUDMock           databasemocks.CRUDOperations
-	PasswordHasherMock helpermocks.PasswordHasher
+	PasswordHasherMock passwordhelpermocks.PasswordHasher
 	TokenControl       controllers.TokenControl
 }
 
 func (suite *TokenControlTestSuite) SetupTest() {
 	suite.CRUDMock = databasemocks.CRUDOperations{}
-	suite.PasswordHasherMock = helpermocks.PasswordHasher{}
+	suite.PasswordHasherMock = passwordhelpermocks.PasswordHasher{}
 	suite.TokenControl = controllers.TokenControl{
 		CRUD:           &suite.CRUDMock,
 		PasswordHasher: &suite.PasswordHasherMock,

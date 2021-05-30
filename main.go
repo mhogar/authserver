@@ -1,8 +1,8 @@
 package main
 
 import (
+	"authserver/common"
 	"authserver/dependencies"
-	commonhelpers "authserver/helpers/common"
 	"authserver/server"
 	"log"
 
@@ -12,7 +12,7 @@ import (
 func main() {
 	err := config.InitConfig(".")
 	if err != nil {
-		log.Fatal(commonhelpers.ChainError("error initing config", err))
+		log.Fatal(common.ChainError("error initing config", err))
 	}
 
 	serverRunner := server.CreateHTTPServerRunner(dependencies.ResolveDatabase(), dependencies.ResolveControllers(), dependencies.ResolveAuthenticator())

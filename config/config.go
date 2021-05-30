@@ -1,7 +1,7 @@
 package config
 
 import (
-	commonhelpers "authserver/helpers/common"
+	"authserver/common"
 	"fmt"
 	"io/ioutil"
 	"path"
@@ -57,14 +57,14 @@ func InitConfig(dir string) error {
 	//read the config file
 	data, err := ioutil.ReadFile(path.Join(dir, fmt.Sprint("config.", viper.Get("env"), ".yml")))
 	if err != nil {
-		return commonhelpers.ChainError("error loading config file", err)
+		return common.ChainError("error loading config file", err)
 	}
 
 	//parse the yaml
 	var cfg config
 	err = yaml.Unmarshal(data, &cfg)
 	if err != nil {
-		return commonhelpers.ChainError("error parsing config file", err)
+		return common.ChainError("error parsing config file", err)
 	}
 
 	//set the config

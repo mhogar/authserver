@@ -1,4 +1,4 @@
-package commonhelpers
+package common
 
 import (
 	"errors"

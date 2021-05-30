@@ -1,8 +1,8 @@
-package helpers_test
+package passwordhelpers_test
 
 import (
 	"authserver/config"
-	"authserver/helpers"
+	passwordhelpers "authserver/controllers/password_helpers"
 	"testing"
 
 	"github.com/spf13/viper"
@@ -11,12 +11,12 @@ import (
 
 type ConfigPasswordCriteriaValidatorTestSuite struct {
 	suite.Suite
-	ConfigPasswordCriteriaValidator helpers.ConfigPasswordCriteriaValidator
+	ConfigPasswordCriteriaValidator passwordhelpers.ConfigPasswordCriteriaValidator
 	Criteria                        config.PasswordCriteriaConfig
 }
 
 func (suite *ConfigPasswordCriteriaValidatorTestSuite) SetupTest() {
-	suite.ConfigPasswordCriteriaValidator = helpers.ConfigPasswordCriteriaValidator{}
+	suite.ConfigPasswordCriteriaValidator = passwordhelpers.ConfigPasswordCriteriaValidator{}
 	suite.Criteria = config.PasswordCriteriaConfig{
 		MinLength:        4,
 		RequireLowerCase: false,
@@ -38,15 +38,15 @@ func (suite *ConfigPasswordCriteriaValidatorTestSuite) TestValidatePasswordCrite
 	}
 
 	password = "aaa"
-	expectedStatus = helpers.ValidatePasswordCriteriaTooShort
+	expectedStatus = passwordhelpers.ValidatePasswordCriteriaTooShort
 	suite.Run("PaswordOneLessThanMinLength_ReturnsValidatePasswordCriteriaTooShort", testCase)
 
 	password = "aaaa"
-	expectedStatus = helpers.ValidatePasswordCriteriaValid
+	expectedStatus = passwordhelpers.ValidatePasswordCriteriaValid
 	suite.Run("PaswordEqualToMinLength_ReturnsValidatePasswordCriteriaValid", testCase)
 
 	password = "aaaaa"
-	expectedStatus = helpers.ValidatePasswordCriteriaValid
+	expectedStatus = passwordhelpers.ValidatePasswordCriteriaValid
 	suite.Run("PaswordGreaterThanMinLength_ReturnsValidatePasswordCriteriaValid", testCase)
 }
 
@@ -62,21 +62,21 @@ func (suite *ConfigPasswordCriteriaValidatorTestSuite) TestValidatePasswordCrite
 	}
 
 	password = "AAAA"
-	expectedStatus = helpers.ValidatePasswordCriteriaValid
+	expectedStatus = passwordhelpers.ValidatePasswordCriteriaValid
 	suite.Run("LowerCaseLetterNotRequiredAndNotContainLowerCaseLetter_ReturnsValidatePasswordCriteriaValid", testCase)
 
 	password = "aaaa"
-	expectedStatus = helpers.ValidatePasswordCriteriaValid
+	expectedStatus = passwordhelpers.ValidatePasswordCriteriaValid
 	suite.Run("LowerCaseLetterNotRequiredAndContainsLowerCaseLetter_ReturnsValidatePasswordCriteriaValid", testCase)
 
 	suite.Criteria.RequireLowerCase = true
 
 	password = "AAAA"
-	expectedStatus = helpers.ValidatePasswordCriteriaMissingLowerCaseLetter
+	expectedStatus = passwordhelpers.ValidatePasswordCriteriaMissingLowerCaseLetter
 	suite.Run("LowerCaseLetterRequiredAndNotContainLowerCaseLetter_ReturnsValidatePasswordCriteriaMissingLowerCaseLetter", testCase)
 
 	password = "aaaa"
-	expectedStatus = helpers.ValidatePasswordCriteriaValid
+	expectedStatus = passwordhelpers.ValidatePasswordCriteriaValid
 	suite.Run("LowerCaseLetterRequiredAndContainsLowerCaseLetter_ReturnsValidatePasswordCriteriaValid", testCase)
 }
 
@@ -92,21 +92,21 @@ func (suite *ConfigPasswordCriteriaValidatorTestSuite) TestValidatePasswordCrite
 	}
 
 	password = "aaaa"
-	expectedStatus = helpers.ValidatePasswordCriteriaValid
+	expectedStatus = passwordhelpers.ValidatePasswordCriteriaValid
 	suite.Run("UpperCaseLetterNotRequiredAndNotContainUpperCaseLetter_ReturnsValidatePasswordCriteriaValid", testCase)
 
 	password = "AAAA"
-	expectedStatus = helpers.ValidatePasswordCriteriaValid
+	expectedStatus = passwordhelpers.ValidatePasswordCriteriaValid
 	suite.Run("UpperCaseLetterNotRequiredAndContainsUpperCaseLetter_ReturnsValidatePasswordCriteriaValid", testCase)
 
 	suite.Criteria.RequireUpperCase = true
 
 	password = "aaaa"
-	expectedStatus = helpers.ValidatePasswordCriteriaMissingUpperCaseLetter
+	expectedStatus = passwordhelpers.ValidatePasswordCriteriaMissingUpperCaseLetter
 	suite.Run("UpperCaseLetterRequiredAndNotContainUpperCaseLetter_ReturnsValidatePasswordCriteriaMissingUpperCaseLetter", testCase)
 
 	password = "AAAA"
-	expectedStatus = helpers.ValidatePasswordCriteriaValid
+	expectedStatus = passwordhelpers.ValidatePasswordCriteriaValid
 	suite.Run("UpperCaseLetterRequiredAndContainsUpperCaseLetter_ReturnsValidatePasswordCriteriaValid", testCase)
 }
 
@@ -122,21 +122,21 @@ func (suite *ConfigPasswordCriteriaValidatorTestSuite) TestValidatePasswordCrite
 	}
 
 	password = "aaaa"
-	expectedStatus = helpers.ValidatePasswordCriteriaValid
+	expectedStatus = passwordhelpers.ValidatePasswordCriteriaValid
 	suite.Run("DigitNotRequiredAndDoesNotContainDigit_ReturnsValidatePasswordCriteriaValid", testCase)
 
 	password = "1234"
-	expectedStatus = helpers.ValidatePasswordCriteriaValid
+	expectedStatus = passwordhelpers.ValidatePasswordCriteriaValid
 	suite.Run("DigitNotRequiredAndContainsDigit_ReturnsValidatePasswordCriteriaValid", testCase)
 
 	suite.Criteria.RequireDigit = true
 
 	password = "aaaa"
-	expectedStatus = helpers.ValidatePasswordCriteriaMissingDigit
+	expectedStatus = passwordhelpers.ValidatePasswordCriteriaMissingDigit
 	suite.Run("DigitRequiredAndNotContainDigit_ReturnsValidatePasswordCriteriaMissingDigit", testCase)
 
 	password = "1234"
-	expectedStatus = helpers.ValidatePasswordCriteriaValid
+	expectedStatus = passwordhelpers.ValidatePasswordCriteriaValid
 	suite.Run("DigitRequiredAndContainsDigit_ReturnsValidatePasswordCriteriaValid", testCase)
 }
 
@@ -152,21 +152,21 @@ func (suite *ConfigPasswordCriteriaValidatorTestSuite) TestValidatePasswordCrite
 	}
 
 	password = "aaaa"
-	expectedStatus = helpers.ValidatePasswordCriteriaValid
+	expectedStatus = passwordhelpers.ValidatePasswordCriteriaValid
 	suite.Run("SymbolNotRequiredAndDoesNotContainSymbol_ReturnsValidatePasswordCriteriaValid", testCase)
 
 	password = "&$%*"
-	expectedStatus = helpers.ValidatePasswordCriteriaValid
+	expectedStatus = passwordhelpers.ValidatePasswordCriteriaValid
 	suite.Run("SymbolNotRequiredAndContainsSymbol_ReturnsValidatePasswordCriteriaValid", testCase)
 
 	suite.Criteria.RequireSymbol = true
 
 	password = "aaaa"
-	expectedStatus = helpers.ValidatePasswordCriteriaMissingSymbol
+	expectedStatus = passwordhelpers.ValidatePasswordCriteriaMissingSymbol
 	suite.Run("SymbolRequiredAndNotContainSymbol_ReturnsValidatePasswordCriteriaMissingSymbol", testCase)
 
 	password = "&$%*"
-	expectedStatus = helpers.ValidatePasswordCriteriaValid
+	expectedStatus = passwordhelpers.ValidatePasswordCriteriaValid
 	suite.Run("SymbolRequiredAndContainsSymbol_ReturnsValidatePasswordCriteriaValid", testCase)
 }
 

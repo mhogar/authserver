@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	"authserver/helpers"
+	passwordhelpers "authserver/controllers/password_helpers"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -14,14 +14,14 @@ type PasswordCriteriaValidator struct {
 }
 
 // ValidatePasswordCriteria provides a mock function with given fields: password
-func (_m *PasswordCriteriaValidator) ValidatePasswordCriteria(password string) helpers.ValidatePasswordCriteriaError {
+func (_m *PasswordCriteriaValidator) ValidatePasswordCriteria(password string) passwordhelpers.ValidatePasswordCriteriaError {
 	ret := _m.Called(password)
 
-	var r0 helpers.ValidatePasswordCriteriaError
-	if rf, ok := ret.Get(0).(func(string) helpers.ValidatePasswordCriteriaError); ok {
+	var r0 passwordhelpers.ValidatePasswordCriteriaError
+	if rf, ok := ret.Get(0).(func(string) passwordhelpers.ValidatePasswordCriteriaError); ok {
 		r0 = rf(password)
 	} else {
-		r0 = ret.Get(0).(helpers.ValidatePasswordCriteriaError)
+		r0 = ret.Get(0).(passwordhelpers.ValidatePasswordCriteriaError)
 	}
 
 	return r0

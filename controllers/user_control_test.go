@@ -2,16 +2,15 @@ package controllers_test
 
 import (
 	"authserver/controllers"
+	passwordhelpers "authserver/controllers/password_helpers"
+	passwordhelpermocks "authserver/controllers/password_helpers/mocks"
 	databasemocks "authserver/database/mocks"
-	"authserver/helpers"
-	helpermocks "authserver/helpers/mocks"
 	"authserver/models"
 	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/google/uuid"
-
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -19,15 +18,15 @@ import (
 type UserControlTestSuite struct {
 	suite.Suite
 	CRUDMock                      databasemocks.CRUDOperations
-	PasswordHasherMock            helpermocks.PasswordHasher
-	PasswordCriteriaValidatorMock helpermocks.PasswordCriteriaValidator
+	PasswordHasherMock            passwordhelpermocks.PasswordHasher
+	PasswordCriteriaValidatorMock passwordhelpermocks.PasswordCriteriaValidator
 	UserControl                   controllers.UserControl
 }
 
 func (suite *UserControlTestSuite) SetupTest() {
 	suite.CRUDMock = databasemocks.CRUDOperations{}
-	suite.PasswordHasherMock = helpermocks.PasswordHasher{}
-	suite.PasswordCriteriaValidatorMock = helpermocks.PasswordCriteriaValidator{}
+	suite.PasswordHasherMock = passwordhelpermocks.PasswordHasher{}
+	suite.PasswordCriteriaValidatorMock = passwordhelpermocks.PasswordCriteriaValidator{}
 	suite.UserControl = controllers.UserControl{
 		CRUD:                      &suite.CRUDMock,
 		PasswordHasher:            &suite.PasswordHasherMock,
@@ -97,7 +96,7 @@ func (suite *UserControlTestSuite) TestCreateUser_WherePasswordDoesNotMeetCriter
 	password := "password"
 
 	suite.CRUDMock.On("GetUserByUsername", mock.Anything).Return(nil, nil)
-	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(helpers.CreateValidatePasswordCriteriaError(helpers.ValidatePasswordCriteriaTooShort, ""))
+	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(passwordhelpers.CreateValidatePasswordCriteriaError(passwordhelpers.ValidatePasswordCriteriaTooShort, ""))
 
 	//act
 	user, rerr := suite.UserControl.CreateUser(username, password)
@@ -113,7 +112,7 @@ func (suite *UserControlTestSuite) TestCreateUser_WithErrorHashingNewPassword_Re
 	password := "password"
 
 	suite.CRUDMock.On("GetUserByUsername", mock.Anything).Return(nil, nil)
-	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(helpers.CreateValidatePasswordCriteriaValid())
+	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(passwordhelpers.CreateValidatePasswordCriteriaValid())
 	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(nil, errors.New(""))
 
 	//act
@@ -130,7 +129,7 @@ func (suite *UserControlTestSuite) TestCreateUser_WithErrorCreatingUser_ReturnsI
 	password := "password"
 
 	suite.CRUDMock.On("GetUserByUsername", mock.Anything).Return(nil, nil)
-	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(helpers.CreateValidatePasswordCriteriaValid())
+	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(passwordhelpers.CreateValidatePasswordCriteriaValid())
 	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(nil, nil)
 	suite.CRUDMock.On("SaveUser", mock.Anything).Return(errors.New(""))
 
@@ -151,7 +150,7 @@ func (suite *UserControlTestSuite) TestCreateUser_WithValidRequest_ReturnsOK() {
 
 	suite.CRUDMock.On("GetAccessTokenByID", mock.Anything).Return(&models.AccessToken{}, nil)
 	suite.CRUDMock.On("GetUserByUsername", username).Return(nil, nil)
-	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(helpers.CreateValidatePasswordCriteriaValid())
+	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(passwordhelpers.CreateValidatePasswordCriteriaValid())
 	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(hash, nil)
 	suite.CRUDMock.On("SaveUser", mock.Anything).Return(nil)
 
@@ -248,7 +247,7 @@ func (suite *UserControlTestSuite) TestUpdateUserPassword_WhereNewPasswordDoesNo
 	user := &models.User{}
 
 	suite.PasswordHasherMock.On("ComparePasswords", mock.Anything, mock.Anything).Return(nil)
-	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(helpers.CreateValidatePasswordCriteriaError(helpers.ValidatePasswordCriteriaTooShort, ""))
+	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(passwordhelpers.CreateValidatePasswordCriteriaError(passwordhelpers.ValidatePasswordCriteriaTooShort, ""))
 
 	//act
 	rerr := suite.UserControl.UpdateUserPassword(user, oldPassword, newPassword)
@@ -264,7 +263,7 @@ func (suite *UserControlTestSuite) TestUpdateUserPassword_WithErrorHashingNewPas
 	user := &models.User{}
 
 	suite.PasswordHasherMock.On("ComparePasswords", mock.Anything, mock.Anything).Return(nil)
-	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(helpers.CreateValidatePasswordCriteriaValid())
+	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(passwordhelpers.CreateValidatePasswordCriteriaValid())
 	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(nil, errors.New(""))
 
 	//act
@@ -281,7 +280,7 @@ func (suite *UserControlTestSuite) TestUpdateUserPassword_WithErrorUpdatingUser_
 	user := &models.User{}
 
 	suite.PasswordHasherMock.On("ComparePasswords", mock.Anything, mock.Anything).Return(nil)
-	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(helpers.CreateValidatePasswordCriteriaValid())
+	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(passwordhelpers.CreateValidatePasswordCriteriaValid())
 	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(nil, nil)
 	suite.CRUDMock.On("UpdateUser", mock.Anything).Return(errors.New(""))
 
@@ -303,7 +302,7 @@ func (suite *UserControlTestSuite) TestUpdateUserPassword_WithValidRequest_Retur
 	user := models.CreateNewUser("username", oldPasswordHash)
 
 	suite.PasswordHasherMock.On("ComparePasswords", mock.Anything, mock.Anything).Return(nil)
-	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(helpers.CreateValidatePasswordCriteriaValid())
+	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(passwordhelpers.CreateValidatePasswordCriteriaValid())
 	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(newPasswordHash, nil)
 	suite.CRUDMock.On("UpdateUser", mock.Anything).Return(nil)
 

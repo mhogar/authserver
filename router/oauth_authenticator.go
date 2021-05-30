@@ -1,8 +1,8 @@
 package router
 
 import (
+	"authserver/common"
 	requesterror "authserver/common/request_error"
-	commonhelpers "authserver/helpers/common"
 	"authserver/models"
 	"log"
 	"net/http"
@@ -25,14 +25,14 @@ func (a OAuthAuthenticator) Authenticate(req *http.Request) (*models.AccessToken
 	//parse the token
 	tokenID, err := uuid.Parse(splitTokens[1])
 	if err != nil {
-		log.Println(commonhelpers.ChainError("error parsing access token id", err))
+		log.Println(common.ChainError("error parsing access token id", err))
 		return nil, requesterror.ClientError("bearer token was in invalid format")
 	}
 
 	//fetch the token
 	token, err := a.CRUD.GetAccessTokenByID(tokenID)
 	if err != nil {
-		log.Println(commonhelpers.ChainError("error getting access token by id", err))
+		log.Println(common.ChainError("error getting access token by id", err))
 		return nil, requesterror.InternalError()
 	}
 

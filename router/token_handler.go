@@ -1,8 +1,8 @@
 package router
 
 import (
+	"authserver/common"
 	requesterror "authserver/common/request_error"
-	commonhelpers "authserver/helpers/common"
 	"authserver/models"
 	"log"
 	"net/http"
@@ -32,7 +32,7 @@ func (h RouteHandler) PostToken(w http.ResponseWriter, req *http.Request, _ http
 	//parse the body
 	err := parseJSONBody(req.Body, &body)
 	if err != nil {
-		log.Println(commonhelpers.ChainError("error parsing PostToken request body", err))
+		log.Println(common.ChainError("error parsing PostToken request body", err))
 		sendOAuthErrorResponse(w, http.StatusBadRequest, "invalid_request", "invalid json body")
 		return
 	}
@@ -89,7 +89,7 @@ func (h RouteHandler) handlePasswordGrant(w http.ResponseWriter, body PostTokenP
 	//parse the client id
 	clientID, err := uuid.Parse(body.ClientID)
 	if err != nil {
-		log.Println(commonhelpers.ChainError("error parsing client id", err))
+		log.Println(common.ChainError("error parsing client id", err))
 		sendOAuthErrorResponse(w, http.StatusBadRequest, "invalid_client", "client_id was in invalid format")
 		return nil
 	}
