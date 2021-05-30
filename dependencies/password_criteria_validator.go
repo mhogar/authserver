@@ -9,7 +9,7 @@ var passwordCriteriaValidatorOnce sync.Once
 var passwordCriteriaValidator passwordhelpers.PasswordCriteriaValidator
 
 // ResolvePasswordCriteriaValidator resolves the PasswordCriteriaValidator dependency.
-// Only the first call to this function will create a new PasswordCriteriaValidator, after which it will be retrieved from the cache.
+// Only the first call to this function will create a new PasswordCriteriaValidator, after which it will be retrieved from memory.
 func ResolvePasswordCriteriaValidator() passwordhelpers.PasswordCriteriaValidator {
 	passwordCriteriaValidatorOnce.Do(func() {
 		passwordCriteriaValidator = passwordhelpers.ConfigPasswordCriteriaValidator{}

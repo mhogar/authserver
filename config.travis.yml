@@ -6,8 +6,8 @@ database:
     timeout: 3000
 
 password_criteria:
-    min_length: 8
-    require_lower_case: true
-    require_upper_case: true
-    require_digit: true
-    require_symbol: true
+    min_length: 4
+    require_lower_case: false
+    require_upper_case: false
+    require_digit: false
+    require_symbol: false

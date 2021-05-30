@@ -10,7 +10,7 @@ var transactionFactoryOnce sync.Once
 var transactionFactory databasepkg.TransactionFactory
 
 // ResolveTransactionFactory resolves the TransactionFactory dependency.
-// Only the first call to this function will create a new TransactionFactory, after which it will be retrieved from the cache.
+// Only the first call to this function will create a new TransactionFactory, after which it will be retrieved from memory.
 func ResolveTransactionFactory() databasepkg.TransactionFactory {
 	transactionFactoryOnce.Do(func() {
 		transactionFactory = sqladapter.SQLTransactionFactory{

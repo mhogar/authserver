@@ -20,7 +20,16 @@ jobs:
         - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
     - name: MigrationRunner
       before_install:
-        - cd database/migration_runner
+        - cd tools/migration_runner
+      install:
+        - go get github.com/mattn/goveralls
+      script:
+        - go build
+        - go test -v -covermode=count -coverprofile=coverage.out
+        - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
+    - name: AdminCreator
+      before_install:
+        - cd tools/admin_creator
       install:
         - go get github.com/mattn/goveralls
       script:
@@ -35,7 +44,8 @@ jobs:
         - go get github.com/mattn/goveralls
       before_script:
         - psql -c 'create database travis_ci_test;' -U postgres
-        - go run database/migration_runner/main.go -db=integration
+        - go run tools/migration_runner/main.go -db=integration
+        - go run tools/admin_creator/main.go -db=integration -username=admin -password=admin
       script:
         - go test ./database/sql_adapter/ -v -covermode=count -coverprofile=coverage.out
         - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
