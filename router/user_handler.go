@@ -65,15 +65,8 @@ func (h RouteHandler) DeleteUser(w http.ResponseWriter, req *http.Request, param
 		return
 	}
 
-	//check for id
-	idStr := params.ByName("id")
-	if idStr == "" {
-		sendErrorResponse(w, http.StatusBadRequest, "id must be present")
-		return
-	}
-
 	//parse the id
-	id, err := uuid.Parse(idStr)
+	id, err := uuid.Parse(params.ByName("id"))
 	if err != nil {
 		log.Println(commonhelpers.ChainError("error parsing user id", err))
 		sendErrorResponse(w, http.StatusBadRequest, "id is in invalid format")

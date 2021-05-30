@@ -14,11 +14,11 @@ type HTTPServer struct {
 }
 
 // CreateHTTPServerRunner creates a server runner using an http server.
-func CreateHTTPServerRunner(DBConnection database.DBConnection, contol controllers.Controllers, authenticator router.Authenticator) Runner {
+func CreateHTTPServerRunner(DBConnection database.DBConnection, control controllers.Controllers, authenticator router.Authenticator) Runner {
 	server := &HTTPServer{
 		Server: http.Server{
 			Addr:    ":8080",
-			Handler: router.CreateRouter(contol, authenticator),
+			Handler: router.CreateRouter(control, authenticator),
 		},
 	}
 

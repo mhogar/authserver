@@ -6,6 +6,8 @@ import (
 	commonhelpers "authserver/helpers/common"
 	"authserver/models"
 	"log"
+
+	"github.com/google/uuid"
 )
 
 // TokenControl handles requests to "/token" endpoints
@@ -20,7 +22,7 @@ type TokenControl struct {
 }
 
 // PostToken handles POST requests to "/token"
-func (c TokenControl) CreateTokenFromPassword(username string, password string, clientID string, scopeName string) (*models.AccessToken, requesterror.OAuthRequestError) {
+func (c TokenControl) CreateTokenFromPassword(username string, password string, clientID uuid.UUID, scopeName string) (*models.AccessToken, requesterror.OAuthRequestError) {
 	//get the client
 	client, rerr := parseClient(c.CRUD, clientID)
 	if rerr.Type != requesterror.ErrorTypeNone {
@@ -42,14 +44,14 @@ func (c TokenControl) CreateTokenFromPassword(username string, password string, 
 
 	//check if user was found
 	if user == nil {
-		return nil, requesterror.OAuthClientError("", "invalid username and/or password")
+		return nil, requesterror.OAuthClientError("invalid_grant", "invalid username and/or password")
 	}
 
 	//validate the password
 	err = c.PasswordHasher.ComparePasswords(user.PasswordHash, password)
 	if err != nil {
 		log.Println(commonhelpers.ChainError("error comparing password hashes", err))
-		return nil, requesterror.OAuthClientError("", "invalid username and/or password")
+		return nil, requesterror.OAuthClientError("invalid_grant", "invalid username and/or password")
 	}
 
 	//create a new access token

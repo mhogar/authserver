@@ -9,14 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func parseClient(clientCRUD models.ClientCRUD, clientIDStr string) (*models.Client, requesterror.OAuthRequestError) {
-	//parse the client id
-	clientID, err := uuid.Parse(clientIDStr)
-	if err != nil {
-		log.Println(commonhelpers.ChainError("error parsing client id", err))
-		return nil, requesterror.OAuthClientError("invalid_client", "client_id was in invalid format")
-	}
-
+func parseClient(clientCRUD models.ClientCRUD, clientID uuid.UUID) (*models.Client, requesterror.OAuthRequestError) {
 	//get the client
 	client, err := clientCRUD.GetClientByID(clientID)
 	if err != nil {

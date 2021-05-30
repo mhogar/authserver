@@ -69,7 +69,7 @@ func (c UserControl) CreateUser(username string, password string) (*models.User,
 	return user, requesterror.NoError()
 }
 
-// DeleteUser handles DELETE requests to "/user"
+// DeleteUser deletes the user with the given id
 func (c UserControl) DeleteUser(id uuid.UUID) requesterror.RequestError {
 	//get the user
 	user, err := c.CRUD.GetUserByID(id)
@@ -93,7 +93,7 @@ func (c UserControl) DeleteUser(id uuid.UUID) requesterror.RequestError {
 	return requesterror.NoError()
 }
 
-// PatchUserPassword handles PATCH requests to "/user/password"
+// UpdateUserPassword updates the given user's password
 func (c UserControl) UpdateUserPassword(user *models.User, oldPassword string, newPassword string) requesterror.RequestError {
 	//validate old password
 	err := c.PasswordHasher.ComparePasswords(user.PasswordHash, oldPassword)

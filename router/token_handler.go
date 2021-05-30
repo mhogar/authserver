@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -85,7 +86,16 @@ func (h RouteHandler) handlePasswordGrant(w http.ResponseWriter, body PostTokenP
 		return nil
 	}
 
-	token, rerr := h.Control.CreateTokenFromPassword(body.Username, body.Password, body.ClientID, body.Scope)
+	//parse the client id
+	clientID, err := uuid.Parse(body.ClientID)
+	if err != nil {
+		log.Println(commonhelpers.ChainError("error parsing client id", err))
+		sendOAuthErrorResponse(w, http.StatusBadRequest, "invalid_client", "client_id was in invalid format")
+		return nil
+	}
+
+	//create the token
+	token, rerr := h.Control.CreateTokenFromPassword(body.Username, body.Password, clientID, body.Scope)
 	if rerr.Type == requesterror.ErrorTypeClient {
 		sendOAuthErrorResponse(w, http.StatusBadRequest, rerr.ErrorName, rerr.Error())
 		return nil

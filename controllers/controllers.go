@@ -25,7 +25,7 @@ type UserController interface {
 
 type TokenController interface {
 	// CreateTokenFromPassword creates a new access token, authenticating using a password
-	CreateTokenFromPassword(username string, password string, clientID string, scopeName string) (*models.AccessToken, requesterror.OAuthRequestError)
+	CreateTokenFromPassword(username string, password string, clientID uuid.UUID, scopeName string) (*models.AccessToken, requesterror.OAuthRequestError)
 
 	// DeleteToken deletes the access token
 	DeleteToken(token *models.AccessToken) requesterror.RequestError
