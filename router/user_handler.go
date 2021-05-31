@@ -4,8 +4,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/google/uuid"
-
 	"authserver/common"
 	requesterror "authserver/common/request_error"
 
@@ -20,16 +18,6 @@ type PostUserBody struct {
 
 // PostUser handles Post requests to "/user"
 func (h RouteHandler) PostUser(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
-	//authenticate the user
-	_, rerr := h.Authenticator.Authenticate(req)
-	if rerr.Type == requesterror.ErrorTypeClient {
-		sendErrorResponse(w, http.StatusUnauthorized, rerr.Error())
-		return
-	} else if rerr.Type == requesterror.ErrorTypeInternal {
-		sendInternalErrorResponse(w, rerr.Error())
-		return
-	}
-
 	//parse the body
 	var body PostUserBody
 	err := parseJSONBody(req.Body, &body)
@@ -40,7 +28,7 @@ func (h RouteHandler) PostUser(w http.ResponseWriter, req *http.Request, _ httpr
 	}
 
 	//create the user
-	_, rerr = h.Control.CreateUser(body.Username, body.Password)
+	_, rerr := h.Control.CreateUser(body.Username, body.Password)
 	if rerr.Type == requesterror.ErrorTypeClient {
 		sendErrorResponse(w, http.StatusBadRequest, rerr.Error())
 		return
@@ -56,7 +44,7 @@ func (h RouteHandler) PostUser(w http.ResponseWriter, req *http.Request, _ httpr
 // DeleteUser handles DELETE requests to "/user"
 func (h RouteHandler) DeleteUser(w http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	//authenticate the user
-	_, rerr := h.Authenticator.Authenticate(req)
+	token, rerr := h.Authenticator.Authenticate(req)
 	if rerr.Type == requesterror.ErrorTypeClient {
 		sendErrorResponse(w, http.StatusUnauthorized, rerr.Error())
 		return
@@ -65,16 +53,8 @@ func (h RouteHandler) DeleteUser(w http.ResponseWriter, req *http.Request, param
 		return
 	}
 
-	//parse the id
-	id, err := uuid.Parse(params.ByName("id"))
-	if err != nil {
-		log.Println(common.ChainError("error parsing user id", err))
-		sendErrorResponse(w, http.StatusBadRequest, "id is in invalid format")
-		return
-	}
-
 	//delete the user
-	rerr = h.Control.DeleteUser(id)
+	rerr = h.Control.DeleteUser(token.User)
 	if rerr.Type == requesterror.ErrorTypeClient {
 		sendErrorResponse(w, http.StatusBadRequest, rerr.Error())
 		return

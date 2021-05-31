@@ -16,8 +16,8 @@ type UserController interface {
 	// CreateUser creates a new user with the given username and password
 	CreateUser(username string, password string) (*models.User, requesterror.RequestError)
 
-	// DeleteUser deletes the user with the given id
-	DeleteUser(id uuid.UUID) requesterror.RequestError
+	// DeleteUser deletes the given user
+	DeleteUser(user *models.User) requesterror.RequestError
 
 	// UpdateUserPassword updates the given user's password
 	UpdateUserPassword(user *models.User, oldPassword string, newPassword string) requesterror.RequestError

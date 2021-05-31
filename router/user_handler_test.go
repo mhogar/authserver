@@ -10,7 +10,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -29,49 +28,12 @@ func (suite *UserHandlerSuite) SetupTest() {
 	suite.Router = router.CreateRouter(&suite.ControllersMock, &suite.AuthenticatorMock)
 }
 
-func (suite *UserHandlerSuite) TestPostUser_WithClientErrorAuthenticatingUser_ReturnsUnauthorized() {
-	//arrange
-	server := httptest.NewServer(suite.Router)
-	defer server.Close()
-
-	req := CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/user", "", nil)
-
-	message := "authenticate error"
-	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(nil, requesterror.ClientError(message))
-
-	//act
-	res, err := http.DefaultClient.Do(req)
-	suite.Require().NoError(err)
-
-	//assert
-	AssertErrorResponse(&suite.Suite, res, http.StatusUnauthorized, message)
-}
-
-func (suite *UserHandlerSuite) TestPostUser_WithInternalErrorAuthenticatingUser_ReturnsInternalServerError() {
-	//arrange
-	server := httptest.NewServer(suite.Router)
-	defer server.Close()
-
-	req := CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/user", "", nil)
-
-	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(nil, requesterror.InternalError())
-
-	//act
-	res, err := http.DefaultClient.Do(req)
-	suite.Require().NoError(err)
-
-	//assert
-	AssertInternalServerErrorResponse(&suite.Suite, res)
-}
-
 func (suite *UserHandlerSuite) TestPostUser_WithInvalidJSONBody_ReturnsBadRequest() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
 
 	req := CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/user", "", "invalid")
-
-	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(nil, requesterror.NoError())
 
 	//act
 	res, err := http.DefaultClient.Do(req)
@@ -93,7 +55,6 @@ func (suite *UserHandlerSuite) TestPostUser_WithClientErrorCreatingUser_ReturnsB
 	req := CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/user", "", body)
 
 	message := "create user error"
-	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(nil, requesterror.NoError())
 	suite.ControllersMock.On("CreateUser", mock.Anything, mock.Anything).Return(nil, requesterror.ClientError(message))
 
 	//act
@@ -115,7 +76,6 @@ func (suite *UserHandlerSuite) TestPostUser_WithInternalErrorCreatingUser_Return
 	}
 	req := CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/user", "", body)
 
-	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(nil, requesterror.NoError())
 	suite.ControllersMock.On("CreateUser", mock.Anything, mock.Anything).Return(nil, requesterror.InternalError())
 
 	//act
@@ -137,7 +97,6 @@ func (suite *UserHandlerSuite) TestPostUser_WithValidRequest_ReturnsSuccess() {
 	}
 	req := CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/user", "", body)
 
-	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(nil, requesterror.NoError())
 	suite.ControllersMock.On("CreateUser", mock.Anything, mock.Anything).Return(nil, requesterror.NoError())
 
 	//act
@@ -145,7 +104,6 @@ func (suite *UserHandlerSuite) TestPostUser_WithValidRequest_ReturnsSuccess() {
 	suite.Require().NoError(err)
 
 	//assert
-	suite.AuthenticatorMock.AssertCalled(suite.T(), "Authenticate", mock.Anything)
 	suite.ControllersMock.AssertCalled(suite.T(), "CreateUser", body.Username, body.Password)
 	AssertSuccessResponse(&suite.Suite, res)
 }
@@ -161,7 +119,6 @@ func (suite *UserHandlerSuite) TestPostUser_WithPanicTriggered_ReturnsInternalSe
 	}
 	req := CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/user", "", body)
 
-	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(nil, requesterror.NoError())
 	suite.ControllersMock.On("CreateUser", mock.Anything, mock.Anything).Run(func(_ mock.Arguments) {
 		panic("test panic handler")
 	})
@@ -179,7 +136,7 @@ func (suite *UserHandlerSuite) TestDeleteUser_WithClientErrorAuthenticatingUser_
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
 
-	req := CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user/id", "", nil)
+	req := CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user", "", nil)
 
 	message := "authenticate error"
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(nil, requesterror.ClientError(message))
@@ -197,7 +154,7 @@ func (suite *UserHandlerSuite) TestDeleteUser_WithInternalErrorAuthenticatingUse
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
 
-	req := CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user/id", "", nil)
+	req := CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user", "", nil)
 
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(nil, requesterror.InternalError())
 
@@ -209,33 +166,16 @@ func (suite *UserHandlerSuite) TestDeleteUser_WithInternalErrorAuthenticatingUse
 	AssertInternalServerErrorResponse(&suite.Suite, res)
 }
 
-func (suite *UserHandlerSuite) TestDeleteUser_WithIdInInvalidFormat_ReturnsClientError() {
-	//arrange
-	server := httptest.NewServer(suite.Router)
-	defer server.Close()
-
-	req := CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user/invalid", "", nil)
-
-	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(nil, requesterror.NoError())
-
-	//act
-	res, err := http.DefaultClient.Do(req)
-	suite.Require().NoError(err)
-
-	//assert
-	AssertErrorResponse(&suite.Suite, res, http.StatusBadRequest, "id", "invalid format")
-}
-
 func (suite *UserHandlerSuite) TestDeleteUser_WithClientErrorDeletingUser_ReturnsBadRequest() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
 
-	id := uuid.New()
-	req := CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user/"+id.String(), "", nil)
+	token := &models.AccessToken{User: &models.User{}}
+	req := CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user", "", nil)
 
 	message := "delete user error"
-	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(nil, requesterror.NoError())
+	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
 	suite.ControllersMock.On("DeleteUser", mock.Anything).Return(requesterror.ClientError(message))
 
 	//act
@@ -251,10 +191,10 @@ func (suite *UserHandlerSuite) TestDeleteUser_WithInternalDeletingUser_ReturnsIn
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
 
-	id := uuid.New()
-	req := CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user/"+id.String(), "", nil)
+	token := &models.AccessToken{User: &models.User{}}
+	req := CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user", "", nil)
 
-	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(nil, requesterror.NoError())
+	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
 	suite.ControllersMock.On("DeleteUser", mock.Anything).Return(requesterror.InternalError())
 
 	//act
@@ -270,10 +210,10 @@ func (suite *UserHandlerSuite) TestDeleteUser_WithValidRequest_ReturnsSuccess() 
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
 
-	id := uuid.New()
-	req := CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user/"+id.String(), "", nil)
+	token := &models.AccessToken{User: &models.User{}}
+	req := CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user", "", nil)
 
-	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(nil, requesterror.NoError())
+	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
 	suite.ControllersMock.On("DeleteUser", mock.Anything).Return(requesterror.NoError())
 
 	//act
@@ -282,7 +222,7 @@ func (suite *UserHandlerSuite) TestDeleteUser_WithValidRequest_ReturnsSuccess() 
 
 	//assert
 	suite.AuthenticatorMock.AssertCalled(suite.T(), "Authenticate", mock.Anything)
-	suite.ControllersMock.AssertCalled(suite.T(), "DeleteUser", id)
+	suite.ControllersMock.AssertCalled(suite.T(), "DeleteUser", token.User)
 	AssertSuccessResponse(&suite.Suite, res)
 }
 
@@ -291,10 +231,10 @@ func (suite *UserHandlerSuite) TestDeleteUser_WithPanicTriggered_ReturnsInternal
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
 
-	id := uuid.New()
-	req := CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user/"+id.String(), "", nil)
+	token := &models.AccessToken{User: &models.User{}}
+	req := CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user", "", nil)
 
-	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(nil, requesterror.NoError())
+	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
 	suite.ControllersMock.On("DeleteUser", mock.Anything).Run(func(_ mock.Arguments) {
 		panic("test panic handler")
 	})

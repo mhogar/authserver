@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -87,7 +86,7 @@ func (suite *UserControlTestSuite) TestCreateUser_WithNonUniqueUsername_ReturnsC
 
 	//assert
 	suite.Nil(user)
-	AssertClientError(&suite.Suite, rerr, "username", "already in use")
+	AssertClientError(&suite.Suite, rerr, "error creating user")
 }
 
 func (suite *UserControlTestSuite) TestCreateUser_WherePasswordDoesNotMeetCriteria_ReturnsClientError() {
@@ -170,39 +169,14 @@ func (suite *UserControlTestSuite) TestCreateUser_WithValidRequest_ReturnsOK() {
 	AssertNoError(&suite.Suite, rerr)
 }
 
-func (suite *UserControlTestSuite) TestDeleteUser_WithErrorGettingUserById_ReturnsInternalError() {
-	//arrange
-	id := uuid.New()
-	suite.CRUDMock.On("GetUserByID", mock.Anything).Return(nil, errors.New(""))
-
-	//act
-	rerr := suite.UserControl.DeleteUser(id)
-
-	//assert
-	AssertInternalError(&suite.Suite, rerr)
-}
-
-func (suite *UserControlTestSuite) TestDeleteUser_WhereUserIsNotFound_ReturnsClientError() {
-	//arrange
-	id := uuid.New()
-	suite.CRUDMock.On("GetUserByID", mock.Anything).Return(nil, nil)
-
-	//act
-	rerr := suite.UserControl.DeleteUser(id)
-
-	//assert
-	AssertClientError(&suite.Suite, rerr, "user not found")
-}
-
 func (suite *UserControlTestSuite) TestDeleteUser_WithErrorDeletingUser_ReturnsInternalError() {
 	//arrange
 	user := models.CreateNewUser("username", []byte("password hash"))
 
-	suite.CRUDMock.On("GetUserByID", mock.Anything).Return(user, nil)
 	suite.CRUDMock.On("DeleteUser", mock.Anything).Return(errors.New(""))
 
 	//act
-	rerr := suite.UserControl.DeleteUser(user.ID)
+	rerr := suite.UserControl.DeleteUser(user)
 
 	//assert
 	AssertInternalError(&suite.Suite, rerr)
@@ -212,14 +186,12 @@ func (suite *UserControlTestSuite) TestDeleteUser_WithValidRequest_ReturnsOK() {
 	//arrange
 	user := models.CreateNewUser("username", []byte("password hash"))
 
-	suite.CRUDMock.On("GetUserByID", mock.Anything).Return(user, nil)
 	suite.CRUDMock.On("DeleteUser", mock.Anything).Return(nil)
 
 	//act
-	rerr := suite.UserControl.DeleteUser(user.ID)
+	rerr := suite.UserControl.DeleteUser(user)
 
 	//assert
-	suite.CRUDMock.AssertCalled(suite.T(), "GetUserByID", user.ID)
 	suite.CRUDMock.AssertCalled(suite.T(), "DeleteUser", user)
 
 	AssertNoError(&suite.Suite, rerr)

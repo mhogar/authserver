@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/google/uuid"
-
 	"authserver/common"
 	requesterror "authserver/common/request_error"
 	passwordhelpers "authserver/controllers/password_helpers"
@@ -42,7 +40,7 @@ func (c UserControl) CreateUser(username string, password string) (*models.User,
 		return nil, requesterror.InternalError()
 	}
 	if otherUser != nil {
-		return nil, requesterror.ClientError("username is already in use")
+		return nil, requesterror.ClientError("error creating user")
 	}
 
 	//validate password meets criteria
@@ -70,24 +68,15 @@ func (c UserControl) CreateUser(username string, password string) (*models.User,
 }
 
 // DeleteUser deletes the user with the given id
-func (c UserControl) DeleteUser(id uuid.UUID) requesterror.RequestError {
-	//get the user
-	user, err := c.CRUD.GetUserByID(id)
-	if err != nil {
-		log.Println(common.ChainError("error fetching user by id", err))
-		return requesterror.InternalError()
-	}
-
-	if user == nil {
-		return requesterror.ClientError("user not found")
-	}
-
+func (c UserControl) DeleteUser(user *models.User) requesterror.RequestError {
 	//delete the user
-	err = c.CRUD.DeleteUser(user)
+	err := c.CRUD.DeleteUser(user)
 	if err != nil {
 		log.Println(common.ChainError("error deleting user", err))
 		return requesterror.InternalError()
 	}
+
+	//TODO: delete all user access tokens
 
 	//return success
 	return requesterror.NoError()
@@ -123,6 +112,8 @@ func (c UserControl) UpdateUserPassword(user *models.User, oldPassword string, n
 		log.Println(common.ChainError("error updating user", err))
 		return requesterror.InternalError()
 	}
+
+	//TODO: delete all user access tokens
 
 	//return success
 	return requesterror.NoError()

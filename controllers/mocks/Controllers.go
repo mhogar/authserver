@@ -77,13 +77,13 @@ func (_m *Controllers) DeleteToken(token *models.AccessToken) requesterror.Reque
 	return r0
 }
 
-// DeleteUser provides a mock function with given fields: id
-func (_m *Controllers) DeleteUser(id uuid.UUID) requesterror.RequestError {
-	ret := _m.Called(id)
+// DeleteUser provides a mock function with given fields: user
+func (_m *Controllers) DeleteUser(user *models.User) requesterror.RequestError {
+	ret := _m.Called(user)
 
 	var r0 requesterror.RequestError
-	if rf, ok := ret.Get(0).(func(uuid.UUID) requesterror.RequestError); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(*models.User) requesterror.RequestError); ok {
+		r0 = rf(user)
 	} else {
 		r0 = ret.Get(0).(requesterror.RequestError)
 	}
