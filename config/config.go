@@ -11,8 +11,9 @@ import (
 	"github.com/spf13/viper"
 )
 
-type config struct {
+type Config struct {
 	RootDir                string                 `yaml:"root_dir"`
+	AppID                  string                 `yaml:"app_id"`
 	DatabaseConfig         DatabaseConfig         `yaml:"database"`
 	PasswordCriteriaConfig PasswordCriteriaConfig `yaml:"password_criteria"`
 }
@@ -61,7 +62,7 @@ func InitConfig(dir string) error {
 	}
 
 	//parse the yaml
-	var cfg config
+	var cfg Config
 	err = yaml.Unmarshal(data, &cfg)
 	if err != nil {
 		return common.ChainError("error parsing config file", err)

@@ -1,13 +1,13 @@
 root_dir: .
-
+app_id: 5369602a-777c-48db-914d-2b1823a1b9af
 database:
     connection_strings:
+        core: ""
         integration: postgres://postgres:@localhost/travis_ci_test?sslmode=disable
     timeout: 3000
-
 password_criteria:
-    min_length: 4
-    require_lower_case: false
-    require_upper_case: false
-    require_digit: false
-    require_symbol: false
+    min_length: 8
+    require_lower_case: true
+    require_upper_case: true
+    require_digit: true
+    require_symbol: true
