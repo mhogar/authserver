@@ -8,6 +8,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
+	"github.com/google/uuid"
 	"github.com/spf13/viper"
 )
 
@@ -70,8 +71,13 @@ func InitConfig(dir string) error {
 
 	//set the config
 	viper.Set("root_dir", cfg.RootDir)
+	viper.Set("app_id", cfg.AppID)
 	viper.Set("password_criteria", cfg.PasswordCriteriaConfig)
 	viper.Set("database", cfg.DatabaseConfig)
 
 	return nil
+}
+
+func GetAppId() uuid.UUID {
+	return uuid.MustParse(viper.Get("app_id").(string))
 }

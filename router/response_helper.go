@@ -1,6 +1,7 @@
 package router
 
 import (
+	"authserver/common"
 	"encoding/json"
 	"errors"
 	"io"
@@ -33,11 +34,11 @@ func sendResponse(w http.ResponseWriter, status int, res interface{}) {
 }
 
 func sendSuccessResponse(w http.ResponseWriter) {
-	sendResponse(w, http.StatusOK, BasicResponse{Success: true})
+	sendResponse(w, http.StatusOK, common.BasicResponse{Success: true})
 }
 
 func sendErrorResponse(w http.ResponseWriter, status int, messsage string) {
-	sendResponse(w, status, ErrorResponse{
+	sendResponse(w, status, common.ErrorResponse{
 		Success: false,
 		Error:   messsage,
 	})

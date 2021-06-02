@@ -58,7 +58,7 @@ func (h RouteHandler) PostToken(w http.ResponseWriter, req *http.Request, _ http
 	}
 
 	//construct and send the access token response
-	sendResponse(w, http.StatusOK, AccessTokenResponse{
+	sendResponse(w, http.StatusOK, common.AccessTokenResponse{
 		AccessToken: token.ID.String(),
 		TokenType:   "bearer",
 	})

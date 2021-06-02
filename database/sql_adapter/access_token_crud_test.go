@@ -116,6 +116,8 @@ func (suite *AccessTokenCRUDTestSuite) TestDeleteAccessToken_DeletesAccessTokenW
 	suite.Nil(resultAccessToken)
 }
 
+//TODO: test cascade delete with users, scopes, and clients
+
 func TestAccessTokenCRUDTestSuite(t *testing.T) {
 	suite.Run(t, &AccessTokenCRUDTestSuite{})
 }

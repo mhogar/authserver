@@ -45,7 +45,18 @@ jobs:
       before_script:
         - psql -c 'create database travis_ci_test;' -U postgres
         - go run tools/migration_runner/main.go -db=integration
-        - go run tools/admin_creator/main.go -db=integration -username=admin -password=admin
       script:
         - go test ./database/sql_adapter/ -v -covermode=count -coverprofile=coverage.out
+        - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
+    - stage: End-to-End Tests
+      services:
+        - postgresql
+      install:
+        - go get github.com/mattn/goveralls
+      before_script:
+        - psql -c 'create database travis_ci_test;' -U postgres
+        - go run tools/migration_runner/main.go -db=integration
+        - go run tools/admin_creator/main.go -db=integration -username=admin -password=admin
+      script:
+        - go test ./e2e_tests/ -v -covermode=count -coverprofile=coverage.out
         - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci

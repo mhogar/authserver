@@ -1,6 +1,7 @@
 package router_test
 
 import (
+	"authserver/common"
 	requesterror "authserver/common/request_error"
 	controllermocks "authserver/controllers/mocks"
 	"authserver/models"
@@ -33,14 +34,14 @@ func (suite *UserHandlerSuite) TestPostUser_WithInvalidJSONBody_ReturnsBadReques
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
 
-	req := CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/user", "", "invalid")
+	req := common.CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/user", "", "invalid")
 
 	//act
 	res, err := http.DefaultClient.Do(req)
 	suite.Require().NoError(err)
 
 	//assert
-	AssertErrorResponse(&suite.Suite, res, http.StatusBadRequest, "invalid json body")
+	common.AssertErrorResponse(&suite.Suite, res, http.StatusBadRequest, "invalid json body")
 }
 
 func (suite *UserHandlerSuite) TestPostUser_WithClientErrorCreatingUser_ReturnsBadRequest() {
@@ -52,7 +53,7 @@ func (suite *UserHandlerSuite) TestPostUser_WithClientErrorCreatingUser_ReturnsB
 		Username: "username",
 		Password: "password",
 	}
-	req := CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/user", "", body)
+	req := common.CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/user", "", body)
 
 	message := "create user error"
 	suite.ControllersMock.On("CreateUser", mock.Anything, mock.Anything).Return(nil, requesterror.ClientError(message))
@@ -62,7 +63,7 @@ func (suite *UserHandlerSuite) TestPostUser_WithClientErrorCreatingUser_ReturnsB
 	suite.Require().NoError(err)
 
 	//assert
-	AssertErrorResponse(&suite.Suite, res, http.StatusBadRequest, message)
+	common.AssertErrorResponse(&suite.Suite, res, http.StatusBadRequest, message)
 }
 
 func (suite *UserHandlerSuite) TestPostUser_WithInternalErrorCreatingUser_ReturnsInternalServerError() {
@@ -74,7 +75,7 @@ func (suite *UserHandlerSuite) TestPostUser_WithInternalErrorCreatingUser_Return
 		Username: "username",
 		Password: "password",
 	}
-	req := CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/user", "", body)
+	req := common.CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/user", "", body)
 
 	suite.ControllersMock.On("CreateUser", mock.Anything, mock.Anything).Return(nil, requesterror.InternalError())
 
@@ -83,7 +84,7 @@ func (suite *UserHandlerSuite) TestPostUser_WithInternalErrorCreatingUser_Return
 	suite.Require().NoError(err)
 
 	//assert
-	AssertInternalServerErrorResponse(&suite.Suite, res)
+	common.AssertInternalServerErrorResponse(&suite.Suite, res)
 }
 
 func (suite *UserHandlerSuite) TestPostUser_WithValidRequest_ReturnsSuccess() {
@@ -95,7 +96,7 @@ func (suite *UserHandlerSuite) TestPostUser_WithValidRequest_ReturnsSuccess() {
 		Username: "username",
 		Password: "password",
 	}
-	req := CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/user", "", body)
+	req := common.CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/user", "", body)
 
 	suite.ControllersMock.On("CreateUser", mock.Anything, mock.Anything).Return(nil, requesterror.NoError())
 
@@ -105,7 +106,7 @@ func (suite *UserHandlerSuite) TestPostUser_WithValidRequest_ReturnsSuccess() {
 
 	//assert
 	suite.ControllersMock.AssertCalled(suite.T(), "CreateUser", body.Username, body.Password)
-	AssertSuccessResponse(&suite.Suite, res)
+	common.AssertSuccessResponse(&suite.Suite, res)
 }
 
 func (suite *UserHandlerSuite) TestPostUser_WithPanicTriggered_ReturnsInternalServerError() {
@@ -117,7 +118,7 @@ func (suite *UserHandlerSuite) TestPostUser_WithPanicTriggered_ReturnsInternalSe
 		Username: "username",
 		Password: "password",
 	}
-	req := CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/user", "", body)
+	req := common.CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/user", "", body)
 
 	suite.ControllersMock.On("CreateUser", mock.Anything, mock.Anything).Run(func(_ mock.Arguments) {
 		panic("test panic handler")
@@ -128,7 +129,7 @@ func (suite *UserHandlerSuite) TestPostUser_WithPanicTriggered_ReturnsInternalSe
 	suite.Require().NoError(err)
 
 	//assert
-	AssertInternalServerErrorResponse(&suite.Suite, res)
+	common.AssertInternalServerErrorResponse(&suite.Suite, res)
 }
 
 func (suite *UserHandlerSuite) TestDeleteUser_WithClientErrorAuthenticatingUser_ReturnsUnauthorized() {
@@ -136,7 +137,7 @@ func (suite *UserHandlerSuite) TestDeleteUser_WithClientErrorAuthenticatingUser_
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
 
-	req := CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user", "", nil)
+	req := common.CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user", "", nil)
 
 	message := "authenticate error"
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(nil, requesterror.ClientError(message))
@@ -146,7 +147,7 @@ func (suite *UserHandlerSuite) TestDeleteUser_WithClientErrorAuthenticatingUser_
 	suite.Require().NoError(err)
 
 	//assert
-	AssertErrorResponse(&suite.Suite, res, http.StatusUnauthorized, message)
+	common.AssertErrorResponse(&suite.Suite, res, http.StatusUnauthorized, message)
 }
 
 func (suite *UserHandlerSuite) TestDeleteUser_WithInternalErrorAuthenticatingUser_ReturnsInternalServerError() {
@@ -154,7 +155,7 @@ func (suite *UserHandlerSuite) TestDeleteUser_WithInternalErrorAuthenticatingUse
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
 
-	req := CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user", "", nil)
+	req := common.CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user", "", nil)
 
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(nil, requesterror.InternalError())
 
@@ -163,7 +164,7 @@ func (suite *UserHandlerSuite) TestDeleteUser_WithInternalErrorAuthenticatingUse
 	suite.Require().NoError(err)
 
 	//assert
-	AssertInternalServerErrorResponse(&suite.Suite, res)
+	common.AssertInternalServerErrorResponse(&suite.Suite, res)
 }
 
 func (suite *UserHandlerSuite) TestDeleteUser_WithClientErrorDeletingUser_ReturnsBadRequest() {
@@ -172,7 +173,7 @@ func (suite *UserHandlerSuite) TestDeleteUser_WithClientErrorDeletingUser_Return
 	defer server.Close()
 
 	token := &models.AccessToken{User: &models.User{}}
-	req := CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user", "", nil)
+	req := common.CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user", "", nil)
 
 	message := "delete user error"
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
@@ -183,7 +184,7 @@ func (suite *UserHandlerSuite) TestDeleteUser_WithClientErrorDeletingUser_Return
 	suite.Require().NoError(err)
 
 	//assert
-	AssertErrorResponse(&suite.Suite, res, http.StatusBadRequest, message)
+	common.AssertErrorResponse(&suite.Suite, res, http.StatusBadRequest, message)
 }
 
 func (suite *UserHandlerSuite) TestDeleteUser_WithInternalDeletingUser_ReturnsInternalServerError() {
@@ -192,7 +193,7 @@ func (suite *UserHandlerSuite) TestDeleteUser_WithInternalDeletingUser_ReturnsIn
 	defer server.Close()
 
 	token := &models.AccessToken{User: &models.User{}}
-	req := CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user", "", nil)
+	req := common.CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user", "", nil)
 
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
 	suite.ControllersMock.On("DeleteUser", mock.Anything).Return(requesterror.InternalError())
@@ -202,7 +203,7 @@ func (suite *UserHandlerSuite) TestDeleteUser_WithInternalDeletingUser_ReturnsIn
 	suite.Require().NoError(err)
 
 	//assert
-	AssertInternalServerErrorResponse(&suite.Suite, res)
+	common.AssertInternalServerErrorResponse(&suite.Suite, res)
 }
 
 func (suite *UserHandlerSuite) TestDeleteUser_WithValidRequest_ReturnsSuccess() {
@@ -211,7 +212,7 @@ func (suite *UserHandlerSuite) TestDeleteUser_WithValidRequest_ReturnsSuccess() 
 	defer server.Close()
 
 	token := &models.AccessToken{User: &models.User{}}
-	req := CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user", "", nil)
+	req := common.CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user", "", nil)
 
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
 	suite.ControllersMock.On("DeleteUser", mock.Anything).Return(requesterror.NoError())
@@ -223,7 +224,7 @@ func (suite *UserHandlerSuite) TestDeleteUser_WithValidRequest_ReturnsSuccess() 
 	//assert
 	suite.AuthenticatorMock.AssertCalled(suite.T(), "Authenticate", mock.Anything)
 	suite.ControllersMock.AssertCalled(suite.T(), "DeleteUser", token.User)
-	AssertSuccessResponse(&suite.Suite, res)
+	common.AssertSuccessResponse(&suite.Suite, res)
 }
 
 func (suite *UserHandlerSuite) TestDeleteUser_WithPanicTriggered_ReturnsInternalServerError() {
@@ -232,7 +233,7 @@ func (suite *UserHandlerSuite) TestDeleteUser_WithPanicTriggered_ReturnsInternal
 	defer server.Close()
 
 	token := &models.AccessToken{User: &models.User{}}
-	req := CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user", "", nil)
+	req := common.CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/user", "", nil)
 
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
 	suite.ControllersMock.On("DeleteUser", mock.Anything).Run(func(_ mock.Arguments) {
@@ -244,7 +245,7 @@ func (suite *UserHandlerSuite) TestDeleteUser_WithPanicTriggered_ReturnsInternal
 	suite.Require().NoError(err)
 
 	//assert
-	AssertInternalServerErrorResponse(&suite.Suite, res)
+	common.AssertInternalServerErrorResponse(&suite.Suite, res)
 }
 
 func (suite *UserHandlerSuite) TestUpdateUserPassword_WithClientErrorAuthenticatingUser_ReturnsUnauthorized() {
@@ -252,7 +253,7 @@ func (suite *UserHandlerSuite) TestUpdateUserPassword_WithClientErrorAuthenticat
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
 
-	req := CreateRequest(&suite.Suite, http.MethodPatch, server.URL+"/user/password", "", nil)
+	req := common.CreateRequest(&suite.Suite, http.MethodPatch, server.URL+"/user/password", "", nil)
 
 	message := "authenticate error"
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(nil, requesterror.ClientError(message))
@@ -262,7 +263,7 @@ func (suite *UserHandlerSuite) TestUpdateUserPassword_WithClientErrorAuthenticat
 	suite.Require().NoError(err)
 
 	//assert
-	AssertErrorResponse(&suite.Suite, res, http.StatusUnauthorized, message)
+	common.AssertErrorResponse(&suite.Suite, res, http.StatusUnauthorized, message)
 }
 
 func (suite *UserHandlerSuite) TestUpdateUserPassword_WithInternalErrorAuthenticatingUser_ReturnsInternalServerError() {
@@ -270,7 +271,7 @@ func (suite *UserHandlerSuite) TestUpdateUserPassword_WithInternalErrorAuthentic
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
 
-	req := CreateRequest(&suite.Suite, http.MethodPatch, server.URL+"/user/password", "", nil)
+	req := common.CreateRequest(&suite.Suite, http.MethodPatch, server.URL+"/user/password", "", nil)
 
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(nil, requesterror.InternalError())
 
@@ -279,7 +280,7 @@ func (suite *UserHandlerSuite) TestUpdateUserPassword_WithInternalErrorAuthentic
 	suite.Require().NoError(err)
 
 	//assert
-	AssertInternalServerErrorResponse(&suite.Suite, res)
+	common.AssertInternalServerErrorResponse(&suite.Suite, res)
 }
 
 func (suite *UserHandlerSuite) TestUpdateUserPassword_WithInvalidJSONBody_ReturnsBadRequest() {
@@ -287,7 +288,7 @@ func (suite *UserHandlerSuite) TestUpdateUserPassword_WithInvalidJSONBody_Return
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
 
-	req := CreateRequest(&suite.Suite, http.MethodPatch, server.URL+"/user/password", "", "invalid")
+	req := common.CreateRequest(&suite.Suite, http.MethodPatch, server.URL+"/user/password", "", "invalid")
 
 	token := &models.AccessToken{User: &models.User{}}
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
@@ -297,7 +298,7 @@ func (suite *UserHandlerSuite) TestUpdateUserPassword_WithInvalidJSONBody_Return
 	suite.Require().NoError(err)
 
 	//assert
-	AssertErrorResponse(&suite.Suite, res, http.StatusBadRequest, "invalid json body")
+	common.AssertErrorResponse(&suite.Suite, res, http.StatusBadRequest, "invalid json body")
 }
 
 func (suite *UserHandlerSuite) TestUpdateUserPassword_WithClientErrorUpdatingUserPassword_ReturnsBadRequest() {
@@ -310,7 +311,7 @@ func (suite *UserHandlerSuite) TestUpdateUserPassword_WithClientErrorUpdatingUse
 		NewPassword: "new password",
 	}
 
-	req := CreateRequest(&suite.Suite, http.MethodPatch, server.URL+"/user/password", "", body)
+	req := common.CreateRequest(&suite.Suite, http.MethodPatch, server.URL+"/user/password", "", body)
 
 	token := &models.AccessToken{User: &models.User{}}
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
@@ -323,7 +324,7 @@ func (suite *UserHandlerSuite) TestUpdateUserPassword_WithClientErrorUpdatingUse
 	suite.Require().NoError(err)
 
 	//assert
-	AssertErrorResponse(&suite.Suite, res, http.StatusBadRequest, message)
+	common.AssertErrorResponse(&suite.Suite, res, http.StatusBadRequest, message)
 }
 
 func (suite *UserHandlerSuite) TestUpdateUserPassword_WithInternalErrorUpdatingUserPassword_ReturnsInternalServerError() {
@@ -336,7 +337,7 @@ func (suite *UserHandlerSuite) TestUpdateUserPassword_WithInternalErrorUpdatingU
 		NewPassword: "new password",
 	}
 
-	req := CreateRequest(&suite.Suite, http.MethodPatch, server.URL+"/user/password", "", body)
+	req := common.CreateRequest(&suite.Suite, http.MethodPatch, server.URL+"/user/password", "", body)
 
 	token := &models.AccessToken{User: &models.User{}}
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
@@ -347,7 +348,7 @@ func (suite *UserHandlerSuite) TestUpdateUserPassword_WithInternalErrorUpdatingU
 	suite.Require().NoError(err)
 
 	//assert
-	AssertInternalServerErrorResponse(&suite.Suite, res)
+	common.AssertInternalServerErrorResponse(&suite.Suite, res)
 }
 
 func (suite *UserHandlerSuite) TestUpdateUserPassword_WithValidRequest_ReturnsSuccess() {
@@ -360,7 +361,7 @@ func (suite *UserHandlerSuite) TestUpdateUserPassword_WithValidRequest_ReturnsSu
 		NewPassword: "new password",
 	}
 
-	req := CreateRequest(&suite.Suite, http.MethodPatch, server.URL+"/user/password", "", body)
+	req := common.CreateRequest(&suite.Suite, http.MethodPatch, server.URL+"/user/password", "", body)
 
 	token := &models.AccessToken{User: &models.User{}}
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
@@ -373,7 +374,7 @@ func (suite *UserHandlerSuite) TestUpdateUserPassword_WithValidRequest_ReturnsSu
 	//assert
 	suite.AuthenticatorMock.AssertCalled(suite.T(), "Authenticate", mock.Anything)
 	suite.ControllersMock.AssertCalled(suite.T(), "UpdateUserPassword", token.User, body.OldPassword, body.NewPassword)
-	AssertSuccessResponse(&suite.Suite, res)
+	common.AssertSuccessResponse(&suite.Suite, res)
 }
 
 func (suite *UserHandlerSuite) TestUpdateUserPassword_WithPanicTriggered_ReturnsInternalServerError() {
@@ -386,7 +387,7 @@ func (suite *UserHandlerSuite) TestUpdateUserPassword_WithPanicTriggered_Returns
 		NewPassword: "new password",
 	}
 
-	req := CreateRequest(&suite.Suite, http.MethodPatch, server.URL+"/user/password", "", body)
+	req := common.CreateRequest(&suite.Suite, http.MethodPatch, server.URL+"/user/password", "", body)
 
 	token := &models.AccessToken{User: &models.User{}}
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
@@ -399,7 +400,7 @@ func (suite *UserHandlerSuite) TestUpdateUserPassword_WithPanicTriggered_Returns
 	suite.Require().NoError(err)
 
 	//assert
-	AssertInternalServerErrorResponse(&suite.Suite, res)
+	common.AssertInternalServerErrorResponse(&suite.Suite, res)
 }
 
 func TestUserHandlerTestSuite(t *testing.T) {

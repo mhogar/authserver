@@ -76,8 +76,6 @@ func (c UserControl) DeleteUser(user *models.User) requesterror.RequestError {
 		return requesterror.InternalError()
 	}
 
-	//TODO: delete all user access tokens
-
 	//return success
 	return requesterror.NoError()
 }
@@ -113,7 +111,7 @@ func (c UserControl) UpdateUserPassword(user *models.User, oldPassword string, n
 		return requesterror.InternalError()
 	}
 
-	//TODO: delete all user access tokens
+	//TODO: delete all other user access tokens (requires transaction)
 
 	//return success
 	return requesterror.NoError()

@@ -1,8 +1,6 @@
-package router_test
+package common
 
 import (
-	"authserver/common"
-	"authserver/router"
 	"bytes"
 	"encoding/json"
 	"io"
@@ -40,7 +38,7 @@ func ParseResponse(suite *suite.Suite, res *http.Response, body interface{}) (st
 }
 
 func AssertSuccessResponse(suite *suite.Suite, res *http.Response) {
-	var basicRes router.BasicResponse
+	var basicRes BasicResponse
 	status := ParseResponse(suite, res, &basicRes)
 
 	suite.Equal(http.StatusOK, status)
@@ -48,13 +46,13 @@ func AssertSuccessResponse(suite *suite.Suite, res *http.Response) {
 }
 
 func AssertErrorResponse(suite *suite.Suite, res *http.Response, expectedStatus int, expectedErrorSubStrings ...string) {
-	var errRes router.ErrorResponse
+	var errRes ErrorResponse
 	status := ParseResponse(suite, res, &errRes)
 
 	suite.Equal(expectedStatus, status)
 	suite.False(errRes.Success)
 
-	common.AssertContainsSubstrings(suite, errRes.Error, expectedErrorSubStrings...)
+	AssertContainsSubstrings(suite, errRes.Error, expectedErrorSubStrings...)
 }
 
 func AssertInternalServerErrorResponse(suite *suite.Suite, res *http.Response) {
@@ -62,20 +60,25 @@ func AssertInternalServerErrorResponse(suite *suite.Suite, res *http.Response) {
 }
 
 func AssertOAuthErrorResponse(suite *suite.Suite, res *http.Response, expectedStatus int, expectedError string, expectedDescriptionSubStrings ...string) {
-	var errRes router.OAuthErrorResponse
+	var errRes OAuthErrorResponse
 	status := ParseResponse(suite, res, &errRes)
 
 	suite.Equal(expectedStatus, status)
 	suite.Contains(errRes.Error, expectedError)
 
-	common.AssertContainsSubstrings(suite, errRes.ErrorDescription, expectedDescriptionSubStrings...)
+	AssertContainsSubstrings(suite, errRes.ErrorDescription, expectedDescriptionSubStrings...)
 }
 
 func AssertAccessTokenResponse(suite *suite.Suite, res *http.Response, expectedTokenID string) {
-	var tokenRes router.AccessTokenResponse
+	var tokenRes AccessTokenResponse
 	status := ParseResponse(suite, res, &tokenRes)
 
 	suite.Equal(http.StatusOK, status)
 	suite.Equal(expectedTokenID, tokenRes.AccessToken)
 	suite.Equal("bearer", tokenRes.TokenType)
+}
+
+func AssertResponseOK(suite *suite.Suite, res *http.Response, result interface{}) {
+	status := ParseResponse(suite, res, result)
+	suite.Equal(http.StatusOK, status)
 }

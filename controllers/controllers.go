@@ -31,7 +31,7 @@ type TokenController interface {
 	DeleteToken(token *models.AccessToken) requesterror.RequestError
 }
 
-type BaseControllers struct {
+type Controls struct {
 	UserControl
 	TokenControl
 }

@@ -12,7 +12,7 @@ var controllers controllerspkg.Controllers
 // Only the first call to this function will create a new Controllers, after which it will be retrieved from memory.
 func ResolveControllers() controllerspkg.Controllers {
 	createContollersOnce.Do(func() {
-		controllers = &controllerspkg.BaseControllers{
+		controllers = &controllerspkg.Controls{
 			UserControl: controllerspkg.UserControl{
 				CRUD:                      ResolveDatabase(),
 				PasswordHasher:            ResolvePasswordHasher(),
