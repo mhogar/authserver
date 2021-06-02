@@ -41,7 +41,7 @@ func (suite *OAuthAuthenticatorTestSuite) TestAuthenticate_WithNoBearerToken_Ret
 		suite.Equal(requesterror.ErrorTypeClient, rerr.Type)
 	}
 
-	req = CreateRequest(&suite.Suite, "", "", "", nil)
+	req = common.CreateRequest(&suite.Suite, "", "", "", nil)
 	suite.Run("NoAuthorizationHeader", testCase)
 
 	req.Header.Set("Authorization", "invalid")
@@ -50,7 +50,7 @@ func (suite *OAuthAuthenticatorTestSuite) TestAuthenticate_WithNoBearerToken_Ret
 
 func (suite *OAuthAuthenticatorTestSuite) TestAuthenticate_WithBearerTokenInInvalidFormat_ReturnsClientRequestError() {
 	//arrange
-	req := CreateRequest(&suite.Suite, "", "", "invalid", nil)
+	req := common.CreateRequest(&suite.Suite, "", "", "invalid", nil)
 
 	//act
 	token, rerr := suite.OAuthAuthenticator.Authenticate(req)
@@ -64,7 +64,7 @@ func (suite *OAuthAuthenticatorTestSuite) TestAuthenticate_WithBearerTokenInInva
 
 func (suite *OAuthAuthenticatorTestSuite) TestAuthenticate_WithErrorFetchingAccessTokenByID_ReturnsInternalServerRequestError() {
 	//arrange
-	req := CreateRequest(&suite.Suite, "", "", uuid.New().String(), nil)
+	req := common.CreateRequest(&suite.Suite, "", "", uuid.New().String(), nil)
 	suite.CRUDMock.On("GetAccessTokenByID", mock.Anything).Return(nil, errors.New(""))
 
 	//act
@@ -79,7 +79,7 @@ func (suite *OAuthAuthenticatorTestSuite) TestAuthenticate_WithErrorFetchingAcce
 
 func (suite *OAuthAuthenticatorTestSuite) TestAuthenticate_WhereAccessTokenWithIDisNotFound_ReturnsClientRequestError() {
 	//arrange
-	req := CreateRequest(&suite.Suite, "", "", uuid.New().String(), nil)
+	req := common.CreateRequest(&suite.Suite, "", "", uuid.New().String(), nil)
 	suite.CRUDMock.On("GetAccessTokenByID", mock.Anything).Return(nil, nil)
 
 	//act
