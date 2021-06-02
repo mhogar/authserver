@@ -26,7 +26,7 @@ type PostTokenPasswordGrantBody struct {
 }
 
 // PostToken handles POST requests to "/token"
-func (h RouteHandler) PostToken(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+func (h routeHandler) PostToken(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	var body PostTokenBody
 
 	//parse the body
@@ -64,7 +64,7 @@ func (h RouteHandler) PostToken(w http.ResponseWriter, req *http.Request, _ http
 	})
 }
 
-func (h RouteHandler) handlePasswordGrant(w http.ResponseWriter, body PostTokenPasswordGrantBody) *models.AccessToken {
+func (h routeHandler) handlePasswordGrant(w http.ResponseWriter, body PostTokenPasswordGrantBody) *models.AccessToken {
 	//validate parameters
 	if body.Username == "" {
 		sendOAuthErrorResponse(w, http.StatusBadRequest, "invalid_request", "missing username parameter")
@@ -108,7 +108,7 @@ func (h RouteHandler) handlePasswordGrant(w http.ResponseWriter, body PostTokenP
 }
 
 // DeleteToken handles DELETE requests to "/token"
-func (h RouteHandler) DeleteToken(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+func (h routeHandler) DeleteToken(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	//authenticate the user
 	token, rerr := h.Authenticator.Authenticate(req)
 	if rerr.Type == requesterror.ErrorTypeClient {

@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Config is a struct with fields needed for configuring the application.
 type Config struct {
 	RootDir                string                 `yaml:"root_dir"`
 	AppID                  string                 `yaml:"app_id"`

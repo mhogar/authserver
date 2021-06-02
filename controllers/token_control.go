@@ -67,6 +67,7 @@ func (c TokenControl) CreateTokenFromPassword(username string, password string, 
 	return token, requesterror.OAuthNoError()
 }
 
+// DeleteToken deletes the access token.
 func (c TokenControl) DeleteToken(token *models.AccessToken) requesterror.RequestError {
 	//delete the token
 	err := c.CRUD.DeleteAccessToken(token)

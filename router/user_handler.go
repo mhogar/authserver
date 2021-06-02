@@ -17,7 +17,7 @@ type PostUserBody struct {
 }
 
 // PostUser handles Post requests to "/user"
-func (h RouteHandler) PostUser(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+func (h routeHandler) PostUser(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	//parse the body
 	var body PostUserBody
 	err := parseJSONBody(req.Body, &body)
@@ -42,7 +42,7 @@ func (h RouteHandler) PostUser(w http.ResponseWriter, req *http.Request, _ httpr
 }
 
 // DeleteUser handles DELETE requests to "/user"
-func (h RouteHandler) DeleteUser(w http.ResponseWriter, req *http.Request, params httprouter.Params) {
+func (h routeHandler) DeleteUser(w http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	//authenticate the user
 	token, rerr := h.Authenticator.Authenticate(req)
 	if rerr.Type == requesterror.ErrorTypeClient {
@@ -74,7 +74,7 @@ type PatchUserPasswordBody struct {
 }
 
 // PatchUserPassword handles PATCH requests to "/user/password"
-func (h RouteHandler) PatchUserPassword(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+func (h routeHandler) PatchUserPassword(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	//authenticate the user
 	token, rerr := h.Authenticator.Authenticate(req)
 	if rerr.Type == requesterror.ErrorTypeClient {

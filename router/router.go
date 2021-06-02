@@ -6,7 +6,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-type RouteHandler struct {
+type routeHandler struct {
 	Control       controllers.Controllers
 	Authenticator Authenticator
 }
@@ -14,7 +14,7 @@ type RouteHandler struct {
 // CreateRouter creates a new router with the endpoints and panic handler configured
 func CreateRouter(control controllers.Controllers, authenticator Authenticator) *httprouter.Router {
 	router := httprouter.New()
-	handler := RouteHandler{
+	handler := routeHandler{
 		Control:       control,
 		Authenticator: authenticator,
 	}

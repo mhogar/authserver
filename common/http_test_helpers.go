@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+// CreateRequest creates an http request object with the given parameters.
 func CreateRequest(suite *suite.Suite, method string, url string, bearerToken string, body interface{}) *http.Request {
 	var bodyReader io.Reader = nil
 
@@ -29,6 +30,7 @@ func CreateRequest(suite *suite.Suite, method string, url string, bearerToken st
 	return req
 }
 
+// ParseResponse parses the provided http response, return its status code and body
 func ParseResponse(suite *suite.Suite, res *http.Response, body interface{}) (status int) {
 	decoder := json.NewDecoder(res.Body)
 	err := decoder.Decode(body)
@@ -37,6 +39,7 @@ func ParseResponse(suite *suite.Suite, res *http.Response, body interface{}) (st
 	return res.StatusCode
 }
 
+// AssertSuccessResponse asserts the response is a success response
 func AssertSuccessResponse(suite *suite.Suite, res *http.Response) {
 	var basicRes BasicResponse
 	status := ParseResponse(suite, res, &basicRes)
@@ -45,6 +48,7 @@ func AssertSuccessResponse(suite *suite.Suite, res *http.Response) {
 	suite.True(basicRes.Success)
 }
 
+// AssertErrorResponse asserts the response is an error reponse with the expected status and error sub strings
 func AssertErrorResponse(suite *suite.Suite, res *http.Response, expectedStatus int, expectedErrorSubStrings ...string) {
 	var errRes ErrorResponse
 	status := ParseResponse(suite, res, &errRes)
@@ -55,10 +59,12 @@ func AssertErrorResponse(suite *suite.Suite, res *http.Response, expectedStatus 
 	AssertContainsSubstrings(suite, errRes.Error, expectedErrorSubStrings...)
 }
 
+// AssertInternalServerErrorResponse asserts the response is an internal server response
 func AssertInternalServerErrorResponse(suite *suite.Suite, res *http.Response) {
 	AssertErrorResponse(suite, res, http.StatusInternalServerError, "internal error")
 }
 
+// AssertOAuthErrorResponse asserts the response is an oauth error reponse with the expected status, error, and description sub strings
 func AssertOAuthErrorResponse(suite *suite.Suite, res *http.Response, expectedStatus int, expectedError string, expectedDescriptionSubStrings ...string) {
 	var errRes OAuthErrorResponse
 	status := ParseResponse(suite, res, &errRes)
@@ -69,6 +75,7 @@ func AssertOAuthErrorResponse(suite *suite.Suite, res *http.Response, expectedSt
 	AssertContainsSubstrings(suite, errRes.ErrorDescription, expectedDescriptionSubStrings...)
 }
 
+// AssertAccessTokenResponse asserts the response is an access token response with the expect token
 func AssertAccessTokenResponse(suite *suite.Suite, res *http.Response, expectedTokenID string) {
 	var tokenRes AccessTokenResponse
 	status := ParseResponse(suite, res, &tokenRes)
@@ -78,6 +85,7 @@ func AssertAccessTokenResponse(suite *suite.Suite, res *http.Response, expectedT
 	suite.Equal("bearer", tokenRes.TokenType)
 }
 
+// AssertResponseOK asserts the response has an http OK status and returns the parsed result
 func AssertResponseOK(suite *suite.Suite, res *http.Response, result interface{}) {
 	status := ParseResponse(suite, res, result)
 	suite.Equal(http.StatusOK, status)

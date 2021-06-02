@@ -41,7 +41,6 @@ func (m Migration) Validate() int {
 	matched, _ := regexp.MatchString(`^\d{14}$`, m.Timestamp)
 	if !matched {
 		code |= ValidateMigrationInvalidTimestamp
-		//return CreateValidateError(ValidateMigrationInvalidTimestamp, "timestamp is in invalid format")
 	}
 
 	return code
