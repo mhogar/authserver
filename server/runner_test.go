@@ -1,9 +1,10 @@
 package server_test
 
 import (
+	"authserver/common"
 	controllermocks "authserver/controllers/mocks"
 	databasemocks "authserver/database/mocks"
-	commonhelpers "authserver/helpers/common"
+	routermocks "authserver/router/mocks"
 	"authserver/server"
 	"authserver/server/mocks"
 	"errors"
@@ -14,21 +15,24 @@ import (
 
 type RunnerTestSuite struct {
 	suite.Suite
-	DBConnectionMock   databasemocks.DBConnection
-	RequestHandlerMock controllermocks.RequestHandler
-	ServerMock         mocks.Server
-	Runner             *server.Runner
+	DBConnectionMock  databasemocks.DBConnection
+	ControllersMock   controllermocks.Controllers
+	AuthenticatorMock routermocks.Authenticator
+	ServerMock        mocks.Server
+	Runner            *server.Runner
 }
 
 func (suite *RunnerTestSuite) SetupTest() {
 	suite.DBConnectionMock = databasemocks.DBConnection{}
-	suite.RequestHandlerMock = controllermocks.RequestHandler{}
+	suite.ControllersMock = controllermocks.Controllers{}
+	suite.AuthenticatorMock = routermocks.Authenticator{}
 	suite.ServerMock = mocks.Server{}
 
 	suite.Runner = &server.Runner{
-		DBConnection:   &suite.DBConnectionMock,
-		RequestHandler: &suite.RequestHandlerMock,
-		Server:         &suite.ServerMock,
+		DBConnection:  &suite.DBConnectionMock,
+		Control:       &suite.ControllersMock,
+		Authenticator: &suite.AuthenticatorMock,
+		Server:        &suite.ServerMock,
 	}
 }
 
@@ -41,7 +45,7 @@ func (suite *RunnerTestSuite) TestRun_WithErrorOpeningDBConnection_ReturnsError(
 	err := suite.Runner.Run()
 
 	//assert
-	commonhelpers.AssertError(&suite.Suite, err, message)
+	common.AssertError(&suite.Suite, err, message)
 }
 
 func (suite *RunnerTestSuite) TestRun_WithPingingDatabase_ReturnsError() {
@@ -55,7 +59,7 @@ func (suite *RunnerTestSuite) TestRun_WithPingingDatabase_ReturnsError() {
 	err := suite.Runner.Run()
 
 	//assert
-	commonhelpers.AssertError(&suite.Suite, err, message)
+	common.AssertError(&suite.Suite, err, message)
 }
 
 func (suite *RunnerTestSuite) TestRun_WithErrorStartingServer_ReturnsError() {
@@ -70,7 +74,7 @@ func (suite *RunnerTestSuite) TestRun_WithErrorStartingServer_ReturnsError() {
 	err := suite.Runner.Run()
 
 	//assert
-	commonhelpers.AssertError(&suite.Suite, err, message)
+	common.AssertError(&suite.Suite, err, message)
 }
 
 func (suite *RunnerTestSuite) TestRun_StartsServer() {

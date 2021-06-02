@@ -4,7 +4,7 @@ dist: bionic
 env:
   - GO111MODULE=on CFG_ENV=travis COVERALLS_PARALLEL=true
 go:
-  - 1.14.x
+  - 1.15.x
 notifications:
   webhooks: https://coveralls.io/webhook
 
@@ -16,11 +16,20 @@ jobs:
         - go get github.com/mattn/goveralls
       script: 
         - go build
-        - go test ./controllers/ ./models/ ./helpers/ ./router/ ./server/ -v -covermode=count -coverprofile=coverage.out
+        - go test ./controllers/ ./controllers/password_helpers/ ./models/ ./router/ ./server/ -v -covermode=count -coverprofile=coverage.out
         - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
     - name: MigrationRunner
       before_install:
-        - cd database/migration_runner
+        - cd tools/migration_runner
+      install:
+        - go get github.com/mattn/goveralls
+      script:
+        - go build
+        - go test -v -covermode=count -coverprofile=coverage.out
+        - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
+    - name: AdminCreator
+      before_install:
+        - cd tools/admin_creator
       install:
         - go get github.com/mattn/goveralls
       script:
@@ -35,7 +44,20 @@ jobs:
         - go get github.com/mattn/goveralls
       before_script:
         - psql -c 'create database travis_ci_test;' -U postgres
-        - go run database/migration_runner/main.go -db=integration
+        - go run tools/migration_runner/main.go -db=integration
       script:
         - go test ./database/sql_adapter/ -v -covermode=count -coverprofile=coverage.out
+        - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
+    - stage: End-to-End Tests
+      name: Common Workflows
+      services:
+        - postgresql
+      install:
+        - go get github.com/mattn/goveralls
+      before_script:
+        - psql -c 'create database travis_ci_test;' -U postgres
+        - go run tools/migration_runner/main.go -db=integration
+        - go run tools/admin_creator/main.go -db=integration -username=admin -password=Admin123!
+      script:
+        - go test ./e2e_tests/ -v -covermode=count -coverprofile=coverage.out
         - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci

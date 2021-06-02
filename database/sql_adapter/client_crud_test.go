@@ -1,10 +1,10 @@
 package sqladapter_test
 
 import (
+	"authserver/common"
 	"authserver/config"
 	sqladapter "authserver/database/sql_adapter"
 	"authserver/dependencies"
-	commonhelpers "authserver/helpers/common"
 	"authserver/models"
 	"testing"
 
@@ -64,7 +64,7 @@ func (suite *ClientCRUDTestSuite) TestSaveClient_WithInvalidClient_ReturnsError(
 	err := suite.Tx.SaveClient(client)
 
 	//assert
-	commonhelpers.AssertError(&suite.Suite, err, "error", "client model")
+	common.AssertError(&suite.Suite, err, "error", "client model")
 }
 
 func (suite *ClientCRUDTestSuite) TestGetClientById_WhereClientNotFound_ReturnsNilClient() {

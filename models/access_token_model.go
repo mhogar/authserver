@@ -4,14 +4,14 @@ import "github.com/google/uuid"
 
 // AccessToken ValidateError statuses.
 const (
-	ValidateAccessTokenValid         = iota
-	ValidateAccessTokenNilID         = iota
-	ValidateAccessTokenNilUser       = iota
-	ValidateAccessTokenInvalidUser   = iota
-	ValidateAccessTokenNilClient     = iota
-	ValidateAccessTokenInvalidClient = iota
-	ValidateAccessTokenNilScope      = iota
-	ValidateAccessTokenInvalidScope  = iota
+	ValidateAccessTokenValid         = 0x0
+	ValidateAccessTokenNilID         = 0x1
+	ValidateAccessTokenNilUser       = 0x2
+	ValidateAccessTokenInvalidUser   = 0x4
+	ValidateAccessTokenNilClient     = 0x8
+	ValidateAccessTokenInvalidClient = 0x10
+	ValidateAccessTokenNilScope      = 0x20
+	ValidateAccessTokenInvalidScope  = 0x40
 )
 
 // AccessToken represents the access token model.
@@ -46,38 +46,40 @@ func CreateNewAccessToken(user *User, client *Client, scope *Scope) *AccessToken
 }
 
 // Validate validates the access token model has valid fields.
-// Returns a ValidateError indicating its result.
-func (tk *AccessToken) Validate() ValidateError {
+// Returns an int indicating which fields are invalid.
+func (tk *AccessToken) Validate() int {
+	code := ValidateAccessTokenValid
+
 	if tk.ID == uuid.Nil {
-		return CreateValidateError(ValidateAccessTokenNilID, "id cannot be nil")
+		code |= ValidateAccessTokenNilID
 	}
 
 	if tk.User == nil {
-		return CreateValidateError(ValidateAccessTokenNilUser, "user cannot be nil")
-	}
-
-	verr := tk.User.Validate()
-	if verr.Status != ValidateUserValid {
-		return CreateValidateError(ValidateAccessTokenInvalidUser, "invalid user: "+verr.Error())
+		code |= ValidateAccessTokenNilUser
+	} else {
+		verr := tk.User.Validate()
+		if verr != ValidateUserValid {
+			code |= ValidateAccessTokenInvalidUser
+		}
 	}
 
 	if tk.Client == nil {
-		return CreateValidateError(ValidateAccessTokenNilClient, "client cannot be nil")
-	}
-
-	verr = tk.Client.Validate()
-	if verr.Status != ValidateClientValid {
-		return CreateValidateError(ValidateAccessTokenInvalidClient, "invalid client: "+verr.Error())
+		code |= ValidateAccessTokenNilClient
+	} else {
+		verr := tk.Client.Validate()
+		if verr != ValidateClientValid {
+			code |= ValidateAccessTokenInvalidClient
+		}
 	}
 
 	if tk.Scope == nil {
-		return CreateValidateError(ValidateAccessTokenNilScope, "scope cannot be nil")
+		code |= ValidateAccessTokenNilScope
+	} else {
+		verr := tk.Scope.Validate()
+		if verr != ValidateScopeValid {
+			code |= ValidateAccessTokenInvalidScope
+		}
 	}
 
-	verr = tk.Scope.Validate()
-	if verr.Status != ValidateScopeValid {
-		return CreateValidateError(ValidateAccessTokenInvalidScope, "invalid scope: "+verr.Error())
-	}
-
-	return ValidateError{ValidateAccessTokenValid, nil}
+	return code
 }

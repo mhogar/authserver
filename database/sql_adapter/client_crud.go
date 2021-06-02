@@ -1,9 +1,11 @@
 package sqladapter
 
 import (
-	commonhelpers "authserver/helpers/common"
+	"authserver/common"
 	"authserver/models"
 	"database/sql"
+	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 )
@@ -12,8 +14,8 @@ import (
 // Returns any errors.
 func (adapter *SQLAdapter) SaveClient(client *models.Client) error {
 	verr := client.Validate()
-	if verr.Status != models.ValidateClientValid {
-		return commonhelpers.ChainError("error validating client model", verr)
+	if verr != models.ValidateClientValid {
+		return errors.New(fmt.Sprint("error validating client model:", verr))
 	}
 
 	ctx, cancel := adapter.CreateStandardTimeoutContext()
@@ -21,7 +23,7 @@ func (adapter *SQLAdapter) SaveClient(client *models.Client) error {
 	cancel()
 
 	if err != nil {
-		return commonhelpers.ChainError("error executing save client statement", err)
+		return common.ChainError("error executing save client statement", err)
 	}
 
 	return nil
@@ -35,7 +37,7 @@ func (adapter *SQLAdapter) GetClientByID(ID uuid.UUID) (*models.Client, error) {
 	defer cancel()
 
 	if err != nil {
-		return nil, commonhelpers.ChainError("error executing get client by id query", err)
+		return nil, common.ChainError("error executing get client by id query", err)
 	}
 	defer rows.Close()
 
@@ -47,7 +49,7 @@ func readClientData(rows *sql.Rows) (*models.Client, error) {
 	if !rows.Next() {
 		err := rows.Err()
 		if err != nil {
-			return nil, commonhelpers.ChainError("error preparing next row", err)
+			return nil, common.ChainError("error preparing next row", err)
 		}
 
 		//return no results
@@ -58,7 +60,7 @@ func readClientData(rows *sql.Rows) (*models.Client, error) {
 	client := &models.Client{}
 	err := rows.Scan(&client.ID)
 	if err != nil {
-		return nil, commonhelpers.ChainError("error reading row", err)
+		return nil, common.ChainError("error reading row", err)
 	}
 
 	return client, nil

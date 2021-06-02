@@ -29,10 +29,10 @@ func (suite *ClientTestSuite) TestCreateNewClient_CreatesClientWithSuppliedField
 
 func (suite *ClientTestSuite) TestValidate_WithValidClient_ReturnsValid() {
 	//act
-	err := suite.Client.Validate()
+	verr := suite.Client.Validate()
 
 	//assert
-	suite.Equal(models.ValidateClientValid, err.Status)
+	suite.Equal(models.ValidateClientValid, verr)
 }
 
 func (suite *ClientTestSuite) TestValidate_WithNilID_ReturnsClientNilID() {
@@ -40,10 +40,10 @@ func (suite *ClientTestSuite) TestValidate_WithNilID_ReturnsClientNilID() {
 	suite.Client.ID = uuid.Nil
 
 	//act
-	err := suite.Client.Validate()
+	verr := suite.Client.Validate()
 
 	//assert
-	suite.Equal(models.ValidateClientNilID, err.Status)
+	suite.Equal(models.ValidateClientNilID, verr)
 }
 
 func TestClientTestSuite(t *testing.T) {

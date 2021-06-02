@@ -1,8 +1,10 @@
 package migrations
 
 import (
+	"authserver/common"
+	"authserver/config"
 	sqladapter "authserver/database/sql_adapter"
-	commonhelpers "authserver/helpers/common"
+	"authserver/models"
 )
 
 type m20200628151601 struct {
@@ -20,7 +22,7 @@ func (m m20200628151601) Up() error {
 	cancel()
 
 	if err != nil {
-		return commonhelpers.ChainError("error executing create user table script", err)
+		return common.ChainError("error executing create user table script", err)
 	}
 
 	//create the client table
@@ -29,7 +31,15 @@ func (m m20200628151601) Up() error {
 	cancel()
 
 	if err != nil {
-		return commonhelpers.ChainError("error executing create client table script", err)
+		return common.ChainError("error executing create client table script", err)
+	}
+
+	//add this app as a client
+	err = m.DB.SaveClient(&models.Client{
+		ID: config.GetAppId(),
+	})
+	if err != nil {
+		return common.ChainError("error saving app client", err)
 	}
 
 	//create the scope table
@@ -38,7 +48,13 @@ func (m m20200628151601) Up() error {
 	cancel()
 
 	if err != nil {
-		return commonhelpers.ChainError("error executing create scope table script", err)
+		return common.ChainError("error executing create scope table script", err)
+	}
+
+	//add the "all" scope
+	err = m.DB.SaveScope(models.CreateNewScope("all"))
+	if err != nil {
+		return common.ChainError("error saving \"all\" scope", err)
 	}
 
 	//create the access_token table
@@ -47,7 +63,7 @@ func (m m20200628151601) Up() error {
 	cancel()
 
 	if err != nil {
-		return commonhelpers.ChainError("error executing create access token table script", err)
+		return common.ChainError("error executing create access token table script", err)
 	}
 
 	return nil
@@ -60,7 +76,7 @@ func (m m20200628151601) Down() error {
 	cancel()
 
 	if err != nil {
-		return commonhelpers.ChainError("error executing drop access token table script", err)
+		return common.ChainError("error executing drop access token table script", err)
 	}
 
 	//drop the scope table
@@ -69,7 +85,7 @@ func (m m20200628151601) Down() error {
 	cancel()
 
 	if err != nil {
-		return commonhelpers.ChainError("error executing drop scope table script", err)
+		return common.ChainError("error executing drop scope table script", err)
 	}
 
 	//drop the client table
@@ -78,7 +94,7 @@ func (m m20200628151601) Down() error {
 	cancel()
 
 	if err != nil {
-		return commonhelpers.ChainError("error executing drop client table script", err)
+		return common.ChainError("error executing drop client table script", err)
 	}
 
 	//drop the user table
@@ -87,7 +103,7 @@ func (m m20200628151601) Down() error {
 	cancel()
 
 	if err != nil {
-		return commonhelpers.ChainError("error executing drop user table script", err)
+		return common.ChainError("error executing drop user table script", err)
 	}
 
 	return nil

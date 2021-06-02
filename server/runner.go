@@ -1,9 +1,10 @@
 package server
 
 import (
+	"authserver/common"
 	"authserver/controllers"
 	"authserver/database"
-	commonhelpers "authserver/helpers/common"
+	"authserver/router"
 )
 
 // Server is an interface for starting and closing a server.
@@ -17,9 +18,10 @@ type Server interface {
 
 // Runner encapsulates dependences and runs the server.
 type Runner struct {
-	DBConnection   database.DBConnection
-	RequestHandler controllers.RequestHandler
-	Server         Server
+	DBConnection  database.DBConnection
+	Control       controllers.Controllers
+	Authenticator router.Authenticator
+	Server        Server
 }
 
 // Run runs the server and returns any errors.
@@ -27,12 +29,12 @@ func (s Runner) Run() error {
 	//connect to the database
 	err := s.DBConnection.OpenConnection()
 	if err != nil {
-		return commonhelpers.ChainError("error opening database connection", err)
+		return common.ChainError("error opening database connection", err)
 	}
 
 	err = s.DBConnection.Ping()
 	if err != nil {
-		return commonhelpers.ChainError("error reaching database", err)
+		return common.ChainError("error reaching database", err)
 	}
 
 	//start the server

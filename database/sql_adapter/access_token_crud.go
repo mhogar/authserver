@@ -1,9 +1,11 @@
 package sqladapter
 
 import (
-	commonhelpers "authserver/helpers/common"
+	"authserver/common"
 	"authserver/models"
 	"database/sql"
+	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 )
@@ -12,8 +14,8 @@ import (
 // Returns any errors.
 func (adapter *SQLAdapter) SaveAccessToken(token *models.AccessToken) error {
 	verr := token.Validate()
-	if verr.Status != models.ValidateAccessTokenValid {
-		return commonhelpers.ChainError("error validating access token model", verr)
+	if verr != models.ValidateAccessTokenValid {
+		return errors.New(fmt.Sprint("error validating access token model:", verr))
 	}
 
 	ctx, cancel := adapter.CreateStandardTimeoutContext()
@@ -22,7 +24,7 @@ func (adapter *SQLAdapter) SaveAccessToken(token *models.AccessToken) error {
 	cancel()
 
 	if err != nil {
-		return commonhelpers.ChainError("error executing save access token statement", err)
+		return common.ChainError("error executing save access token statement", err)
 	}
 
 	return nil
@@ -36,7 +38,7 @@ func (adapter *SQLAdapter) GetAccessTokenByID(ID uuid.UUID) (*models.AccessToken
 	defer cancel()
 
 	if err != nil {
-		return nil, commonhelpers.ChainError("error executing get access token by id query", err)
+		return nil, common.ChainError("error executing get access token by id query", err)
 	}
 	defer rows.Close()
 
@@ -51,7 +53,7 @@ func (adapter *SQLAdapter) DeleteAccessToken(token *models.AccessToken) error {
 	cancel()
 
 	if err != nil {
-		return commonhelpers.ChainError("error executing delete access token statement", err)
+		return common.ChainError("error executing delete access token statement", err)
 	}
 
 	return nil
@@ -62,7 +64,7 @@ func readAccessTokenData(rows *sql.Rows) (*models.AccessToken, error) {
 	if !rows.Next() {
 		err := rows.Err()
 		if err != nil {
-			return nil, commonhelpers.ChainError("error preparing next row", err)
+			return nil, common.ChainError("error preparing next row", err)
 		}
 
 		//return no results
@@ -83,7 +85,7 @@ func readAccessTokenData(rows *sql.Rows) (*models.AccessToken, error) {
 		&token.Scope.ID, &token.Scope.Name,
 	)
 	if err != nil {
-		return nil, commonhelpers.ChainError("error reading row", err)
+		return nil, common.ChainError("error reading row", err)
 	}
 
 	return token, nil

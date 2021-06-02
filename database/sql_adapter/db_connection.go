@@ -1,8 +1,8 @@
 package sqladapter
 
 import (
+	"authserver/common"
 	"authserver/config"
-	commonhelpers "authserver/helpers/common"
 	"context"
 	"database/sql"
 	"errors"
@@ -29,7 +29,7 @@ func (DB *SQLDB) OpenConnection() error {
 	//connect to the db
 	db, err := sql.Open(DB.SQLDriver.GetDriverName(), connectionStr)
 	if err != nil {
-		return commonhelpers.ChainError("error opening database connection", err)
+		return common.ChainError("error opening database connection", err)
 	}
 
 	DB.DB = db
@@ -45,7 +45,7 @@ func (DB *SQLDB) OpenConnection() error {
 func (DB *SQLDB) CloseConnection() error {
 	err := DB.DB.Close()
 	if err != nil {
-		return commonhelpers.ChainError("error closing database connection", err)
+		return common.ChainError("error closing database connection", err)
 	}
 
 	//cancel any remaining requests that may still be running
@@ -65,7 +65,7 @@ func (DB *SQLDB) Ping() error {
 	cancel()
 
 	if err != nil {
-		return commonhelpers.ChainError("error pinging database", err)
+		return common.ChainError("error pinging database", err)
 	}
 
 	return nil

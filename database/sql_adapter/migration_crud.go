@@ -1,8 +1,10 @@
 package sqladapter
 
 import (
-	commonhelpers "authserver/helpers/common"
+	"authserver/common"
 	"authserver/models"
+	"errors"
+	"fmt"
 )
 
 // Setup creates the migration table if it does not already exist.
@@ -12,7 +14,7 @@ func (adapter *SQLAdapter) Setup() error {
 	cancel()
 
 	if err != nil {
-		return commonhelpers.ChainError("error executing create migration table statment", err)
+		return common.ChainError("error executing create migration table statment", err)
 	}
 
 	return nil
@@ -24,8 +26,8 @@ func (adapter *SQLAdapter) CreateMigration(timestamp string) error {
 	//create and validate migration model
 	migration := models.CreateNewMigration(timestamp)
 	verr := migration.Validate()
-	if verr.Status != models.ValidateMigrationValid {
-		return commonhelpers.ChainError("error validating migration model", verr)
+	if verr != models.ValidateMigrationValid {
+		return errors.New(fmt.Sprint("error validating migration model:", verr))
 	}
 
 	ctx, cancel := adapter.CreateStandardTimeoutContext()
@@ -33,7 +35,7 @@ func (adapter *SQLAdapter) CreateMigration(timestamp string) error {
 	cancel()
 
 	if err != nil {
-		return commonhelpers.ChainError("error executing save migration statment", err)
+		return common.ChainError("error executing save migration statment", err)
 	}
 
 	return nil
@@ -47,7 +49,7 @@ func (adapter *SQLAdapter) GetMigrationByTimestamp(timestamp string) (*models.Mi
 	defer cancel()
 
 	if err != nil {
-		return nil, commonhelpers.ChainError("error executing get migration by timestamp query", err)
+		return nil, common.ChainError("error executing get migration by timestamp query", err)
 	}
 	defer rows.Close()
 
@@ -55,7 +57,7 @@ func (adapter *SQLAdapter) GetMigrationByTimestamp(timestamp string) (*models.Mi
 	if !rows.Next() {
 		err := rows.Err()
 		if err != nil {
-			return nil, commonhelpers.ChainError("error preparing next row", err)
+			return nil, common.ChainError("error preparing next row", err)
 		}
 
 		//return no results
@@ -66,7 +68,7 @@ func (adapter *SQLAdapter) GetMigrationByTimestamp(timestamp string) (*models.Mi
 	migration := &models.Migration{}
 	err = rows.Scan(&migration.Timestamp)
 	if err != nil {
-		return nil, commonhelpers.ChainError("error reading row", err)
+		return nil, common.ChainError("error reading row", err)
 	}
 
 	return migration, nil
@@ -81,7 +83,7 @@ func (adapter *SQLAdapter) GetLatestTimestamp() (timestamp string, hasLatest boo
 	defer cancel()
 
 	if err != nil {
-		return "", false, commonhelpers.ChainError("error executing get latest timestamp query", err)
+		return "", false, common.ChainError("error executing get latest timestamp query", err)
 	}
 	defer rows.Close()
 
@@ -89,7 +91,7 @@ func (adapter *SQLAdapter) GetLatestTimestamp() (timestamp string, hasLatest boo
 	if !rows.Next() {
 		err := rows.Err()
 		if err != nil {
-			return "", false, commonhelpers.ChainError("error preparing next row", err)
+			return "", false, common.ChainError("error preparing next row", err)
 		}
 
 		//return no results
@@ -99,7 +101,7 @@ func (adapter *SQLAdapter) GetLatestTimestamp() (timestamp string, hasLatest boo
 	//get the result
 	err = rows.Scan(&timestamp)
 	if err != nil {
-		return "", false, commonhelpers.ChainError("error reading row", err)
+		return "", false, common.ChainError("error reading row", err)
 	}
 
 	return timestamp, true, nil
@@ -113,7 +115,7 @@ func (adapter *SQLAdapter) DeleteMigrationByTimestamp(timestamp string) error {
 	cancel()
 
 	if err != nil {
-		return commonhelpers.ChainError("error executing delete migration by timestamp statement", err)
+		return common.ChainError("error executing delete migration by timestamp statement", err)
 	}
 
 	return nil

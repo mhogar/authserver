@@ -1,9 +1,11 @@
 package sqladapter
 
 import (
-	commonhelpers "authserver/helpers/common"
+	"authserver/common"
 	"authserver/models"
 	"database/sql"
+	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 )
@@ -12,8 +14,8 @@ import (
 // Returns any errors.
 func (adapter *SQLAdapter) SaveUser(user *models.User) error {
 	verr := user.Validate()
-	if verr.Status != models.ValidateUserValid {
-		return commonhelpers.ChainError("error validating user model", verr)
+	if verr != models.ValidateUserValid {
+		return errors.New(fmt.Sprint("error validating user model:", verr))
 	}
 
 	ctx, cancel := adapter.CreateStandardTimeoutContext()
@@ -22,7 +24,7 @@ func (adapter *SQLAdapter) SaveUser(user *models.User) error {
 	cancel()
 
 	if err != nil {
-		return commonhelpers.ChainError("error executing save user statement", err)
+		return common.ChainError("error executing save user statement", err)
 	}
 
 	return nil
@@ -36,7 +38,7 @@ func (adapter *SQLAdapter) GetUserByID(ID uuid.UUID) (*models.User, error) {
 	defer cancel()
 
 	if err != nil {
-		return nil, commonhelpers.ChainError("error executing get user by id query", err)
+		return nil, common.ChainError("error executing get user by id query", err)
 	}
 	defer rows.Close()
 
@@ -51,7 +53,7 @@ func (adapter *SQLAdapter) GetUserByUsername(username string) (*models.User, err
 	defer cancel()
 
 	if err != nil {
-		return nil, commonhelpers.ChainError("error executing get user by username query", err)
+		return nil, common.ChainError("error executing get user by username query", err)
 	}
 	defer rows.Close()
 
@@ -62,8 +64,8 @@ func (adapter *SQLAdapter) GetUserByUsername(username string) (*models.User, err
 // Returns any errors.
 func (adapter *SQLAdapter) UpdateUser(user *models.User) error {
 	verr := user.Validate()
-	if verr.Status != models.ValidateUserValid {
-		return commonhelpers.ChainError("error validating user model", verr)
+	if verr != models.ValidateUserValid {
+		return errors.New(fmt.Sprint("error validating user model:", verr))
 	}
 
 	ctx, cancel := adapter.CreateStandardTimeoutContext()
@@ -72,7 +74,7 @@ func (adapter *SQLAdapter) UpdateUser(user *models.User) error {
 	cancel()
 
 	if err != nil {
-		return commonhelpers.ChainError("error executing update user statement", err)
+		return common.ChainError("error executing update user statement", err)
 	}
 
 	return nil
@@ -86,7 +88,7 @@ func (adapter *SQLAdapter) DeleteUser(user *models.User) error {
 	cancel()
 
 	if err != nil {
-		return commonhelpers.ChainError("error executing delete user statement", err)
+		return common.ChainError("error executing delete user statement", err)
 	}
 
 	return nil
@@ -97,7 +99,7 @@ func readUserData(rows *sql.Rows) (*models.User, error) {
 	if !rows.Next() {
 		err := rows.Err()
 		if err != nil {
-			return nil, commonhelpers.ChainError("error preparing next row", err)
+			return nil, common.ChainError("error preparing next row", err)
 		}
 
 		//return no results
@@ -108,7 +110,7 @@ func readUserData(rows *sql.Rows) (*models.User, error) {
 	user := &models.User{}
 	err := rows.Scan(&user.ID, &user.Username, &user.PasswordHash)
 	if err != nil {
-		return nil, commonhelpers.ChainError("error reading row", err)
+		return nil, common.ChainError("error reading row", err)
 	}
 
 	return user, nil

@@ -1,10 +1,10 @@
 package sqladapter_test
 
 import (
+	"authserver/common"
 	"authserver/config"
 	sqladapter "authserver/database/sql_adapter"
 	"authserver/dependencies"
-	commonhelpers "authserver/helpers/common"
 	"authserver/models"
 	"testing"
 
@@ -59,7 +59,7 @@ func (suite *UserCRUDTestSuite) TestSaveUser_WithInvalidUser_ReturnsError() {
 	err := suite.Tx.SaveUser(models.CreateNewUser("", nil))
 
 	//assert
-	commonhelpers.AssertError(&suite.Suite, err, "error", "user model")
+	common.AssertError(&suite.Suite, err, "error", "user model")
 }
 
 func (suite *UserCRUDTestSuite) TestGetUserById_WhereUserNotFound_ReturnsNilUser() {
@@ -111,7 +111,7 @@ func (suite *UserCRUDTestSuite) TestUpdateUser_WithInvalidUser_ReturnsError() {
 	err := suite.Tx.UpdateUser(models.CreateNewUser("", nil))
 
 	//assert
-	commonhelpers.AssertError(&suite.Suite, err, "error", "user model")
+	common.AssertError(&suite.Suite, err, "error", "user model")
 }
 
 func (suite *UserCRUDTestSuite) TestUpdateUser_WithNoUserToUpdate_ReturnsNilError() {

@@ -1,18 +1,21 @@
 package config
 
 import (
-	commonhelpers "authserver/helpers/common"
+	"authserver/common"
 	"fmt"
 	"io/ioutil"
 	"path"
 
 	"gopkg.in/yaml.v3"
 
+	"github.com/google/uuid"
 	"github.com/spf13/viper"
 )
 
-type config struct {
+// Config is a struct with fields needed for configuring the application.
+type Config struct {
 	RootDir                string                 `yaml:"root_dir"`
+	AppID                  string                 `yaml:"app_id"`
 	DatabaseConfig         DatabaseConfig         `yaml:"database"`
 	PasswordCriteriaConfig PasswordCriteriaConfig `yaml:"password_criteria"`
 }
@@ -57,20 +60,25 @@ func InitConfig(dir string) error {
 	//read the config file
 	data, err := ioutil.ReadFile(path.Join(dir, fmt.Sprint("config.", viper.Get("env"), ".yml")))
 	if err != nil {
-		return commonhelpers.ChainError("error loading config file", err)
+		return common.ChainError("error loading config file", err)
 	}
 
 	//parse the yaml
-	var cfg config
+	var cfg Config
 	err = yaml.Unmarshal(data, &cfg)
 	if err != nil {
-		return commonhelpers.ChainError("error parsing config file", err)
+		return common.ChainError("error parsing config file", err)
 	}
 
 	//set the config
 	viper.Set("root_dir", cfg.RootDir)
+	viper.Set("app_id", cfg.AppID)
 	viper.Set("password_criteria", cfg.PasswordCriteriaConfig)
 	viper.Set("database", cfg.DatabaseConfig)
 
 	return nil
+}
+
+func GetAppId() uuid.UUID {
+	return uuid.MustParse(viper.Get("app_id").(string))
 }

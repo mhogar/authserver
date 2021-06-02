@@ -1,10 +1,10 @@
 package sqladapter_test
 
 import (
+	"authserver/common"
 	"authserver/config"
 	sqladapter "authserver/database/sql_adapter"
 	"authserver/dependencies"
-	commonhelpers "authserver/helpers/common"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -57,7 +57,7 @@ func (suite *MigrationCRUDTestSuite) TestCreateMigration_WithInvalidTimestamp_Re
 	err := suite.Tx.CreateMigration("invalid")
 
 	//assert
-	commonhelpers.AssertError(&suite.Suite, err, "error", "migration model")
+	common.AssertError(&suite.Suite, err, "error", "migration model")
 }
 
 func (suite *MigrationCRUDTestSuite) TestGetMigrationByTimestamp_WhereTimestampNotFound_ReturnsNilMigration() {

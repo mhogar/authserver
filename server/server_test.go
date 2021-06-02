@@ -3,6 +3,7 @@ package server_test
 import (
 	controllermocks "authserver/controllers/mocks"
 	databasemocks "authserver/database/mocks"
+	routermocks "authserver/router/mocks"
 	"authserver/server"
 	"testing"
 
@@ -11,18 +12,20 @@ import (
 
 type ServerTestSuite struct {
 	suite.Suite
-	DBConnectionMock   databasemocks.DBConnection
-	RequestHandlerMock controllermocks.RequestHandler
+	DBConnectionMock  databasemocks.DBConnection
+	ControllersMock   controllermocks.Controllers
+	AuthenticatorMock routermocks.Authenticator
 }
 
 func (suite *ServerTestSuite) SetupTest() {
 	suite.DBConnectionMock = databasemocks.DBConnection{}
-	suite.RequestHandlerMock = controllermocks.RequestHandler{}
+	suite.ControllersMock = controllermocks.Controllers{}
+	suite.AuthenticatorMock = routermocks.Authenticator{}
 }
 
 func (suite *ServerTestSuite) TestCreateHTTPServerRunner_CreatesRunnerUsingHTTPServer() {
 	//act
-	runner := server.CreateHTTPServerRunner(&suite.DBConnectionMock, &suite.RequestHandlerMock)
+	runner := server.CreateHTTPServerRunner(&suite.DBConnectionMock, &suite.ControllersMock, &suite.AuthenticatorMock)
 	_, ok := runner.Server.(*server.HTTPServer)
 
 	//assert
@@ -31,7 +34,7 @@ func (suite *ServerTestSuite) TestCreateHTTPServerRunner_CreatesRunnerUsingHTTPS
 
 func (suite *ServerTestSuite) TestCreateHTTPTestServerRunner_CreatesRunnerUsingHTTPTestServer() {
 	//act
-	runner := server.CreateHTTPTestServerRunner(&suite.DBConnectionMock, &suite.RequestHandlerMock)
+	runner := server.CreateHTTPTestServerRunner(&suite.DBConnectionMock, &suite.ControllersMock, &suite.AuthenticatorMock)
 	_, ok := runner.Server.(*server.HTTPTestServer)
 
 	//assert

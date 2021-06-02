@@ -13,9 +13,9 @@ type HTTPTestServer struct {
 }
 
 // CreateHTTPTestServerRunner creates a server runner using an httptest server.
-func CreateHTTPTestServerRunner(DBConnection database.DBConnection, requestHandler controllers.RequestHandler) Runner {
+func CreateHTTPTestServerRunner(DBConnection database.DBConnection, control controllers.Controllers, authenticator router.Authenticator) Runner {
 	server := &HTTPTestServer{
-		Server: httptest.NewUnstartedServer(router.CreateRouter(requestHandler)),
+		Server: httptest.NewUnstartedServer(router.CreateRouter(control, authenticator)),
 	}
 
 	return Runner{

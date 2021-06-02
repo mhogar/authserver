@@ -1,18 +1,16 @@
 package models
 
 import (
-	"fmt"
-
 	"github.com/google/uuid"
 )
 
 // User ValidateError statuses.
 const (
-	ValidateUserValid               = iota
-	ValidateUserNilID               = iota
-	ValidateUserEmptyUsername       = iota
-	ValidateUserUsernameTooLong     = iota
-	ValidateUserInvalidPasswordHash = iota
+	ValidateUserValid               = 0x0
+	ValidateUserNilID               = 0x1
+	ValidateUserEmptyUsername       = 0x2
+	ValidateUserUsernameTooLong     = 0x4
+	ValidateUserInvalidPasswordHash = 0x8
 )
 
 // UserUsernameMaxLength is the max length a user's username can be.
@@ -55,23 +53,23 @@ func CreateNewUser(username string, passwordHash []byte) *User {
 }
 
 // Validate validates the user model has valid fields.
-// Returns a ValidateError indicating its result.
-func (u *User) Validate() ValidateError {
+// Returns an int indicating which fields are invalid.
+func (u *User) Validate() int {
+	code := ValidateUserValid
+
 	if u.ID == uuid.Nil {
-		return CreateValidateError(ValidateUserNilID, "id cannot be nil")
+		code |= ValidateUserNilID
 	}
 
 	if u.Username == "" {
-		return CreateValidateError(ValidateUserEmptyUsername, "username cannot be empty")
-	}
-
-	if len(u.Username) > UserUsernameMaxLength {
-		return CreateValidateError(ValidateUserUsernameTooLong, fmt.Sprint("username cannot be longer than", UserUsernameMaxLength, "characters"))
+		code |= ValidateUserEmptyUsername
+	} else if len(u.Username) > UserUsernameMaxLength {
+		code |= ValidateUserUsernameTooLong
 	}
 
 	if len(u.PasswordHash) == 0 {
-		return CreateValidateError(ValidateUserInvalidPasswordHash, "password hash cannot be nil")
+		code |= ValidateUserInvalidPasswordHash
 	}
 
-	return ValidateError{ValidateUserValid, nil}
+	return code
 }

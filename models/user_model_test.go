@@ -35,10 +35,10 @@ func (suite *UserTestSuite) TestCreateNewUser_CreatesUserWithSuppliedFields() {
 
 func (suite *UserTestSuite) TestValidate_WithValidUser_ReturnsValid() {
 	//act
-	err := suite.User.Validate()
+	verr := suite.User.Validate()
 
 	//assert
-	suite.Equal(models.ValidateUserValid, err.Status)
+	suite.Equal(models.ValidateUserValid, verr)
 }
 
 func (suite *UserTestSuite) TestValidate_WithNilID_ReturnsUserNilID() {
@@ -46,10 +46,10 @@ func (suite *UserTestSuite) TestValidate_WithNilID_ReturnsUserNilID() {
 	suite.User.ID = uuid.Nil
 
 	//act
-	err := suite.User.Validate()
+	verr := suite.User.Validate()
 
 	//assert
-	suite.Equal(models.ValidateUserNilID, err.Status)
+	suite.Equal(models.ValidateUserNilID, verr)
 }
 
 func (suite *UserTestSuite) TestValidate_WithEmptyUsername_ReturnsUserInvalidUsername() {
@@ -57,10 +57,10 @@ func (suite *UserTestSuite) TestValidate_WithEmptyUsername_ReturnsUserInvalidUse
 	suite.User.Username = ""
 
 	//act
-	err := suite.User.Validate()
+	verr := suite.User.Validate()
 
 	//assert
-	suite.Equal(models.ValidateUserEmptyUsername, err.Status)
+	suite.Equal(models.ValidateUserEmptyUsername, verr)
 }
 
 func (suite *UserTestSuite) TestValidate_UsernameMaxLengthTestCases() {
@@ -72,10 +72,10 @@ func (suite *UserTestSuite) TestValidate_UsernameMaxLengthTestCases() {
 		suite.User.Username = username
 
 		//act
-		err := suite.User.Validate()
+		verr := suite.User.Validate()
 
 		//assert
-		suite.Equal(expectedValidateError, err.Status)
+		suite.Equal(expectedValidateError, verr)
 	}
 
 	username = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" //30 chars
@@ -92,10 +92,10 @@ func (suite *UserTestSuite) TestValidate_WithEmptyPasswordHash_ReturnsUserInvali
 	suite.User.PasswordHash = make([]byte, 0)
 
 	//act
-	err := suite.User.Validate()
+	verr := suite.User.Validate()
 
 	//assert
-	suite.Equal(models.ValidateUserInvalidPasswordHash, err.Status)
+	suite.Equal(models.ValidateUserInvalidPasswordHash, verr)
 }
 
 func TestUserTestSuite(t *testing.T) {
