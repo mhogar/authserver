@@ -12,27 +12,25 @@ import (
 
 type RouterTestSuite struct {
 	suite.Suite
-	ControllersMock   controllermocks.Controllers
-	AuthenticatorMock mocks.Authenticator
-	Transaction       databasemocks.Transaction
-	Router            *httprouter.Router
+	ControllersMock        controllermocks.Controllers
+	AuthenticatorMock      mocks.Authenticator
+	TransactionFactoryMock databasemocks.TransactionFactory
+	TransactionMock        databasemocks.Transaction
+	Router                 *httprouter.Router
 }
 
 func (suite *RouterTestSuite) SetupTest() {
 	suite.ControllersMock = controllermocks.Controllers{}
 	suite.AuthenticatorMock = mocks.Authenticator{}
-	suite.Transaction = databasemocks.Transaction{}
+	suite.TransactionFactoryMock = databasemocks.TransactionFactory{}
+	suite.TransactionMock = databasemocks.Transaction{}
 
-	tf := databasemocks.TransactionFactory{}
-	tf.On("CreateTransaction").Return(&suite.Transaction, nil)
-
-	suite.Transaction.On("CommitTransaction").Return(nil)
-	suite.Transaction.On("RollbackTransaction")
+	suite.TransactionMock.On("RollbackTransaction")
 
 	rf := router.RouterFactory{
 		Controllers:        &suite.ControllersMock,
 		Authenticator:      &suite.AuthenticatorMock,
-		TransactionFactory: &tf,
+		TransactionFactory: &suite.TransactionFactoryMock,
 	}
 	suite.Router = rf.CreateRouter()
 }

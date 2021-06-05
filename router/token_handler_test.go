@@ -5,6 +5,7 @@ import (
 	requesterror "authserver/common/request_error"
 	"authserver/models"
 	"authserver/router"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -18,6 +19,23 @@ type TokenHandlerTestSuite struct {
 	RouterTestSuite
 }
 
+func (suite *TokenHandlerTestSuite) TestPostToken_WithErrorCreatingTransaction_ReturnsInternalServerError() {
+	//arrange
+	server := httptest.NewServer(suite.Router)
+	defer server.Close()
+
+	req := common.CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/token", "", nil)
+
+	suite.TransactionFactoryMock.On("CreateTransaction").Return(nil, errors.New(""))
+
+	//act
+	res, err := http.DefaultClient.Do(req)
+	suite.Require().NoError(err)
+
+	//assert
+	common.AssertInternalServerErrorResponse(&suite.Suite, res)
+}
+
 func (suite *TokenHandlerTestSuite) TestPostToken_WithInvalidJSONBody_ReturnsInvalidRequest() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
@@ -25,11 +43,14 @@ func (suite *TokenHandlerTestSuite) TestPostToken_WithInvalidJSONBody_ReturnsInv
 
 	req := common.CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/token", "", "invalid")
 
+	suite.TransactionFactoryMock.On("CreateTransaction").Return(&suite.TransactionMock, nil)
+
 	//act
 	res, err := http.DefaultClient.Do(req)
 	suite.Require().NoError(err)
 
 	//assert
+	suite.TransactionMock.AssertCalled(suite.T(), "RollbackTransaction")
 	common.AssertOAuthErrorResponse(&suite.Suite, res, http.StatusBadRequest, "invalid_request", "invalid json body")
 }
 
@@ -41,11 +62,14 @@ func (suite *TokenHandlerTestSuite) TestPostToken_WithMissingGrantType_ReturnsIn
 	body := router.PostTokenBody{}
 	req := common.CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/token", "", body)
 
+	suite.TransactionFactoryMock.On("CreateTransaction").Return(&suite.TransactionMock, nil)
+
 	//act
 	res, err := http.DefaultClient.Do(req)
 	suite.Require().NoError(err)
 
 	//assert
+	suite.TransactionMock.AssertCalled(suite.T(), "RollbackTransaction")
 	common.AssertOAuthErrorResponse(&suite.Suite, res, http.StatusBadRequest, "invalid_request", "missing grant_type parameter")
 }
 
@@ -59,11 +83,14 @@ func (suite *TokenHandlerTestSuite) TestPostToken_WithUnsupportedGrantType_Retur
 	}
 	req := common.CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/token", "", body)
 
+	suite.TransactionFactoryMock.On("CreateTransaction").Return(&suite.TransactionMock, nil)
+
 	//act
 	res, err := http.DefaultClient.Do(req)
 	suite.Require().NoError(err)
 
 	//assert
+	suite.TransactionMock.AssertCalled(suite.T(), "RollbackTransaction")
 	common.AssertOAuthErrorResponse(&suite.Suite, res, http.StatusBadRequest, "unsupported_grant_type", "")
 }
 
@@ -82,11 +109,14 @@ func (suite *TokenHandlerTestSuite) TestPostToken_PasswordGrant_WithMissingParam
 		}
 		req := common.CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/token", "", body)
 
+		suite.TransactionFactoryMock.On("CreateTransaction").Return(&suite.TransactionMock, nil)
+
 		//act
 		res, err := http.DefaultClient.Do(req)
 		suite.Require().NoError(err)
 
 		//assert
+		suite.TransactionMock.AssertCalled(suite.T(), "RollbackTransaction")
 		common.AssertOAuthErrorResponse(&suite.Suite, res, http.StatusBadRequest, "invalid_request", expectedErrorDescription)
 	}
 
@@ -139,6 +169,8 @@ func (suite *TokenHandlerTestSuite) TestPostToken_PasswordGrant_WithClientErrorC
 	}
 	req := common.CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/token", "", body)
 
+	suite.TransactionFactoryMock.On("CreateTransaction").Return(&suite.TransactionMock, nil)
+
 	errorName := "error_name"
 	message := "create token error"
 	suite.ControllersMock.On("CreateTokenFromPassword", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
@@ -149,6 +181,7 @@ func (suite *TokenHandlerTestSuite) TestPostToken_PasswordGrant_WithClientErrorC
 	suite.Require().NoError(err)
 
 	//assert
+	suite.TransactionMock.AssertCalled(suite.T(), "RollbackTransaction")
 	common.AssertOAuthErrorResponse(&suite.Suite, res, http.StatusBadRequest, errorName, message)
 }
 
@@ -168,8 +201,42 @@ func (suite *TokenHandlerTestSuite) TestPostToken_PasswordGrant_WithInternalErro
 	}
 	req := common.CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/token", "", body)
 
+	suite.TransactionFactoryMock.On("CreateTransaction").Return(&suite.TransactionMock, nil)
 	suite.ControllersMock.On("CreateTokenFromPassword", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(nil, requesterror.OAuthInternalError())
+
+	//act
+	res, err := http.DefaultClient.Do(req)
+	suite.Require().NoError(err)
+
+	//assert
+	suite.TransactionMock.AssertCalled(suite.T(), "RollbackTransaction")
+	common.AssertInternalServerErrorResponse(&suite.Suite, res)
+}
+
+func (suite *TokenHandlerTestSuite) TestPostToken_WithErrorCommitingTransaction_ReturnsInternalServerError() {
+	//arrange
+	server := httptest.NewServer(suite.Router)
+	defer server.Close()
+
+	clientID := uuid.New()
+	token := models.CreateNewAccessToken(nil, nil, nil)
+
+	body := router.PostTokenBody{
+		GrantType: "password",
+		PostTokenPasswordGrantBody: router.PostTokenPasswordGrantBody{
+			Username: "username",
+			Password: "password",
+			ClientID: clientID.String(),
+			Scope:    "scope",
+		},
+	}
+	req := common.CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/token", "", body)
+
+	suite.TransactionFactoryMock.On("CreateTransaction").Return(&suite.TransactionMock, nil)
+	suite.ControllersMock.On("CreateTokenFromPassword", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		Return(token, requesterror.OAuthNoError())
+	suite.TransactionMock.On("CommitTransaction").Return(errors.New(""))
 
 	//act
 	res, err := http.DefaultClient.Do(req)
@@ -198,15 +265,21 @@ func (suite *TokenHandlerTestSuite) TestPostToken_PasswordGrant_WithValidRequest
 	}
 	req := common.CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/token", "", body)
 
+	suite.TransactionFactoryMock.On("CreateTransaction").Return(&suite.TransactionMock, nil)
 	suite.ControllersMock.On("CreateTokenFromPassword", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(token, requesterror.OAuthNoError())
+	suite.TransactionMock.On("CommitTransaction").Return(nil)
 
 	//act
 	res, err := http.DefaultClient.Do(req)
 	suite.Require().NoError(err)
 
 	//assert
+	suite.AuthenticatorMock.AssertNotCalled(suite.T(), "Authenticate", mock.Anything)
+	suite.TransactionFactoryMock.AssertCalled(suite.T(), "CreateTransaction")
 	suite.ControllersMock.AssertCalled(suite.T(), "CreateTokenFromPassword", mock.Anything, body.Username, body.Password, clientID, body.Scope)
+	suite.TransactionMock.AssertCalled(suite.T(), "CommitTransaction")
+	suite.TransactionMock.AssertNotCalled(suite.T(), "RollbackTransaction")
 	common.AssertAccessTokenResponse(&suite.Suite, res, token.ID.String())
 }
 
@@ -226,6 +299,7 @@ func (suite *TokenHandlerTestSuite) TestPostToken_PasswordGrant_WithPanicTrigger
 	}
 	req := common.CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/token", "", body)
 
+	suite.TransactionFactoryMock.On("CreateTransaction").Return(&suite.TransactionMock, nil)
 	suite.ControllersMock.On("CreateTokenFromPassword", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Run(func(_ mock.Arguments) {
 		panic("test panic handler")
 	})
@@ -273,6 +347,24 @@ func (suite *TokenHandlerTestSuite) TestDeleteToken_WithInternalErrorAuthenticat
 	common.AssertInternalServerErrorResponse(&suite.Suite, res)
 }
 
+func (suite *TokenHandlerTestSuite) TestDeleteToken_WithErrorCreatingTransaction_ReturnsInternalServerError() {
+	//arrange
+	server := httptest.NewServer(suite.Router)
+	defer server.Close()
+
+	req := common.CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/token", "", nil)
+
+	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(nil, requesterror.InternalError())
+	suite.TransactionFactoryMock.On("CreateTransaction").Return(nil, errors.New(""))
+
+	//act
+	res, err := http.DefaultClient.Do(req)
+	suite.Require().NoError(err)
+
+	//assert
+	common.AssertInternalServerErrorResponse(&suite.Suite, res)
+}
+
 func (suite *TokenHandlerTestSuite) TestDeleteToken_WithClientErrorDeletingToken_ReturnsBadRequest() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
@@ -283,6 +375,7 @@ func (suite *TokenHandlerTestSuite) TestDeleteToken_WithClientErrorDeletingToken
 
 	message := "delete token error"
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
+	suite.TransactionFactoryMock.On("CreateTransaction").Return(&suite.TransactionMock, nil)
 	suite.ControllersMock.On("DeleteToken", mock.Anything, mock.Anything).Return(requesterror.ClientError(message))
 
 	//act
@@ -290,6 +383,7 @@ func (suite *TokenHandlerTestSuite) TestDeleteToken_WithClientErrorDeletingToken
 	suite.Require().NoError(err)
 
 	//assert
+	suite.TransactionMock.AssertCalled(suite.T(), "RollbackTransaction")
 	common.AssertErrorResponse(&suite.Suite, res, http.StatusBadRequest, message)
 }
 
@@ -302,7 +396,30 @@ func (suite *TokenHandlerTestSuite) TestDeleteToken_WithInternalErrorDeletingTok
 	req := common.CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/token", "", nil)
 
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
+	suite.TransactionFactoryMock.On("CreateTransaction").Return(&suite.TransactionMock, nil)
 	suite.ControllersMock.On("DeleteToken", mock.Anything, mock.Anything).Return(requesterror.InternalError())
+
+	//act
+	res, err := http.DefaultClient.Do(req)
+	suite.Require().NoError(err)
+
+	//assert
+	suite.TransactionMock.AssertCalled(suite.T(), "RollbackTransaction")
+	common.AssertInternalServerErrorResponse(&suite.Suite, res)
+}
+
+func (suite *TokenHandlerTestSuite) TestDeleteToken_WithErrorCommitingTransaction_ReturnsInternalServerError() {
+	//arrange
+	server := httptest.NewServer(suite.Router)
+	defer server.Close()
+
+	token := &models.AccessToken{}
+	req := common.CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/token", "", nil)
+
+	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
+	suite.TransactionFactoryMock.On("CreateTransaction").Return(&suite.TransactionMock, nil)
+	suite.ControllersMock.On("DeleteToken", mock.Anything, mock.Anything).Return(requesterror.NoError())
+	suite.TransactionMock.On("CommitTransaction").Return(errors.New(""))
 
 	//act
 	res, err := http.DefaultClient.Do(req)
@@ -321,7 +438,9 @@ func (suite *TokenHandlerTestSuite) TestDeleteToken_WithValidRequest_ReturnsSucc
 	req := common.CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/token", "", nil)
 
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
+	suite.TransactionFactoryMock.On("CreateTransaction").Return(&suite.TransactionMock, nil)
 	suite.ControllersMock.On("DeleteToken", mock.Anything, mock.Anything).Return(requesterror.NoError())
+	suite.TransactionMock.On("CommitTransaction").Return(nil)
 
 	//act
 	res, err := http.DefaultClient.Do(req)
@@ -329,7 +448,10 @@ func (suite *TokenHandlerTestSuite) TestDeleteToken_WithValidRequest_ReturnsSucc
 
 	//assert
 	suite.AuthenticatorMock.AssertCalled(suite.T(), "Authenticate", mock.Anything)
+	suite.TransactionFactoryMock.AssertCalled(suite.T(), "CreateTransaction")
 	suite.ControllersMock.AssertCalled(suite.T(), "DeleteToken", mock.Anything, token)
+	suite.TransactionMock.AssertCalled(suite.T(), "CommitTransaction")
+	suite.TransactionMock.AssertNotCalled(suite.T(), "RollbackTransaction")
 	common.AssertSuccessResponse(&suite.Suite, res)
 }
 
@@ -342,6 +464,7 @@ func (suite *TokenHandlerTestSuite) TestDeleteToken_WithPanicTriggered_ReturnsIn
 	req := common.CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/token", "", nil)
 
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
+	suite.TransactionFactoryMock.On("CreateTransaction").Return(&suite.TransactionMock, nil)
 	suite.ControllersMock.On("DeleteToken", mock.Anything, mock.Anything).Run(func(_ mock.Arguments) {
 		panic("test panic handler")
 	})
