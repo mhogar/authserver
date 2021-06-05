@@ -50,8 +50,7 @@ func (suite *ClientCRUDTestSuite) SetupTest() {
 
 func (suite *ClientCRUDTestSuite) TearDownTest() {
 	//rollback the transaction after each test
-	err := suite.Tx.RollbackTransaction()
-	suite.Require().NoError(err)
+	suite.Tx.RollbackTransaction()
 }
 
 func (suite *ClientCRUDTestSuite) TestSaveClient_WithInvalidClient_ReturnsError() {

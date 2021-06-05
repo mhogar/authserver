@@ -49,8 +49,7 @@ func (suite *ScopeCRUDTestSuite) SetupTest() {
 
 func (suite *ScopeCRUDTestSuite) TearDownTest() {
 	//rollback the transaction after each test
-	err := suite.Tx.RollbackTransaction()
-	suite.Require().NoError(err)
+	suite.Tx.RollbackTransaction()
 }
 
 func (suite *ScopeCRUDTestSuite) TestSaveScope_WithInvalidScope_ReturnsError() {
