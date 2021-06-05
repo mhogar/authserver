@@ -3,34 +3,22 @@ package router_test
 import (
 	"authserver/common"
 	requesterror "authserver/common/request_error"
-	controllermocks "authserver/controllers/mocks"
 	"authserver/models"
 	"authserver/router"
-	"authserver/router/mocks"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
 
-type TokenHandlerSuite struct {
-	suite.Suite
-	ControllersMock   controllermocks.Controllers
-	AuthenticatorMock mocks.Authenticator
-	Router            *httprouter.Router
+type TokenHandlerTestSuite struct {
+	RouterTestSuite
 }
 
-func (suite *TokenHandlerSuite) SetupTest() {
-	suite.ControllersMock = controllermocks.Controllers{}
-	suite.AuthenticatorMock = mocks.Authenticator{}
-	suite.Router = router.CreateRouter(&suite.ControllersMock, &suite.AuthenticatorMock)
-}
-
-func (suite *TokenHandlerSuite) TestPostToken_WithInvalidJSONBody_ReturnsInvalidRequest() {
+func (suite *TokenHandlerTestSuite) TestPostToken_WithInvalidJSONBody_ReturnsInvalidRequest() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
@@ -45,7 +33,7 @@ func (suite *TokenHandlerSuite) TestPostToken_WithInvalidJSONBody_ReturnsInvalid
 	common.AssertOAuthErrorResponse(&suite.Suite, res, http.StatusBadRequest, "invalid_request", "invalid json body")
 }
 
-func (suite *TokenHandlerSuite) TestPostToken_WithMissingGrantType_ReturnsInvalidRequest() {
+func (suite *TokenHandlerTestSuite) TestPostToken_WithMissingGrantType_ReturnsInvalidRequest() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
@@ -61,7 +49,7 @@ func (suite *TokenHandlerSuite) TestPostToken_WithMissingGrantType_ReturnsInvali
 	common.AssertOAuthErrorResponse(&suite.Suite, res, http.StatusBadRequest, "invalid_request", "missing grant_type parameter")
 }
 
-func (suite *TokenHandlerSuite) TestPostToken_WithUnsupportedGrantType_ReturnsUnsupportedGrantType() {
+func (suite *TokenHandlerTestSuite) TestPostToken_WithUnsupportedGrantType_ReturnsUnsupportedGrantType() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
@@ -79,7 +67,7 @@ func (suite *TokenHandlerSuite) TestPostToken_WithUnsupportedGrantType_ReturnsUn
 	common.AssertOAuthErrorResponse(&suite.Suite, res, http.StatusBadRequest, "unsupported_grant_type", "")
 }
 
-func (suite *TokenHandlerSuite) TestPostToken_PasswordGrant_WithMissingParameters_ReturnsInvalidRequest() {
+func (suite *TokenHandlerTestSuite) TestPostToken_PasswordGrant_WithMissingParameters_ReturnsInvalidRequest() {
 	var grantBody router.PostTokenPasswordGrantBody
 	var expectedErrorDescription string
 
@@ -135,7 +123,7 @@ func (suite *TokenHandlerSuite) TestPostToken_PasswordGrant_WithMissingParameter
 	suite.Run("MissingScope", testCase)
 }
 
-func (suite *TokenHandlerSuite) TestPostToken_PasswordGrant_WithClientErrorCreatingTokenFromPassword_ReturnsInvalidClient() {
+func (suite *TokenHandlerTestSuite) TestPostToken_PasswordGrant_WithClientErrorCreatingTokenFromPassword_ReturnsInvalidClient() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
@@ -153,7 +141,7 @@ func (suite *TokenHandlerSuite) TestPostToken_PasswordGrant_WithClientErrorCreat
 
 	errorName := "error_name"
 	message := "create token error"
-	suite.ControllersMock.On("CreateTokenFromPassword", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+	suite.ControllersMock.On("CreateTokenFromPassword", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(nil, requesterror.OAuthClientError(errorName, message))
 
 	//act
@@ -164,7 +152,7 @@ func (suite *TokenHandlerSuite) TestPostToken_PasswordGrant_WithClientErrorCreat
 	common.AssertOAuthErrorResponse(&suite.Suite, res, http.StatusBadRequest, errorName, message)
 }
 
-func (suite *TokenHandlerSuite) TestPostToken_PasswordGrant_WithInternalErrorCreatingTokenFromPassword_ReturnsInternalServerError() {
+func (suite *TokenHandlerTestSuite) TestPostToken_PasswordGrant_WithInternalErrorCreatingTokenFromPassword_ReturnsInternalServerError() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
@@ -180,7 +168,7 @@ func (suite *TokenHandlerSuite) TestPostToken_PasswordGrant_WithInternalErrorCre
 	}
 	req := common.CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/token", "", body)
 
-	suite.ControllersMock.On("CreateTokenFromPassword", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+	suite.ControllersMock.On("CreateTokenFromPassword", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(nil, requesterror.OAuthInternalError())
 
 	//act
@@ -191,7 +179,7 @@ func (suite *TokenHandlerSuite) TestPostToken_PasswordGrant_WithInternalErrorCre
 	common.AssertInternalServerErrorResponse(&suite.Suite, res)
 }
 
-func (suite *TokenHandlerSuite) TestPostToken_PasswordGrant_WithValidRequest_ReturnsAccessToken() {
+func (suite *TokenHandlerTestSuite) TestPostToken_PasswordGrant_WithValidRequest_ReturnsAccessToken() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
@@ -210,7 +198,7 @@ func (suite *TokenHandlerSuite) TestPostToken_PasswordGrant_WithValidRequest_Ret
 	}
 	req := common.CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/token", "", body)
 
-	suite.ControllersMock.On("CreateTokenFromPassword", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+	suite.ControllersMock.On("CreateTokenFromPassword", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(token, requesterror.OAuthNoError())
 
 	//act
@@ -218,11 +206,11 @@ func (suite *TokenHandlerSuite) TestPostToken_PasswordGrant_WithValidRequest_Ret
 	suite.Require().NoError(err)
 
 	//assert
-	suite.ControllersMock.AssertCalled(suite.T(), "CreateTokenFromPassword", body.Username, body.Password, clientID, body.Scope)
+	suite.ControllersMock.AssertCalled(suite.T(), "CreateTokenFromPassword", mock.Anything, body.Username, body.Password, clientID, body.Scope)
 	common.AssertAccessTokenResponse(&suite.Suite, res, token.ID.String())
 }
 
-func (suite *TokenHandlerSuite) TestPostToken_PasswordGrant_WithPanicTriggered_ReturnsInternalServerError() {
+func (suite *TokenHandlerTestSuite) TestPostToken_PasswordGrant_WithPanicTriggered_ReturnsInternalServerError() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
@@ -238,7 +226,7 @@ func (suite *TokenHandlerSuite) TestPostToken_PasswordGrant_WithPanicTriggered_R
 	}
 	req := common.CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/token", "", body)
 
-	suite.ControllersMock.On("CreateTokenFromPassword", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Run(func(_ mock.Arguments) {
+	suite.ControllersMock.On("CreateTokenFromPassword", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Run(func(_ mock.Arguments) {
 		panic("test panic handler")
 	})
 
@@ -250,7 +238,7 @@ func (suite *TokenHandlerSuite) TestPostToken_PasswordGrant_WithPanicTriggered_R
 	common.AssertInternalServerErrorResponse(&suite.Suite, res)
 }
 
-func (suite *TokenHandlerSuite) TestDeleteToken_WithClientErrorAuthenticatingUser_ReturnsUnauthorized() {
+func (suite *TokenHandlerTestSuite) TestDeleteToken_WithClientErrorAuthenticatingUser_ReturnsUnauthorized() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
@@ -268,7 +256,7 @@ func (suite *TokenHandlerSuite) TestDeleteToken_WithClientErrorAuthenticatingUse
 	common.AssertErrorResponse(&suite.Suite, res, http.StatusUnauthorized, message)
 }
 
-func (suite *TokenHandlerSuite) TestDeleteToken_WithInternalErrorAuthenticatingUser_ReturnsInternalServerError() {
+func (suite *TokenHandlerTestSuite) TestDeleteToken_WithInternalErrorAuthenticatingUser_ReturnsInternalServerError() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
@@ -285,7 +273,7 @@ func (suite *TokenHandlerSuite) TestDeleteToken_WithInternalErrorAuthenticatingU
 	common.AssertInternalServerErrorResponse(&suite.Suite, res)
 }
 
-func (suite *TokenHandlerSuite) TestDeleteToken_WithClientErrorDeletingToken_ReturnsBadRequest() {
+func (suite *TokenHandlerTestSuite) TestDeleteToken_WithClientErrorDeletingToken_ReturnsBadRequest() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
@@ -295,7 +283,7 @@ func (suite *TokenHandlerSuite) TestDeleteToken_WithClientErrorDeletingToken_Ret
 
 	message := "delete token error"
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
-	suite.ControllersMock.On("DeleteToken", mock.Anything).Return(requesterror.ClientError(message))
+	suite.ControllersMock.On("DeleteToken", mock.Anything, mock.Anything).Return(requesterror.ClientError(message))
 
 	//act
 	res, err := http.DefaultClient.Do(req)
@@ -305,7 +293,7 @@ func (suite *TokenHandlerSuite) TestDeleteToken_WithClientErrorDeletingToken_Ret
 	common.AssertErrorResponse(&suite.Suite, res, http.StatusBadRequest, message)
 }
 
-func (suite *TokenHandlerSuite) TestDeleteToken_WithInternalErrorDeletingToken_ReturnsInternalServerError() {
+func (suite *TokenHandlerTestSuite) TestDeleteToken_WithInternalErrorDeletingToken_ReturnsInternalServerError() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
@@ -314,7 +302,7 @@ func (suite *TokenHandlerSuite) TestDeleteToken_WithInternalErrorDeletingToken_R
 	req := common.CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/token", "", nil)
 
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
-	suite.ControllersMock.On("DeleteToken", mock.Anything).Return(requesterror.InternalError())
+	suite.ControllersMock.On("DeleteToken", mock.Anything, mock.Anything).Return(requesterror.InternalError())
 
 	//act
 	res, err := http.DefaultClient.Do(req)
@@ -324,7 +312,7 @@ func (suite *TokenHandlerSuite) TestDeleteToken_WithInternalErrorDeletingToken_R
 	common.AssertInternalServerErrorResponse(&suite.Suite, res)
 }
 
-func (suite *TokenHandlerSuite) TestDeleteToken_WithValidRequest_ReturnsSuccess() {
+func (suite *TokenHandlerTestSuite) TestDeleteToken_WithValidRequest_ReturnsSuccess() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
@@ -333,7 +321,7 @@ func (suite *TokenHandlerSuite) TestDeleteToken_WithValidRequest_ReturnsSuccess(
 	req := common.CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/token", "", nil)
 
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
-	suite.ControllersMock.On("DeleteToken", mock.Anything).Return(requesterror.NoError())
+	suite.ControllersMock.On("DeleteToken", mock.Anything, mock.Anything).Return(requesterror.NoError())
 
 	//act
 	res, err := http.DefaultClient.Do(req)
@@ -341,11 +329,11 @@ func (suite *TokenHandlerSuite) TestDeleteToken_WithValidRequest_ReturnsSuccess(
 
 	//assert
 	suite.AuthenticatorMock.AssertCalled(suite.T(), "Authenticate", mock.Anything)
-	suite.ControllersMock.AssertCalled(suite.T(), "DeleteToken", token)
+	suite.ControllersMock.AssertCalled(suite.T(), "DeleteToken", mock.Anything, token)
 	common.AssertSuccessResponse(&suite.Suite, res)
 }
 
-func (suite *TokenHandlerSuite) TestDeleteToken_WithPanicTriggered_ReturnsInternalServerError() {
+func (suite *TokenHandlerTestSuite) TestDeleteToken_WithPanicTriggered_ReturnsInternalServerError() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
 	defer server.Close()
@@ -354,7 +342,7 @@ func (suite *TokenHandlerSuite) TestDeleteToken_WithPanicTriggered_ReturnsIntern
 	req := common.CreateRequest(&suite.Suite, http.MethodDelete, server.URL+"/token", "", nil)
 
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
-	suite.ControllersMock.On("DeleteToken", mock.Anything).Run(func(_ mock.Arguments) {
+	suite.ControllersMock.On("DeleteToken", mock.Anything, mock.Anything).Run(func(_ mock.Arguments) {
 		panic("test panic handler")
 	})
 
@@ -367,5 +355,5 @@ func (suite *TokenHandlerSuite) TestDeleteToken_WithPanicTriggered_ReturnsIntern
 }
 
 func TestTokenHandlerTestSuite(t *testing.T) {
-	suite.Run(t, &TokenHandlerSuite{})
+	suite.Run(t, &TokenHandlerTestSuite{})
 }

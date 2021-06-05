@@ -1,7 +1,6 @@
 package server
 
 import (
-	"authserver/controllers"
 	"authserver/database"
 	"authserver/router"
 	"net/http/httptest"
@@ -13,9 +12,9 @@ type HTTPTestServer struct {
 }
 
 // CreateHTTPTestServerRunner creates a server runner using an httptest server.
-func CreateHTTPTestServerRunner(DBConnection database.DBConnection, control controllers.Controllers, authenticator router.Authenticator) Runner {
+func CreateHTTPTestServerRunner(DBConnection database.DBConnection, routerFactory router.IRouterFactory) Runner {
 	server := &HTTPTestServer{
-		Server: httptest.NewUnstartedServer(router.CreateRouter(control, authenticator)),
+		Server: httptest.NewUnstartedServer(routerFactory.CreateRouter()),
 	}
 
 	return Runner{

@@ -2,9 +2,7 @@ package server
 
 import (
 	"authserver/common"
-	"authserver/controllers"
 	"authserver/database"
-	"authserver/router"
 )
 
 // Server is an interface for starting and closing a server.
@@ -18,10 +16,8 @@ type Server interface {
 
 // Runner encapsulates dependences and runs the server.
 type Runner struct {
-	DBConnection  database.DBConnection
-	Control       controllers.Controllers
-	Authenticator router.Authenticator
-	Server        Server
+	DBConnection database.DBConnection
+	Server       Server
 }
 
 // Run runs the server and returns any errors.

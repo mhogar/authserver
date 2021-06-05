@@ -12,16 +12,12 @@ import (
 
 // UserControl handles requests to "/user" endpoints
 type UserControl struct {
-	CRUD interface {
-		models.UserCRUD
-		models.AccessTokenCRUD
-	}
 	PasswordHasher            passwordhelpers.PasswordHasher
 	PasswordCriteriaValidator passwordhelpers.PasswordCriteriaValidator
 }
 
 // CreateUser creates a new user with the given username and password
-func (c UserControl) CreateUser(username string, password string) (*models.User, requesterror.RequestError) {
+func (c UserControl) CreateUser(CRUD UserControllerCRUD, username string, password string) (*models.User, requesterror.RequestError) {
 	//create the user model
 	user := models.CreateNewUser(username, nil)
 
@@ -34,7 +30,7 @@ func (c UserControl) CreateUser(username string, password string) (*models.User,
 	}
 
 	//validate username is unique
-	otherUser, err := c.CRUD.GetUserByUsername(username)
+	otherUser, err := CRUD.GetUserByUsername(username)
 	if err != nil {
 		log.Println(common.ChainError("error getting user by username", err))
 		return nil, requesterror.InternalError()
@@ -58,7 +54,7 @@ func (c UserControl) CreateUser(username string, password string) (*models.User,
 	}
 
 	//save the user
-	err = c.CRUD.SaveUser(user)
+	err = CRUD.SaveUser(user)
 	if err != nil {
 		log.Println(common.ChainError("error saving user", err))
 		return nil, requesterror.InternalError()
@@ -68,9 +64,9 @@ func (c UserControl) CreateUser(username string, password string) (*models.User,
 }
 
 // DeleteUser deletes the user with the given id
-func (c UserControl) DeleteUser(user *models.User) requesterror.RequestError {
+func (c UserControl) DeleteUser(CRUD UserControllerCRUD, user *models.User) requesterror.RequestError {
 	//delete the user
-	err := c.CRUD.DeleteUser(user)
+	err := CRUD.DeleteUser(user)
 	if err != nil {
 		log.Println(common.ChainError("error deleting user", err))
 		return requesterror.InternalError()
@@ -81,7 +77,7 @@ func (c UserControl) DeleteUser(user *models.User) requesterror.RequestError {
 }
 
 // UpdateUserPassword updates the given user's password
-func (c UserControl) UpdateUserPassword(user *models.User, oldPassword string, newPassword string) requesterror.RequestError {
+func (c UserControl) UpdateUserPassword(CRUD UserControllerCRUD, user *models.User, oldPassword string, newPassword string) requesterror.RequestError {
 	//validate old password
 	err := c.PasswordHasher.ComparePasswords(user.PasswordHash, oldPassword)
 	if err != nil {
@@ -105,7 +101,7 @@ func (c UserControl) UpdateUserPassword(user *models.User, oldPassword string, n
 
 	//update the user
 	user.PasswordHash = hash
-	err = c.CRUD.UpdateUser(user)
+	err = CRUD.UpdateUser(user)
 	if err != nil {
 		log.Println(common.ChainError("error updating user", err))
 		return requesterror.InternalError()

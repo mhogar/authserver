@@ -32,7 +32,7 @@ type TransactionOperations interface {
 	CommitTransaction() error
 
 	// RollbackTransaction rollbacks the transaction.
-	RollbackTransaction() error
+	RollbackTransaction()
 }
 
 // Database is an interface that encapsulates the database connection and CRUD operations interfaces.

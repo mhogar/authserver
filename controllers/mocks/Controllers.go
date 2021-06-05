@@ -3,9 +3,11 @@
 package mocks
 
 import (
-	models "authserver/models"
+	controllers "authserver/controllers"
 
 	mock "github.com/stretchr/testify/mock"
+
+	models "authserver/models"
 
 	requesterror "authserver/common/request_error"
 
@@ -17,13 +19,13 @@ type Controllers struct {
 	mock.Mock
 }
 
-// CreateTokenFromPassword provides a mock function with given fields: username, password, clientID, scopeName
-func (_m *Controllers) CreateTokenFromPassword(username string, password string, clientID uuid.UUID, scopeName string) (*models.AccessToken, requesterror.OAuthRequestError) {
-	ret := _m.Called(username, password, clientID, scopeName)
+// CreateTokenFromPassword provides a mock function with given fields: CRUD, username, password, clientID, scopeName
+func (_m *Controllers) CreateTokenFromPassword(CRUD controllers.TokenControllerCRUD, username string, password string, clientID uuid.UUID, scopeName string) (*models.AccessToken, requesterror.OAuthRequestError) {
+	ret := _m.Called(CRUD, username, password, clientID, scopeName)
 
 	var r0 *models.AccessToken
-	if rf, ok := ret.Get(0).(func(string, string, uuid.UUID, string) *models.AccessToken); ok {
-		r0 = rf(username, password, clientID, scopeName)
+	if rf, ok := ret.Get(0).(func(controllers.TokenControllerCRUD, string, string, uuid.UUID, string) *models.AccessToken); ok {
+		r0 = rf(CRUD, username, password, clientID, scopeName)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.AccessToken)
@@ -31,8 +33,8 @@ func (_m *Controllers) CreateTokenFromPassword(username string, password string,
 	}
 
 	var r1 requesterror.OAuthRequestError
-	if rf, ok := ret.Get(1).(func(string, string, uuid.UUID, string) requesterror.OAuthRequestError); ok {
-		r1 = rf(username, password, clientID, scopeName)
+	if rf, ok := ret.Get(1).(func(controllers.TokenControllerCRUD, string, string, uuid.UUID, string) requesterror.OAuthRequestError); ok {
+		r1 = rf(CRUD, username, password, clientID, scopeName)
 	} else {
 		r1 = ret.Get(1).(requesterror.OAuthRequestError)
 	}
@@ -40,13 +42,13 @@ func (_m *Controllers) CreateTokenFromPassword(username string, password string,
 	return r0, r1
 }
 
-// CreateUser provides a mock function with given fields: username, password
-func (_m *Controllers) CreateUser(username string, password string) (*models.User, requesterror.RequestError) {
-	ret := _m.Called(username, password)
+// CreateUser provides a mock function with given fields: CRUD, username, password
+func (_m *Controllers) CreateUser(CRUD controllers.UserControllerCRUD, username string, password string) (*models.User, requesterror.RequestError) {
+	ret := _m.Called(CRUD, username, password)
 
 	var r0 *models.User
-	if rf, ok := ret.Get(0).(func(string, string) *models.User); ok {
-		r0 = rf(username, password)
+	if rf, ok := ret.Get(0).(func(controllers.UserControllerCRUD, string, string) *models.User); ok {
+		r0 = rf(CRUD, username, password)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.User)
@@ -54,8 +56,8 @@ func (_m *Controllers) CreateUser(username string, password string) (*models.Use
 	}
 
 	var r1 requesterror.RequestError
-	if rf, ok := ret.Get(1).(func(string, string) requesterror.RequestError); ok {
-		r1 = rf(username, password)
+	if rf, ok := ret.Get(1).(func(controllers.UserControllerCRUD, string, string) requesterror.RequestError); ok {
+		r1 = rf(CRUD, username, password)
 	} else {
 		r1 = ret.Get(1).(requesterror.RequestError)
 	}
@@ -63,13 +65,13 @@ func (_m *Controllers) CreateUser(username string, password string) (*models.Use
 	return r0, r1
 }
 
-// DeleteToken provides a mock function with given fields: token
-func (_m *Controllers) DeleteToken(token *models.AccessToken) requesterror.RequestError {
-	ret := _m.Called(token)
+// DeleteToken provides a mock function with given fields: CRUD, token
+func (_m *Controllers) DeleteToken(CRUD controllers.TokenControllerCRUD, token *models.AccessToken) requesterror.RequestError {
+	ret := _m.Called(CRUD, token)
 
 	var r0 requesterror.RequestError
-	if rf, ok := ret.Get(0).(func(*models.AccessToken) requesterror.RequestError); ok {
-		r0 = rf(token)
+	if rf, ok := ret.Get(0).(func(controllers.TokenControllerCRUD, *models.AccessToken) requesterror.RequestError); ok {
+		r0 = rf(CRUD, token)
 	} else {
 		r0 = ret.Get(0).(requesterror.RequestError)
 	}
@@ -77,13 +79,13 @@ func (_m *Controllers) DeleteToken(token *models.AccessToken) requesterror.Reque
 	return r0
 }
 
-// DeleteUser provides a mock function with given fields: user
-func (_m *Controllers) DeleteUser(user *models.User) requesterror.RequestError {
-	ret := _m.Called(user)
+// DeleteUser provides a mock function with given fields: CRUD, user
+func (_m *Controllers) DeleteUser(CRUD controllers.UserControllerCRUD, user *models.User) requesterror.RequestError {
+	ret := _m.Called(CRUD, user)
 
 	var r0 requesterror.RequestError
-	if rf, ok := ret.Get(0).(func(*models.User) requesterror.RequestError); ok {
-		r0 = rf(user)
+	if rf, ok := ret.Get(0).(func(controllers.UserControllerCRUD, *models.User) requesterror.RequestError); ok {
+		r0 = rf(CRUD, user)
 	} else {
 		r0 = ret.Get(0).(requesterror.RequestError)
 	}
@@ -91,13 +93,13 @@ func (_m *Controllers) DeleteUser(user *models.User) requesterror.RequestError {
 	return r0
 }
 
-// UpdateUserPassword provides a mock function with given fields: user, oldPassword, newPassword
-func (_m *Controllers) UpdateUserPassword(user *models.User, oldPassword string, newPassword string) requesterror.RequestError {
-	ret := _m.Called(user, oldPassword, newPassword)
+// UpdateUserPassword provides a mock function with given fields: CRUD, user, oldPassword, newPassword
+func (_m *Controllers) UpdateUserPassword(CRUD controllers.UserControllerCRUD, user *models.User, oldPassword string, newPassword string) requesterror.RequestError {
+	ret := _m.Called(CRUD, user, oldPassword, newPassword)
 
 	var r0 requesterror.RequestError
-	if rf, ok := ret.Get(0).(func(*models.User, string, string) requesterror.RequestError); ok {
-		r0 = rf(user, oldPassword, newPassword)
+	if rf, ok := ret.Get(0).(func(controllers.UserControllerCRUD, *models.User, string, string) requesterror.RequestError); ok {
+		r0 = rf(CRUD, user, oldPassword, newPassword)
 	} else {
 		r0 = ret.Get(0).(requesterror.RequestError)
 	}
