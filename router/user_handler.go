@@ -6,6 +6,8 @@ import (
 
 	"authserver/common"
 	requesterror "authserver/common/request_error"
+	"authserver/database"
+	"authserver/models"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -17,54 +19,39 @@ type PostUserBody struct {
 }
 
 // PostUser handles Post requests to "/user"
-func (h routeHandler) PostUser(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+func (h RouterFactory) postUser(req *http.Request, _ httprouter.Params, _ *models.AccessToken, tx database.Transaction) (int, interface{}) {
 	//parse the body
 	var body PostUserBody
 	err := parseJSONBody(req.Body, &body)
 	if err != nil {
 		log.Println(common.ChainError("error parsing PostUser request body", err))
-		sendErrorResponse(w, http.StatusBadRequest, "invalid json body")
-		return
+		return common.NewBadRequestResponse("invalid json body")
 	}
 
 	//create the user
-	_, rerr := h.Control.CreateUser(body.Username, body.Password)
+	_, rerr := h.Controllers.CreateUser(tx, body.Username, body.Password)
 	if rerr.Type == requesterror.ErrorTypeClient {
-		sendErrorResponse(w, http.StatusBadRequest, rerr.Error())
-		return
-	} else if rerr.Type == requesterror.ErrorTypeInternal {
-		sendInternalErrorResponse(w, rerr.Error())
-		return
+		return common.NewBadRequestResponse(rerr.Error())
+	}
+	if rerr.Type == requesterror.ErrorTypeInternal {
+		return common.NewInternalServerErrorResponse()
 	}
 
-	//return success
-	sendSuccessResponse(w)
+	return common.NewSuccessResponse()
 }
 
 // DeleteUser handles DELETE requests to "/user"
-func (h routeHandler) DeleteUser(w http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	//authenticate the user
-	token, rerr := h.Authenticator.Authenticate(req)
-	if rerr.Type == requesterror.ErrorTypeClient {
-		sendErrorResponse(w, http.StatusUnauthorized, rerr.Error())
-		return
-	} else if rerr.Type == requesterror.ErrorTypeInternal {
-		sendInternalErrorResponse(w, rerr.Error())
-		return
-	}
-
+func (h RouterFactory) deleteUser(_ *http.Request, _ httprouter.Params, token *models.AccessToken, tx database.Transaction) (int, interface{}) {
 	//delete the user
-	rerr = h.Control.DeleteUser(token.User)
+	rerr := h.Controllers.DeleteUser(tx, token.User)
 	if rerr.Type == requesterror.ErrorTypeClient {
-		sendErrorResponse(w, http.StatusBadRequest, rerr.Error())
-		return
-	} else if rerr.Type == requesterror.ErrorTypeInternal {
-		sendInternalErrorResponse(w, rerr.Error())
-		return
+		return common.NewBadRequestResponse(rerr.Error())
+	}
+	if rerr.Type == requesterror.ErrorTypeInternal {
+		return common.NewInternalServerErrorResponse()
 	}
 
-	//return success
-	sendSuccessResponse(w)
+	return common.NewSuccessResponse()
 }
 
 // PatchUserPasswordBody is the struct the body of requests to PatchUserPassword should be parsed into
@@ -74,36 +61,32 @@ type PatchUserPasswordBody struct {
 }
 
 // PatchUserPassword handles PATCH requests to "/user/password"
-func (h routeHandler) PatchUserPassword(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
-	//authenticate the user
-	token, rerr := h.Authenticator.Authenticate(req)
-	if rerr.Type == requesterror.ErrorTypeClient {
-		sendErrorResponse(w, http.StatusUnauthorized, rerr.Error())
-		return
-	} else if rerr.Type == requesterror.ErrorTypeInternal {
-		sendInternalErrorResponse(w, rerr.Error())
-		return
-	}
-
+func (h RouterFactory) patchUserPassword(req *http.Request, _ httprouter.Params, token *models.AccessToken, tx database.Transaction) (int, interface{}) {
 	//parse the body
 	var body PatchUserPasswordBody
 	err := parseJSONBody(req.Body, &body)
 	if err != nil {
 		log.Println(common.ChainError("error parsing PatchUserPassword request body", err))
-		sendErrorResponse(w, http.StatusBadRequest, "invalid json body")
-		return
+		return common.NewBadRequestResponse("invalid json body")
 	}
 
 	//update the password
-	rerr = h.Control.UpdateUserPassword(token.User, body.OldPassword, body.NewPassword)
+	rerr := h.Controllers.UpdateUserPassword(tx, token.User, body.OldPassword, body.NewPassword)
 	if rerr.Type == requesterror.ErrorTypeClient {
-		sendErrorResponse(w, http.StatusBadRequest, rerr.Error())
-		return
-	} else if rerr.Type == requesterror.ErrorTypeInternal {
-		sendInternalErrorResponse(w, rerr.Error())
-		return
+		return common.NewBadRequestResponse(rerr.Error())
+	}
+	if rerr.Type == requesterror.ErrorTypeInternal {
+		return common.NewInternalServerErrorResponse()
 	}
 
-	//return success
-	sendSuccessResponse(w)
+	//delete all other user access tokens
+	rerr = h.Controllers.DeleteAllOtherUserTokens(tx, token)
+	if rerr.Type == requesterror.ErrorTypeClient {
+		return common.NewBadRequestResponse(rerr.Error())
+	}
+	if rerr.Type == requesterror.ErrorTypeInternal {
+		return common.NewInternalServerErrorResponse()
+	}
+
+	return common.NewSuccessResponse()
 }

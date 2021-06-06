@@ -15,6 +15,6 @@ func main() {
 		log.Fatal(common.ChainError("error initing config", err))
 	}
 
-	serverRunner := server.CreateHTTPServerRunner(dependencies.ResolveDatabase(), dependencies.ResolveControllers(), dependencies.ResolveAuthenticator())
+	serverRunner := server.CreateHTTPServerRunner(dependencies.ResolveDatabase(), dependencies.ResolveRouterFactory())
 	log.Fatal(serverRunner.Run())
 }

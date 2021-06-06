@@ -28,7 +28,7 @@ func (suite *E2ETestSuite) SetupSuite() {
 	suite.DBConnection = dependencies.ResolveDatabase()
 
 	//create the test server
-	runner := server.CreateHTTPTestServerRunner(suite.DBConnection, dependencies.ResolveControllers(), dependencies.ResolveAuthenticator())
+	runner := server.CreateHTTPTestServerRunner(suite.DBConnection, dependencies.ResolveRouterFactory())
 	suite.Server = runner.Server.(*server.HTTPTestServer).Server
 
 	// run the server

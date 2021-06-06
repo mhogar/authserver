@@ -14,12 +14,10 @@ func ResolveControllers() controllerspkg.Controllers {
 	createContollersOnce.Do(func() {
 		controllers = &controllerspkg.Controls{
 			UserControl: controllerspkg.UserControl{
-				CRUD:                      ResolveDatabase(),
 				PasswordHasher:            ResolvePasswordHasher(),
 				PasswordCriteriaValidator: ResolvePasswordCriteriaValidator(),
 			},
 			TokenControl: controllerspkg.TokenControl{
-				CRUD:           ResolveDatabase(),
 				PasswordHasher: ResolvePasswordHasher(),
 			},
 		}

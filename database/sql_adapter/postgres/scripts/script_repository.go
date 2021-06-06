@@ -29,6 +29,14 @@ DELETE FROM "access_token" tk
 `
 }
 
+// DeleteAllOtherUserTokensScript gets the DeleteAllOtherUserTokens script
+func (ScriptRepository) DeleteAllOtherUserTokensScript() string {
+	return `
+DELETE FROM "access_token" tk
+    WHERE tk."user_id" = $1 AND tk."id" != $2
+`
+}
+
 // DropAccessTokenTableScript gets the DropAccessTokenTable script
 func (ScriptRepository) DropAccessTokenTableScript() string {
 	return `

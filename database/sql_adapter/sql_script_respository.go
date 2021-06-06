@@ -16,6 +16,7 @@ type AccessTokenScriptRepository interface {
 	SaveAccessTokenScript() string
 	GetAccessTokenByIdScript() string
 	DeleteAccessTokenScript() string
+	DeleteAllOtherUserTokensScript() string
 }
 
 // ClientScriptRepository is an interface for fetching client sql scripts.

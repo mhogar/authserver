@@ -48,8 +48,7 @@ func (suite *MigrationCRUDTestSuite) SetupTest() {
 
 func (suite *MigrationCRUDTestSuite) TearDownTest() {
 	//rollback the transaction after each test
-	err := suite.Tx.RollbackTransaction()
-	suite.Require().NoError(err)
+	suite.Tx.RollbackTransaction()
 }
 
 func (suite *MigrationCRUDTestSuite) TestCreateMigration_WithInvalidTimestamp_ReturnsError() {

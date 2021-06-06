@@ -29,7 +29,7 @@ func main() {
 
 	viper.Set("db_key", *dbKey)
 
-	user, err := Run(dependencies.ResolveDatabase(), dependencies.ResolveControllers(), *username, *password)
+	user, err := Run(dependencies.ResolveDatabase(), dependencies.ResolveControllers(), dependencies.ResolveTransactionFactory(), *username, *password)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -38,7 +38,7 @@ func main() {
 }
 
 // Run connects to the database and runs the admin creator. Returns any errors.
-func Run(db database.DBConnection, c controllers.UserController, username string, password string) (*models.User, error) {
+func Run(db database.DBConnection, c controllers.UserController, tf database.TransactionFactory, username string, password string) (*models.User, error) {
 	//open the db connection
 	err := db.OpenConnection()
 	if err != nil {
@@ -53,10 +53,23 @@ func Run(db database.DBConnection, c controllers.UserController, username string
 		return nil, common.ChainError("could not reach database", err)
 	}
 
-	//save the user
-	user, rerr := c.CreateUser(username, password)
+	//create a new transaction
+	tx, err := tf.CreateTransaction()
+	if err != nil {
+		return nil, err
+	}
+
+	//save the user, rollback transaction on error
+	user, rerr := c.CreateUser(tx, username, password)
 	if rerr.Type != requesterror.ErrorTypeNone {
+		tx.RollbackTransaction()
 		return nil, rerr
+	}
+
+	//commit the transaction
+	err = tx.CommitTransaction()
+	if err != nil {
+		return nil, err
 	}
 
 	return user, nil

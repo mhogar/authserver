@@ -12,31 +12,25 @@ import (
 
 // TokenControl handles requests to "/token" endpoints
 type TokenControl struct {
-	CRUD interface {
-		models.UserCRUD
-		models.ClientCRUD
-		models.ScopeCRUD
-		models.AccessTokenCRUD
-	}
-	passwordhelpers.PasswordHasher
+	PasswordHasher passwordhelpers.PasswordHasher
 }
 
 // PostToken handles POST requests to "/token"
-func (c TokenControl) CreateTokenFromPassword(username string, password string, clientID uuid.UUID, scopeName string) (*models.AccessToken, requesterror.OAuthRequestError) {
+func (c TokenControl) CreateTokenFromPassword(CRUD TokenControllerCRUD, username string, password string, clientID uuid.UUID, scopeName string) (*models.AccessToken, requesterror.OAuthRequestError) {
 	//get the client
-	client, rerr := parseClient(c.CRUD, clientID)
+	client, rerr := parseClient(CRUD, clientID)
 	if rerr.Type != requesterror.ErrorTypeNone {
 		return nil, rerr
 	}
 
 	//get the scope
-	scope, rerr := parseScope(c.CRUD, scopeName)
+	scope, rerr := parseScope(CRUD, scopeName)
 	if rerr.Type != requesterror.ErrorTypeNone {
 		return nil, rerr
 	}
 
 	//get the user
-	user, err := c.CRUD.GetUserByUsername(username)
+	user, err := CRUD.GetUserByUsername(username)
 	if err != nil {
 		log.Println(common.ChainError("error getting user by username", err))
 		return nil, requesterror.OAuthInternalError()
@@ -58,7 +52,7 @@ func (c TokenControl) CreateTokenFromPassword(username string, password string, 
 	token := models.CreateNewAccessToken(user, client, scope)
 
 	//save the token
-	err = c.CRUD.SaveAccessToken(token)
+	err = CRUD.SaveAccessToken(token)
 	if err != nil {
 		log.Println(common.ChainError("error saving access token", err))
 		return nil, requesterror.OAuthInternalError()
@@ -68,11 +62,24 @@ func (c TokenControl) CreateTokenFromPassword(username string, password string, 
 }
 
 // DeleteToken deletes the access token.
-func (c TokenControl) DeleteToken(token *models.AccessToken) requesterror.RequestError {
+func (c TokenControl) DeleteToken(CRUD TokenControllerCRUD, token *models.AccessToken) requesterror.RequestError {
 	//delete the token
-	err := c.CRUD.DeleteAccessToken(token)
+	err := CRUD.DeleteAccessToken(token)
 	if err != nil {
 		log.Println(common.ChainError("error deleting access token", err))
+		return requesterror.InternalError()
+	}
+
+	//return success
+	return requesterror.NoError()
+}
+
+// DeleteToken deletes all of the user's tokens accept for the provided one.
+func (c TokenControl) DeleteAllOtherUserTokens(CRUD TokenControllerCRUD, token *models.AccessToken) requesterror.RequestError {
+	//delete the token
+	err := CRUD.DeleteAllOtherUserTokens(token)
+	if err != nil {
+		log.Println(common.ChainError("error deleting all other user tokens", err))
 		return requesterror.InternalError()
 	}
 

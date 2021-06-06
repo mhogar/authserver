@@ -2,33 +2,34 @@ package router
 
 import (
 	"authserver/controllers"
+	"authserver/database"
 
 	"github.com/julienschmidt/httprouter"
 )
 
-type routeHandler struct {
-	Control       controllers.Controllers
-	Authenticator Authenticator
+type IRouterFactory interface {
+	CreateRouter() *httprouter.Router
 }
 
-// CreateRouter creates a new router with the endpoints and panic handler configured
-func CreateRouter(control controllers.Controllers, authenticator Authenticator) *httprouter.Router {
-	router := httprouter.New()
-	handler := routeHandler{
-		Control:       control,
-		Authenticator: authenticator,
-	}
+type RouterFactory struct {
+	Controllers        controllers.Controllers
+	Authenticator      Authenticator
+	TransactionFactory database.TransactionFactory
+}
 
-	router.PanicHandler = panicHandler
+// CreateRouter creates a new httprouter with the endpoints and panic handler configured.
+func (rf RouterFactory) CreateRouter() *httprouter.Router {
+	r := httprouter.New()
+	r.PanicHandler = panicHandler
 
 	//user routes
-	router.POST("/user", handler.PostUser)
-	router.DELETE("/user", handler.DeleteUser)
-	router.PATCH("/user/password", handler.PatchUserPassword)
+	r.POST("/user", rf.createHandler(rf.postUser, false))
+	r.DELETE("/user", rf.createHandler(rf.deleteUser, true))
+	r.PATCH("/user/password", rf.createHandler(rf.patchUserPassword, true))
 
 	//token routes
-	router.POST("/token", handler.PostToken)
-	router.DELETE("/token", handler.DeleteToken)
+	r.POST("/token", rf.createHandler(rf.postToken, false))
+	r.DELETE("/token", rf.createHandler(rf.deleteToken, true))
 
-	return router
+	return r
 }

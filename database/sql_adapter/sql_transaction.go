@@ -28,8 +28,11 @@ func (tx *SQLTransaction) CommitTransaction() error {
 
 // RollbackTransaction rollbacks the sql transaction's transaction instance.
 // Returns any errors.
-func (tx *SQLTransaction) RollbackTransaction() error {
-	return tx.Tx.Rollback()
+func (tx *SQLTransaction) RollbackTransaction() {
+	err := tx.Tx.Rollback()
+	if err != nil {
+		panic(err) //panic if can't rollback
+	}
 }
 
 // CreateTransaction creates a new sql transaction. Returns any errors.
