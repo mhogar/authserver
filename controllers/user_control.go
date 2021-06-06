@@ -107,8 +107,6 @@ func (c UserControl) UpdateUserPassword(CRUD UserControllerCRUD, user *models.Us
 		return requesterror.InternalError()
 	}
 
-	//TODO: delete all other user access tokens (requires transaction)
-
 	//return success
 	return requesterror.NoError()
 }

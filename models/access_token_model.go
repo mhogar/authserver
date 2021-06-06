@@ -33,6 +33,9 @@ type AccessTokenCRUD interface {
 
 	// DeleteAccessToken deletes the token and returns any errors.
 	DeleteAccessToken(token *AccessToken) error
+
+	// DeleteAllOtherUserTokens deletes all of the user's tokens expect for the provided one and returns any errors.
+	DeleteAllOtherUserTokens(token *AccessToken) error
 }
 
 // CreateNewAccessToken creates a access token model with a new id and the provided fields.

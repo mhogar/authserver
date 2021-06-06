@@ -145,7 +145,7 @@ func (suite *UserHandlerTestSuite) TestPostUser_WithValidRequest_ReturnsSuccess(
 	//assert
 	suite.AuthenticatorMock.AssertNotCalled(suite.T(), "Authenticate", mock.Anything)
 	suite.TransactionFactoryMock.AssertCalled(suite.T(), "CreateTransaction")
-	suite.ControllersMock.AssertCalled(suite.T(), "CreateUser", mock.Anything, body.Username, body.Password)
+	suite.ControllersMock.AssertCalled(suite.T(), "CreateUser", &suite.TransactionMock, body.Username, body.Password)
 	suite.TransactionMock.AssertCalled(suite.T(), "CommitTransaction")
 	suite.TransactionMock.AssertNotCalled(suite.T(), "RollbackTransaction")
 	common.AssertSuccessResponse(&suite.Suite, res)
@@ -313,7 +313,7 @@ func (suite *UserHandlerTestSuite) TestDeleteUser_WithValidRequest_ReturnsSucces
 	//assert
 	suite.AuthenticatorMock.AssertCalled(suite.T(), "Authenticate", mock.Anything)
 	suite.TransactionFactoryMock.AssertCalled(suite.T(), "CreateTransaction")
-	suite.ControllersMock.AssertCalled(suite.T(), "DeleteUser", mock.Anything, token.User)
+	suite.ControllersMock.AssertCalled(suite.T(), "DeleteUser", &suite.TransactionMock, token.User)
 	suite.TransactionMock.AssertCalled(suite.T(), "CommitTransaction")
 	suite.TransactionMock.AssertNotCalled(suite.T(), "RollbackTransaction")
 	common.AssertSuccessResponse(&suite.Suite, res)
@@ -467,6 +467,60 @@ func (suite *UserHandlerTestSuite) TestUpdateUserPassword_WithInternalErrorUpdat
 	common.AssertInternalServerErrorResponse(&suite.Suite, res)
 }
 
+func (suite *UserHandlerTestSuite) TestUpdateUserPassword_WithClientErrorDeletingAllOtherUserTokens_ReturnsBadRequest() {
+	//arrange
+	server := httptest.NewServer(suite.Router)
+	defer server.Close()
+
+	body := router.PatchUserPasswordBody{
+		OldPassword: "old password",
+		NewPassword: "new password",
+	}
+	req := common.CreateRequest(&suite.Suite, http.MethodPatch, server.URL+"/user/password", "", body)
+
+	token := &models.AccessToken{User: &models.User{}}
+	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
+	suite.TransactionFactoryMock.On("CreateTransaction").Return(&suite.TransactionMock, nil)
+
+	message := "update user password error"
+	suite.ControllersMock.On("UpdateUserPassword", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(requesterror.NoError())
+	suite.ControllersMock.On("DeleteAllOtherUserTokens", mock.Anything, mock.Anything).Return(requesterror.ClientError(message))
+
+	//act
+	res, err := http.DefaultClient.Do(req)
+	suite.Require().NoError(err)
+
+	//assert
+	suite.TransactionMock.AssertCalled(suite.T(), "RollbackTransaction")
+	common.AssertErrorResponse(&suite.Suite, res, http.StatusBadRequest, message)
+}
+
+func (suite *UserHandlerTestSuite) TestUpdateUserPassword_WithInternalErrorDeletingAllOtherUserTokens_ReturnsInternalServerError() {
+	//arrange
+	server := httptest.NewServer(suite.Router)
+	defer server.Close()
+
+	body := router.PatchUserPasswordBody{
+		OldPassword: "old password",
+		NewPassword: "new password",
+	}
+	req := common.CreateRequest(&suite.Suite, http.MethodPatch, server.URL+"/user/password", "", body)
+
+	token := &models.AccessToken{User: &models.User{}}
+	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
+	suite.TransactionFactoryMock.On("CreateTransaction").Return(&suite.TransactionMock, nil)
+	suite.ControllersMock.On("UpdateUserPassword", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(requesterror.NoError())
+	suite.ControllersMock.On("DeleteAllOtherUserTokens", mock.Anything, mock.Anything).Return(requesterror.InternalError())
+
+	//act
+	res, err := http.DefaultClient.Do(req)
+	suite.Require().NoError(err)
+
+	//assert
+	suite.TransactionMock.AssertCalled(suite.T(), "RollbackTransaction")
+	common.AssertInternalServerErrorResponse(&suite.Suite, res)
+}
+
 func (suite *UserHandlerTestSuite) TestUpdateUserPassword_WithErrorCommitingTransaction_ReturnsInternalServerError() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
@@ -482,6 +536,7 @@ func (suite *UserHandlerTestSuite) TestUpdateUserPassword_WithErrorCommitingTran
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
 	suite.TransactionFactoryMock.On("CreateTransaction").Return(&suite.TransactionMock, nil)
 	suite.ControllersMock.On("UpdateUserPassword", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(requesterror.NoError())
+	suite.ControllersMock.On("DeleteAllOtherUserTokens", mock.Anything, mock.Anything).Return(requesterror.NoError())
 	suite.TransactionMock.On("CommitTransaction").Return(errors.New(""))
 
 	//act
@@ -507,6 +562,7 @@ func (suite *UserHandlerTestSuite) TestUpdateUserPassword_WithValidRequest_Retur
 	suite.AuthenticatorMock.On("Authenticate", mock.Anything).Return(token, requesterror.NoError())
 	suite.TransactionFactoryMock.On("CreateTransaction").Return(&suite.TransactionMock, nil)
 	suite.ControllersMock.On("UpdateUserPassword", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(requesterror.NoError())
+	suite.ControllersMock.On("DeleteAllOtherUserTokens", mock.Anything, mock.Anything).Return(requesterror.NoError())
 	suite.TransactionMock.On("CommitTransaction").Return(nil)
 
 	//act
@@ -516,7 +572,8 @@ func (suite *UserHandlerTestSuite) TestUpdateUserPassword_WithValidRequest_Retur
 	//assert
 	suite.AuthenticatorMock.AssertCalled(suite.T(), "Authenticate", mock.Anything)
 	suite.TransactionFactoryMock.AssertCalled(suite.T(), "CreateTransaction")
-	suite.ControllersMock.AssertCalled(suite.T(), "UpdateUserPassword", mock.Anything, token.User, body.OldPassword, body.NewPassword)
+	suite.ControllersMock.AssertCalled(suite.T(), "UpdateUserPassword", &suite.TransactionMock, token.User, body.OldPassword, body.NewPassword)
+	suite.ControllersMock.AssertCalled(suite.T(), "DeleteAllOtherUserTokens", &suite.TransactionMock, token)
 	suite.TransactionMock.AssertCalled(suite.T(), "CommitTransaction")
 	suite.TransactionMock.AssertNotCalled(suite.T(), "RollbackTransaction")
 	common.AssertSuccessResponse(&suite.Suite, res)

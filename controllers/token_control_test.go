@@ -242,6 +242,34 @@ func (suite *TokenControlTestSuite) TestDeleteToken_WithValidRequest_ReturnsOK()
 	AssertNoError(&suite.Suite, rerr)
 }
 
+func (suite *TokenControlTestSuite) TestDeleteAllOtherUserTokens_WithErrorDeletingTokens_ReturnsInternalError() {
+	//arrange
+	token := &models.AccessToken{}
+
+	suite.CRUDMock.On("DeleteAllOtherUserTokens", mock.Anything).Return(errors.New(""))
+
+	//act
+	rerr := suite.TokenControl.DeleteAllOtherUserTokens(&suite.CRUDMock, token)
+
+	//assert
+	AssertInternalError(&suite.Suite, rerr)
+}
+
+func (suite *TokenControlTestSuite) TestDeleteAllOtherUserTokens_WithValidRequest_ReturnsOK() {
+	//arrange
+	token := &models.AccessToken{}
+
+	suite.CRUDMock.On("DeleteAllOtherUserTokens", mock.Anything).Return(nil)
+
+	//act
+	rerr := suite.TokenControl.DeleteAllOtherUserTokens(&suite.CRUDMock, token)
+
+	//assert
+	suite.CRUDMock.AssertCalled(suite.T(), "DeleteAllOtherUserTokens", token)
+
+	AssertNoError(&suite.Suite, rerr)
+}
+
 func TestTokenControlTestSuite(t *testing.T) {
 	suite.Run(t, &TokenControlTestSuite{})
 }

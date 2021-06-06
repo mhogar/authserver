@@ -2,9 +2,6 @@ package sqladapter_test
 
 import (
 	"authserver/common"
-	"authserver/config"
-	sqladapter "authserver/database/sql_adapter"
-	"authserver/dependencies"
 	"authserver/models"
 	"testing"
 
@@ -13,44 +10,7 @@ import (
 )
 
 type UserCRUDTestSuite struct {
-	suite.Suite
-	TransactionFactory *sqladapter.SQLTransactionFactory
-	Tx                 *sqladapter.SQLTransaction
-}
-
-func (suite *UserCRUDTestSuite) SetupSuite() {
-	err := config.InitConfig("../..")
-	suite.Require().NoError(err)
-
-	//create the database and open its connection
-	db := sqladapter.CreateSQLDB("integration", dependencies.ResolveSQLDriver())
-
-	err = db.OpenConnection()
-	suite.Require().NoError(err)
-
-	err = db.Ping()
-	suite.Require().NoError(err)
-
-	suite.TransactionFactory = &sqladapter.SQLTransactionFactory{
-		DB: db,
-	}
-}
-
-func (suite *UserCRUDTestSuite) TearDownSuite() {
-	suite.TransactionFactory.DB.CloseConnection()
-}
-
-func (suite *UserCRUDTestSuite) SetupTest() {
-	//start a new transaction for every test
-	tx, err := suite.TransactionFactory.CreateTransaction()
-	suite.Require().NoError(err)
-
-	suite.Tx = tx.(*sqladapter.SQLTransaction)
-}
-
-func (suite *UserCRUDTestSuite) TearDownTest() {
-	//rollback the transaction after each test
-	suite.Tx.RollbackTransaction()
+	CRUDTestSuite
 }
 
 func (suite *UserCRUDTestSuite) TestSaveUser_WithInvalidUser_ReturnsError() {
@@ -73,7 +33,7 @@ func (suite *UserCRUDTestSuite) TestGetUserById_WhereUserNotFound_ReturnsNilUser
 func (suite *UserCRUDTestSuite) TestGetUserById_GetsTheUserWithId() {
 	//arrange
 	user := models.CreateNewUser("username", []byte("password"))
-	SaveUser(&suite.Suite, suite.Tx, user)
+	suite.SaveUser(suite.Tx, user)
 
 	//act
 	resultUser, err := suite.Tx.GetUserByID(user.ID)
@@ -95,7 +55,7 @@ func (suite *UserCRUDTestSuite) TestGetUserByUsername_WhereUserNotFound_ReturnsN
 func (suite *UserCRUDTestSuite) TestGetUserByUsernameGetsTheUserWithUsername() {
 	//arrange
 	user := models.CreateNewUser("username", []byte("password"))
-	SaveUser(&suite.Suite, suite.Tx, user)
+	suite.SaveUser(suite.Tx, user)
 
 	//act
 	resultUser, err := suite.Tx.GetUserByUsername(user.Username)
@@ -124,7 +84,7 @@ func (suite *UserCRUDTestSuite) TestUpdateUser_WithNoUserToUpdate_ReturnsNilErro
 func (suite *UserCRUDTestSuite) TestUpdateUser_UpdatesUserWithId() {
 	//arrange
 	user := models.CreateNewUser("username", []byte("password"))
-	SaveUser(&suite.Suite, suite.Tx, user)
+	suite.SaveUser(suite.Tx, user)
 
 	//act
 	user.Username = "username2"
@@ -149,7 +109,7 @@ func (suite *UserCRUDTestSuite) TestDeleteUser_WithNoUserToDelete_ReturnsNilErro
 func (suite *UserCRUDTestSuite) TestDeleteUser_DeletesUserWithId() {
 	//arrange
 	user := models.CreateNewUser("username", []byte("password"))
-	SaveUser(&suite.Suite, suite.Tx, user)
+	suite.SaveUser(suite.Tx, user)
 
 	//act
 	err := suite.Tx.DeleteUser(user)
@@ -162,11 +122,27 @@ func (suite *UserCRUDTestSuite) TestDeleteUser_DeletesUserWithId() {
 	suite.Nil(resultUser)
 }
 
-func TestUserCRUDTestSuite(t *testing.T) {
-	suite.Run(t, &UserCRUDTestSuite{})
+func (suite *UserCRUDTestSuite) TestDeleteUser_AlsoDeletesAllUserTokens() {
+	//arrange
+	user := models.CreateNewUser("username", []byte("password"))
+	token := models.CreateNewAccessToken(
+		user,
+		models.CreateNewClient(),
+		models.CreateNewScope("name"),
+	)
+	suite.SaveAccessTokenAndFields(suite.Tx, token)
+
+	//act
+	err := suite.Tx.DeleteUser(user)
+
+	//assert
+	suite.Require().NoError(err)
+
+	resultAccessToken, err := suite.Tx.GetAccessTokenByID(token.ID)
+	suite.NoError(err)
+	suite.Nil(resultAccessToken)
 }
 
-func SaveUser(suite *suite.Suite, tx *sqladapter.SQLTransaction, user *models.User) {
-	err := tx.SaveUser(user)
-	suite.Require().NoError(err)
+func TestUserCRUDTestSuite(t *testing.T) {
+	suite.Run(t, &UserCRUDTestSuite{})
 }

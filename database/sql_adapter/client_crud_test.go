@@ -2,9 +2,6 @@ package sqladapter_test
 
 import (
 	"authserver/common"
-	"authserver/config"
-	sqladapter "authserver/database/sql_adapter"
-	"authserver/dependencies"
 	"authserver/models"
 	"testing"
 
@@ -13,44 +10,7 @@ import (
 )
 
 type ClientCRUDTestSuite struct {
-	suite.Suite
-	TransactionFactory *sqladapter.SQLTransactionFactory
-	Tx                 *sqladapter.SQLTransaction
-}
-
-func (suite *ClientCRUDTestSuite) SetupSuite() {
-	err := config.InitConfig("../..")
-	suite.Require().NoError(err)
-
-	//create the database and open its connection
-	db := sqladapter.CreateSQLDB("integration", dependencies.ResolveSQLDriver())
-
-	err = db.OpenConnection()
-	suite.Require().NoError(err)
-
-	err = db.Ping()
-	suite.Require().NoError(err)
-
-	suite.TransactionFactory = &sqladapter.SQLTransactionFactory{
-		DB: db,
-	}
-}
-
-func (suite *ClientCRUDTestSuite) TearDownSuite() {
-	suite.TransactionFactory.DB.CloseConnection()
-}
-
-func (suite *ClientCRUDTestSuite) SetupTest() {
-	//start a new transaction for every test
-	tx, err := suite.TransactionFactory.CreateTransaction()
-	suite.Require().NoError(err)
-
-	suite.Tx = tx.(*sqladapter.SQLTransaction)
-}
-
-func (suite *ClientCRUDTestSuite) TearDownTest() {
-	//rollback the transaction after each test
-	suite.Tx.RollbackTransaction()
+	CRUDTestSuite
 }
 
 func (suite *ClientCRUDTestSuite) TestSaveClient_WithInvalidClient_ReturnsError() {
@@ -78,7 +38,7 @@ func (suite *ClientCRUDTestSuite) TestGetClientById_WhereClientNotFound_ReturnsN
 func (suite *ClientCRUDTestSuite) TestGetClientById_GetsTheClientWithId() {
 	//arrange
 	client := models.CreateNewClient()
-	SaveClient(&suite.Suite, suite.Tx, client)
+	suite.SaveClient(suite.Tx, client)
 
 	//act
 	resultClient, err := suite.Tx.GetClientByID(client.ID)
@@ -90,9 +50,4 @@ func (suite *ClientCRUDTestSuite) TestGetClientById_GetsTheClientWithId() {
 
 func TestClientCRUDTestSuite(t *testing.T) {
 	suite.Run(t, &ClientCRUDTestSuite{})
-}
-
-func SaveClient(suite *suite.Suite, tx *sqladapter.SQLTransaction, client *models.Client) {
-	err := tx.SaveClient(client)
-	suite.Require().NoError(err)
 }

@@ -277,7 +277,7 @@ func (suite *TokenHandlerTestSuite) TestPostToken_PasswordGrant_WithValidRequest
 	//assert
 	suite.AuthenticatorMock.AssertNotCalled(suite.T(), "Authenticate", mock.Anything)
 	suite.TransactionFactoryMock.AssertCalled(suite.T(), "CreateTransaction")
-	suite.ControllersMock.AssertCalled(suite.T(), "CreateTokenFromPassword", mock.Anything, body.Username, body.Password, clientID, body.Scope)
+	suite.ControllersMock.AssertCalled(suite.T(), "CreateTokenFromPassword", &suite.TransactionMock, body.Username, body.Password, clientID, body.Scope)
 	suite.TransactionMock.AssertCalled(suite.T(), "CommitTransaction")
 	suite.TransactionMock.AssertNotCalled(suite.T(), "RollbackTransaction")
 	common.AssertAccessTokenResponse(&suite.Suite, res, token.ID.String())
@@ -449,7 +449,7 @@ func (suite *TokenHandlerTestSuite) TestDeleteToken_WithValidRequest_ReturnsSucc
 	//assert
 	suite.AuthenticatorMock.AssertCalled(suite.T(), "Authenticate", mock.Anything)
 	suite.TransactionFactoryMock.AssertCalled(suite.T(), "CreateTransaction")
-	suite.ControllersMock.AssertCalled(suite.T(), "DeleteToken", mock.Anything, token)
+	suite.ControllersMock.AssertCalled(suite.T(), "DeleteToken", &suite.TransactionMock, token)
 	suite.TransactionMock.AssertCalled(suite.T(), "CommitTransaction")
 	suite.TransactionMock.AssertNotCalled(suite.T(), "RollbackTransaction")
 	common.AssertSuccessResponse(&suite.Suite, res)

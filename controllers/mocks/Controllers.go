@@ -65,6 +65,20 @@ func (_m *Controllers) CreateUser(CRUD controllers.UserControllerCRUD, username 
 	return r0, r1
 }
 
+// DeleteAllOtherUserTokens provides a mock function with given fields: CRUD, token
+func (_m *Controllers) DeleteAllOtherUserTokens(CRUD controllers.TokenControllerCRUD, token *models.AccessToken) requesterror.RequestError {
+	ret := _m.Called(CRUD, token)
+
+	var r0 requesterror.RequestError
+	if rf, ok := ret.Get(0).(func(controllers.TokenControllerCRUD, *models.AccessToken) requesterror.RequestError); ok {
+		r0 = rf(CRUD, token)
+	} else {
+		r0 = ret.Get(0).(requesterror.RequestError)
+	}
+
+	return r0
+}
+
 // DeleteToken provides a mock function with given fields: CRUD, token
 func (_m *Controllers) DeleteToken(CRUD controllers.TokenControllerCRUD, token *models.AccessToken) requesterror.RequestError {
 	ret := _m.Called(CRUD, token)

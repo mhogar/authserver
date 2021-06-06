@@ -59,6 +59,20 @@ func (adapter *SQLAdapter) DeleteAccessToken(token *models.AccessToken) error {
 	return nil
 }
 
+// DeleteAllOtherUserTokens deletes all the rows in the access_token table with the matching user id, and not the token id.
+// Returns any errors.
+func (adapter *SQLAdapter) DeleteAllOtherUserTokens(token *models.AccessToken) error {
+	ctx, cancel := adapter.CreateStandardTimeoutContext()
+	_, err := adapter.SQLExecuter.ExecContext(ctx, adapter.SQLDriver.DeleteAllOtherUserTokensScript(), token.User.ID, token.ID)
+	cancel()
+
+	if err != nil {
+		return common.ChainError("error executing delete all other user tokens statement", err)
+	}
+
+	return nil
+}
+
 func readAccessTokenData(rows *sql.Rows) (*models.AccessToken, error) {
 	//check if there was a result
 	if !rows.Next() {

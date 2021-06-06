@@ -46,6 +46,9 @@ type TokenController interface {
 
 	// DeleteToken deletes the access token.
 	DeleteToken(CRUD TokenControllerCRUD, token *models.AccessToken) requesterror.RequestError
+
+	// DeleteToken deletes all of the user's tokens accept for the provided one.
+	DeleteAllOtherUserTokens(CRUD TokenControllerCRUD, token *models.AccessToken) requesterror.RequestError
 }
 
 // Controls encapsulates all other control structs.

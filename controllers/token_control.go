@@ -73,3 +73,16 @@ func (c TokenControl) DeleteToken(CRUD TokenControllerCRUD, token *models.Access
 	//return success
 	return requesterror.NoError()
 }
+
+// DeleteToken deletes all of the user's tokens accept for the provided one.
+func (c TokenControl) DeleteAllOtherUserTokens(CRUD TokenControllerCRUD, token *models.AccessToken) requesterror.RequestError {
+	//delete the token
+	err := CRUD.DeleteAllOtherUserTokens(token)
+	if err != nil {
+		log.Println(common.ChainError("error deleting all other user tokens", err))
+		return requesterror.InternalError()
+	}
+
+	//return success
+	return requesterror.NoError()
+}

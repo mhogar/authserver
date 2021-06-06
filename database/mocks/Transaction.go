@@ -57,6 +57,20 @@ func (_m *Transaction) DeleteAccessToken(token *models.AccessToken) error {
 	return r0
 }
 
+// DeleteAllOtherUserTokens provides a mock function with given fields: token
+func (_m *Transaction) DeleteAllOtherUserTokens(token *models.AccessToken) error {
+	ret := _m.Called(token)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*models.AccessToken) error); ok {
+		r0 = rf(token)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // DeleteMigrationByTimestamp provides a mock function with given fields: timestamp
 func (_m *Transaction) DeleteMigrationByTimestamp(timestamp string) error {
 	ret := _m.Called(timestamp)

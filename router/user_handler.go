@@ -79,5 +79,14 @@ func (h RouterFactory) patchUserPassword(req *http.Request, _ httprouter.Params,
 		return common.NewInternalServerErrorResponse()
 	}
 
+	//delete all other user access tokens
+	rerr = h.Controllers.DeleteAllOtherUserTokens(tx, token)
+	if rerr.Type == requesterror.ErrorTypeClient {
+		return common.NewBadRequestResponse(rerr.Error())
+	}
+	if rerr.Type == requesterror.ErrorTypeInternal {
+		return common.NewInternalServerErrorResponse()
+	}
+
 	return common.NewSuccessResponse()
 }

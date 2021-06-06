@@ -2,9 +2,6 @@ package sqladapter_test
 
 import (
 	"authserver/common"
-	"authserver/config"
-	sqladapter "authserver/database/sql_adapter"
-	"authserver/dependencies"
 	"authserver/models"
 	"testing"
 
@@ -13,44 +10,7 @@ import (
 )
 
 type AccessTokenCRUDTestSuite struct {
-	suite.Suite
-	TransactionFactory *sqladapter.SQLTransactionFactory
-	Tx                 *sqladapter.SQLTransaction
-}
-
-func (suite *AccessTokenCRUDTestSuite) SetupSuite() {
-	err := config.InitConfig("../..")
-	suite.Require().NoError(err)
-
-	//create the database and open its connection
-	db := sqladapter.CreateSQLDB("integration", dependencies.ResolveSQLDriver())
-
-	err = db.OpenConnection()
-	suite.Require().NoError(err)
-
-	err = db.Ping()
-	suite.Require().NoError(err)
-
-	suite.TransactionFactory = &sqladapter.SQLTransactionFactory{
-		DB: db,
-	}
-}
-
-func (suite *AccessTokenCRUDTestSuite) TearDownSuite() {
-	suite.TransactionFactory.DB.CloseConnection()
-}
-
-func (suite *AccessTokenCRUDTestSuite) SetupTest() {
-	//start a new transaction for every test
-	tx, err := suite.TransactionFactory.CreateTransaction()
-	suite.Require().NoError(err)
-
-	suite.Tx = tx.(*sqladapter.SQLTransaction)
-}
-
-func (suite *AccessTokenCRUDTestSuite) TearDownTest() {
-	//rollback the transaction after each test
-	suite.Tx.RollbackTransaction()
+	CRUDTestSuite
 }
 
 func (suite *AccessTokenCRUDTestSuite) TestSaveAccessToken_WithInvalidAccessToken_ReturnsError() {
@@ -77,7 +37,7 @@ func (suite *AccessTokenCRUDTestSuite) TestGetAccessTokenById_GetsTheAccessToken
 		models.CreateNewClient(),
 		models.CreateNewScope("name"),
 	)
-	SaveAccessToken(&suite.Suite, suite.Tx, token)
+	suite.SaveAccessTokenAndFields(suite.Tx, token)
 
 	//act
 	resultAccessToken, err := suite.Tx.GetAccessTokenByID(token.ID)
@@ -102,7 +62,7 @@ func (suite *AccessTokenCRUDTestSuite) TestDeleteAccessToken_DeletesAccessTokenW
 		models.CreateNewClient(),
 		models.CreateNewScope("name"),
 	)
-	SaveAccessToken(&suite.Suite, suite.Tx, token)
+	suite.SaveAccessTokenAndFields(suite.Tx, token)
 
 	//act
 	err := suite.Tx.DeleteAccessToken(token)
@@ -115,17 +75,47 @@ func (suite *AccessTokenCRUDTestSuite) TestDeleteAccessToken_DeletesAccessTokenW
 	suite.Nil(resultAccessToken)
 }
 
-//TODO: test cascade delete with users, scopes, and clients
+func (suite *AccessTokenCRUDTestSuite) TestDeleteAllOtherUserTokens_WithNoAccessTokensToDelete_ReturnsNilError() {
+	//act
+	err := suite.Tx.DeleteAllOtherUserTokens(models.CreateNewAccessToken(models.CreateNewUser("", nil), nil, nil))
+
+	//assert
+	suite.NoError(err)
+}
+
+func (suite *AccessTokenCRUDTestSuite) TestDeleteAllOtherUserTokens_DeletesAllOtherTokenWithUserId() {
+	//arrange
+	token1 := models.CreateNewAccessToken(
+		models.CreateNewUser("username", []byte("password")),
+		models.CreateNewClient(),
+		models.CreateNewScope("name1"),
+	)
+	suite.SaveAccessTokenAndFields(suite.Tx, token1)
+
+	token2 := models.CreateNewAccessToken(
+		token1.User,
+		token1.Client,
+		token1.Scope,
+	)
+	suite.Tx.SaveAccessToken(token2)
+
+	//act
+	err := suite.Tx.DeleteAllOtherUserTokens(token1)
+
+	//assert
+	suite.Require().NoError(err)
+
+	//can still find token1
+	resultAccessToken, err := suite.Tx.GetAccessTokenByID(token1.ID)
+	suite.NoError(err)
+	suite.EqualValues(token1, resultAccessToken)
+
+	//token2 was deleted
+	resultAccessToken, err = suite.Tx.GetAccessTokenByID(token2.ID)
+	suite.NoError(err)
+	suite.Nil(resultAccessToken)
+}
 
 func TestAccessTokenCRUDTestSuite(t *testing.T) {
 	suite.Run(t, &AccessTokenCRUDTestSuite{})
-}
-
-func SaveAccessToken(suite *suite.Suite, tx *sqladapter.SQLTransaction, token *models.AccessToken) {
-	SaveUser(suite, tx, token.User)
-	SaveClient(suite, tx, token.Client)
-	SaveScope(suite, tx, token.Scope)
-
-	err := tx.SaveAccessToken(token)
-	suite.Require().NoError(err)
 }
