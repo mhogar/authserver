@@ -153,6 +153,33 @@ func (suite *TokenHandlerTestSuite) TestPostToken_PasswordGrant_WithMissingParam
 	suite.Run("MissingScope", testCase)
 }
 
+func (suite *TokenHandlerTestSuite) TestPostToken_PasswordGrant_WithErrorParsingClient_ReturnsInvalidClient() {
+	//arrange
+	server := httptest.NewServer(suite.Router)
+	defer server.Close()
+
+	body := router.PostTokenBody{
+		GrantType: "password",
+		PostTokenPasswordGrantBody: router.PostTokenPasswordGrantBody{
+			Username: "username",
+			Password: "password",
+			ClientID: "invalid",
+			Scope:    "scope",
+		},
+	}
+	req := common.CreateRequest(&suite.Suite, http.MethodPost, server.URL+"/token", "", body)
+
+	suite.TransactionFactoryMock.On("CreateTransaction").Return(&suite.TransactionMock, nil)
+
+	//act
+	res, err := http.DefaultClient.Do(req)
+	suite.Require().NoError(err)
+
+	//assert
+	suite.TransactionMock.AssertCalled(suite.T(), "RollbackTransaction")
+	common.AssertOAuthErrorResponse(&suite.Suite, res, http.StatusBadRequest, "invalid_client", "client_id", "invalid format")
+}
+
 func (suite *TokenHandlerTestSuite) TestPostToken_PasswordGrant_WithClientErrorCreatingTokenFromPassword_ReturnsInvalidClient() {
 	//arrange
 	server := httptest.NewServer(suite.Router)
